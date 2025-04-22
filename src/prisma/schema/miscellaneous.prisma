@@ -1,0 +1,23 @@
+// model Miscellaneous {
+//   id        Int      @id @default(autoincrement())
+//   type      String   @unique
+//   content   String   @db.Text
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+// model Faqs {
+//   id        Int      @id @default(autoincrement())
+//   question  String
+//   answer    String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+// model FrequentWords {
+//   id        Int      @id @default(autoincrement())
+//   word      String
+//   count     Int
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }

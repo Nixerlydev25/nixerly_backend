@@ -1,0 +1,14 @@
+// model Comments {
+//   id         String     @id @default(uuid())
+//   message    String     @db.Text
+//   created_at DateTime   @default(now())
+//   updated_at DateTime   @updatedAt
+//   userId     String
+//   user       Users      @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   postId     String
+//   post       Posts      @relation(fields: [postId], references: [id], onDelete: Cascade)
+//   parent     Comments?  @relation("ParentChield", fields: [parentId], references: [id], onDelete: Cascade)
+//   children   Comments[] @relation("ParentChield")
+//   parentId   String?
+//   like       Likes[]
+// }

@@ -1,0 +1,518 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// USERS --------------------------------------------
+model User {
+  id                String           @id @default(uuid())
+  email             String           @unique
+  password          String
+  name              String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  isVerified        Boolean          @default(false)
+  isDeleted         Boolean          @default(false)
+  isSuspended       Boolean          @default(false)
+  role              Role             @default(WORKER)
+  provider          OAuthProvider    @default(EMAIL_PASSWORD)
+  defaultProfile    ProfileType      @default(WORKER)
+  otps              Otp[]
+  restrictions      UserRestriction[]
+  // Profile Relations
+  workerProfile     WorkerProfile?   @relation("UserWorkerProfile")
+  businessProfile   BusinessProfile? @relation("UserBusinessProfile")
+  // Job Relations  
+  jobsPosted        Job[]            @relation("JobPoster")
+  jobApplications   JobApplication[]
+  contracts         Contract[]       @relation("ContractWorker")
+  contractsPosted   Contract[]       @relation("ContractPoster")
+  // Report Relations
+  reportsSubmitted  Report[]         @relation("Reporter")
+  reportsReceived   Report[]         @relation("Reported")
+  // Message Relations
+  workerMessages    Message[]        @relation("WorkerMessages")
+  businessMessages  Message[]        @relation("BusinessMessages")
+
+  @@map("users")
+}
+
+model UserRestriction {
+  id              String          @id @default(uuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restrictionType RestrictionType
+  createdAt       DateTime        @default(now())
+  expiresAt       DateTime?
+  reason          String?         @db.Text
+
+  @@unique([userId, restrictionType])
+  @@map("user_restrictions")
+}
+
+enum RestrictionType {
+  APPLY_TO_JOBS
+  SEND_MESSAGES
+  POST_JOBS
+  HIRE_WORKERS
+  VIEW_PROFILES
+  SUBMIT_REVIEWS
+  SUBMIT_REPORTS
+}
+
+enum Role {
+  WORKER
+  BUSINESS
+  ADMIN
+}
+
+enum ProfileType {
+  WORKER
+  BUSINESS
+}
+
+enum OAuthProvider {
+  GOOGLE
+  OUTLOOK
+  FACEBOOK
+  GITHUB
+  EMAIL_PASSWORD
+}
+
+// WORKER PROFILE --------------------------------------------
+model WorkerProfile {
+  id                  String        @id @default(uuid())
+  userId              String        @unique
+  user                User          @relation("UserWorkerProfile", fields: [userId], references: [id], onDelete: Cascade)
+  title               String?       // Professional Title
+  hourlyRate          Float?
+  description         String?       @db.Text
+  skills              Skill[]
+  categoryId          String?
+  category            Category?     @relation(fields: [categoryId], references: [id])
+  experience          Experience[]
+  education           Education[]
+  certificates        Certificate[]
+  portfolio          Project[]
+  location            String?
+  languages          Language[]
+  availability        Boolean       @default(true)
+  totalEarnings       Float         @default(0)
+  completedJobs       Int           @default(0)
+  avgRating          Float         @default(0)
+  reviewsReceived     Review[]      @relation("WorkerReviews")
+  conversations      Conversation[] @relation("WorkerConversations")
+  
+  @@map("worker_profiles")
+}
+
+// BUSINESS PROFILE --------------------------------------------
+model BusinessProfile {
+  id                String        @id @default(uuid())
+  userId            String        @unique
+  user              User          @relation("UserBusinessProfile", fields: [userId], references: [id], onDelete: Cascade)
+  companyName       String?
+  description       String?       @db.Text
+  industry          String?
+  location          String?
+  website           String?
+  employeeCount     Int?
+  yearFounded       Int?
+  totalSpent        Float         @default(0)
+  postedJobs        Int           @default(0)
+  reviewsReceived   Review[]      @relation("BusinessReviews")
+  conversations     Conversation[] @relation("BusinessConversations")
+  
+  @@map("business_profiles")
+}
+
+// MESSAGING --------------------------------------------
+model Conversation {
+  id              String           @id @default(uuid())
+  workerProfileId String
+  workerProfile   WorkerProfile    @relation("WorkerConversations", fields: [workerProfileId], references: [id])
+  businessProfileId String
+  businessProfile BusinessProfile  @relation("BusinessConversations", fields: [businessProfileId], references: [id])
+  messages        Message[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([workerProfileId, businessProfileId])
+  @@map("conversations")
+}
+
+model Message {
+  id              String       @id @default(uuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId        String
+  sender          User         @relation("WorkerMessages", fields: [senderId], references: [id])
+  receiverId      String
+  receiver        User         @relation("BusinessMessages", fields: [receiverId], references: [id])
+  content         String       @db.Text
+  isRead          Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+
+  @@map("messages")
+}
+
+// JOBS --------------------------------------------
+model Job {
+  id                String           @id @default(uuid())
+  title             String
+  description       String           @db.Text
+  budget            Float?
+  hourlyRateMin     Float?
+  hourlyRateMax     Float?
+  categoryId        String
+  category          Category         @relation(fields: [categoryId], references: [id])
+  posterId          String
+  poster            User             @relation("JobPoster", fields: [posterId], references: [id])
+  status            JobStatus        @default(OPEN)
+  applications      JobApplication[]
+  contracts         Contract[]
+  requiredSkills    Skill[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  expiresAt         DateTime?
+  
+  @@map("jobs")
+}
+
+enum JobStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  EXPIRED
+}
+
+// JOB APPLICATIONS --------------------------------------------
+model JobApplication {
+  id              String    @id @default(uuid())
+  jobId           String
+  job             Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  workerId        String
+  worker          User      @relation(fields: [workerId], references: [id])
+  coverLetter     String    @db.Text
+  proposedRate    Float
+  status          ApplicationStatus @default(PENDING)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("job_applications")
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+// CONTRACTS --------------------------------------------
+model Contract {
+  id              String          @id @default(uuid())
+  jobId           String
+  job             Job             @relation(fields: [jobId], references: [id])
+  workerId        String
+  worker          User            @relation("ContractWorker", fields: [workerId], references: [id])
+  businessId      String
+  business        User            @relation("ContractPoster", fields: [businessId], references: [id])
+  status          ContractStatus  @default(ACTIVE)
+  startDate       DateTime        @default(now())
+  endDate         DateTime?
+  paymentRate     Float
+  totalAmount     Float
+  milestones      Milestone[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("contracts")
+}
+
+enum ContractStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+// MILESTONES --------------------------------------------
+model Milestone {
+  id              String    @id @default(uuid())
+  contractId      String
+  contract        Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  title           String
+  description     String    @db.Text
+  amount          Float
+  dueDate         DateTime
+  status          MilestoneStatus @default(PENDING)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("milestones")
+}
+
+enum MilestoneStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+// REVIEWS --------------------------------------------
+model Review {
+  id              String           @id @default(uuid())
+  rating          Float
+  comment         String           @db.Text
+  workerProfileId String?
+  workerProfile   WorkerProfile?   @relation("WorkerReviews", fields: [workerProfileId], references: [id])
+  businessProfileId String?
+  businessProfile BusinessProfile? @relation("BusinessReviews", fields: [businessProfileId], references: [id])
+  contractId      String
+  createdAt       DateTime         @default(now())
+
+  @@map("reviews")
+}
+
+// REPORTS --------------------------------------------
+model Report {
+  id              String       @id @default(uuid())
+  reporterId      String
+  reporter        User         @relation("Reporter", fields: [reporterId], references: [id])
+  reportedId      String
+  reported        User         @relation("Reported", fields: [reportedId], references: [id])
+  reason          String       @db.Text
+  status          ReportStatus @default(PENDING)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("reports")
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+// WORKER PORTFOLIO & EXPERIENCE --------------------------------------------
+model Project {
+  id              String        @id @default(uuid())
+  workerId        String
+  workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  title           String
+  description     String        @db.Text
+  completionDate  DateTime
+  projectUrl      String?
+  assets          Asset[]
+  createdAt       DateTime      @default(now())
+
+  @@map("projects")
+}
+
+model Asset {
+  id              String    @id @default(uuid())
+  projectId       String
+  project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url             String
+  type            AssetType
+  createdAt       DateTime  @default(now())
+
+  @@map("assets")
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+model Experience {
+  id              String        @id @default(uuid())
+  workerId        String
+  workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  title           String
+  company         String
+  location        String
+  startDate       DateTime
+  endDate         DateTime?
+  description     String        @db.Text
+  current         Boolean       @default(false)
+
+  @@map("experiences")
+}
+
+model Education {
+  id              String        @id @default(uuid())
+  workerId        String
+  workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  school          String
+  degree          String
+  fieldOfStudy    String
+  startDate       DateTime
+  endDate         DateTime?
+  description     String?       @db.Text
+
+  @@map("education")
+}
+
+model Certificate {
+  id              String        @id @default(uuid())
+  workerId        String
+  workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  name            String
+  issuingOrg      String
+  issueDate       DateTime
+  expiryDate      DateTime?
+  credentialUrl   String?
+
+  @@map("certificates")
+}
+
+// CATEGORIES & SKILLS --------------------------------------------
+enum CategoryName {
+  PLUMBING
+  ELECTRICAL
+  CARPENTRY
+  HVAC
+  PAINTING
+  LANDSCAPING
+  CLEANING
+  MOVING
+  AUTOMOTIVE
+  ROOFING
+  MASONRY
+  WELDING
+  FLOORING
+  PEST_CONTROL
+  APPLIANCE_REPAIR
+  GENERAL_MAINTENANCE
+}
+
+enum SubCategoryName {
+  // Plumbing
+  PIPE_INSTALLATION
+  DRAIN_CLEANING
+  FIXTURE_INSTALLATION
+  WATER_HEATER_SERVICE
+  LEAK_REPAIR
+  
+  // Electrical
+  WIRING_INSTALLATION
+  LIGHTING_INSTALLATION
+  ELECTRICAL_REPAIR
+  PANEL_UPGRADES
+  GENERATOR_INSTALLATION
+  
+  // Carpentry
+  CABINET_MAKING
+  FRAMING
+  FINISH_CARPENTRY
+  DOOR_INSTALLATION
+  WINDOW_INSTALLATION
+  
+  // HVAC
+  AC_INSTALLATION
+  HEATING_REPAIR
+  VENTILATION_WORK
+  DUCT_CLEANING
+  SYSTEM_MAINTENANCE
+  
+  // And so on for other categories...
+}
+
+enum SkillName {
+  // Plumbing Skills
+  PIPE_FITTING
+  DRAIN_SNAKING
+  SOLDERING
+  WATER_PRESSURE_MANAGEMENT
+  BACKFLOW_PREVENTION
+  
+  // Electrical Skills
+  CIRCUIT_TESTING
+  CONDUIT_BENDING
+  VOLTAGE_TESTING
+  TRANSFORMER_INSTALLATION
+  ELECTRICAL_TROUBLESHOOTING
+  
+  // Carpentry Skills
+  WOODWORKING
+  BLUEPRINT_READING
+  POWER_TOOL_OPERATION
+  MEASURING_CUTTING
+  FURNITURE_ASSEMBLY
+  
+  // HVAC Skills
+  REFRIGERANT_HANDLING
+  THERMOSTAT_PROGRAMMING
+  DUCTWORK_FABRICATION
+  HEAT_PUMP_REPAIR
+  FURNACE_MAINTENANCE
+  
+  // And many more specific skills...
+}
+
+model Category {
+  id              String          @id @default(uuid())
+  name            CategoryName    @unique
+  description     String?         @db.Text
+  jobs            Job[]
+  workers         WorkerProfile[]
+  subCategories   SubCategory[]
+
+  @@map("categories")
+}
+
+model SubCategory {
+  id              String           @id @default(uuid())
+  name            SubCategoryName  @unique
+  categoryId      String
+  category        Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("sub_categories")
+}
+
+model Skill {
+  id              String          @id @default(uuid())
+  name            SkillName       @unique
+  workers         WorkerProfile[]
+  jobs            Job[]
+
+  @@map("skills")
+}
+
+model Language {
+  id              String          @id @default(uuid())
+  name            String
+  proficiency     Proficiency
+  workers         WorkerProfile[]
+
+  @@map("languages")
+}
+
+enum Proficiency {
+  BASIC
+  CONVERSATIONAL
+  FLUENT
+  NATIVE
+}
+
+// OTP MODEL --------------------------------------------
+model Otp {
+  id         String   @id @default(uuid())
+  otp        Int
+  createdAt  DateTime @default(now())
+  isExpired  Boolean  @default(false)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("otps")
+}

@@ -1,0 +1,8 @@
+// model Likes {
+//   user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   comment   Comments @relation(fields: [commentId], references: [id], onDelete: Cascade)
+//   userId    String
+//   commentId String
+
+//   @@id([userId, commentId])
+// }

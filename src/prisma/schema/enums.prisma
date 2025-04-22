@@ -1,0 +1,22 @@
+// enum Restrictions {
+//   CREATE_POST
+//   EDIT_POST
+//   DELETE_POST
+//   VIEW_POST
+//   CREATE_COMMENT
+//   VIEW_COMMENT
+//   ANALYTICS
+//   REPORT
+//   ACCOUNT
+//   CONTENT
+// }
+
+// enum Roles {
+//   SUPER_ADMIN
+//   ADMIN
+//   DEVELOPER
+//   USER
+//   GUEST
+//   ANALYST
+//   MODERATOR
+// }
