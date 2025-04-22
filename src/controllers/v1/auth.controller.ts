@@ -3,12 +3,6 @@ import * as authModel from "../../model/v1/auth.model";
 import { ResponseMessages, ResponseStatus } from "../../types/response.enums";
 
 import * as bcryptHelper from "../../utils";
-import {
-  loginSchema,
-  resetPasswordSchema,
-  signUpSchema,
-  updateUserDetailsSchema,
-} from "../../schema/v1/auth.validation";
 import { z } from "zod";
 import { setUserCookies } from "../../utils/auth.utils";
 import { signJWT, verifyJWT } from "../../utils/jwt.utils";
@@ -30,7 +24,7 @@ export const signupHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password, name } = signUpSchema.parse(request.body);
+    const { email, password, name } = request.body;
 
     const existingUser = await authModel.findUserByEmail(email);
 
@@ -63,7 +57,7 @@ export const signupHandler = async (
         userId: newUser.id,
         firstTimeLogin: newUser.firstTimeLogin,
         restrictions: newUser.restrictions.map(
-          (restriction) => restriction.restrictionType
+          (restriction: any) => restriction.restrictionType
         ),
         isVerified: newUser.isVerified,
         name: newUser.name,
@@ -84,7 +78,7 @@ export const signinHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password } = loginSchema.parse(request.body);
+    const { email, password } = request.body;
 
     const user = await authModel.findUserByEmail(email);
 
@@ -136,7 +130,7 @@ export const signinHandler = async (
         isTemporaryPasswordReset: user.isTemporaryPasswordReset,
         firstTimeLogin: user.firstTimeLogin,
         restrictions: user.restrictions.map(
-          (restriction) => restriction.restrictionType
+          (restriction: any) => restriction.restrictionType
         ),
         name: user.name,
       });
@@ -157,7 +151,7 @@ export const passwordRecoveryHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password } = loginSchema.parse(request.body);
+    const { email, password } = request.body;
     const user = await authModel.findUserByEmail(email);
 
     if (!user) {
@@ -253,7 +247,7 @@ export const resetPasswordHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { otp, email, password } = resetPasswordSchema.parse(request.body);
+    const { otp, email, password } = request.body;
 
     const user = await authModel.findUserByEmail(email);
     if (!user) {

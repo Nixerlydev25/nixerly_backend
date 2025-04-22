@@ -7,7 +7,6 @@ import dotenv from "dotenv";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 
-// import Api1 from "./routes/v1/global.router";
 import Api1 from "./routes/v1/global.router";
 
 import { corsOptions } from "./config/cors.config";
@@ -35,7 +34,6 @@ if (IS_DEVELOPMENT) {
 }
 
 // api versioning.
-// app.use("/v1", Api1);
 app.use("/v1", Api1);
 app.use("/static", express.static(path.join(__dirname, "public")));
 
