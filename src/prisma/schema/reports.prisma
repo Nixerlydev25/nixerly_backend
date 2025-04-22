@@ -1,0 +1,12 @@
+// model Reports {
+//   id         String   @id @default(uuid())
+//   reason     String   @db.VarChar(1000)
+//   created_at DateTime @default(now())
+//   updated_at DateTime @updatedAt
+  
+//   userId     String
+//   user       Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+//   postId     String
+//   post       Posts    @relation(fields: [postId], references: [id], onDelete: Cascade)
+// }

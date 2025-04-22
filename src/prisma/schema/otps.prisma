@@ -1,0 +1,8 @@
+// model Otp {
+//   id         String   @id @default(uuid())
+//   otp        Int
+//   created_at DateTime @default(now())
+//   isExpired  Boolean  @default(false)
+//   userId     String
+//   user       Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+// }

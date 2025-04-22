@@ -1,0 +1,46 @@
+// model Posts {
+//   id              String            @id @default(uuid())
+//   phone_number    String
+//   city            String
+//   country         String
+//   caption         String           @db.VarChar(2000)
+//   name            String
+//   lastName        String
+//   user            Users             @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   userId          String
+//   likes           Int               @default(0)
+//   comments        Comments[]
+//   reports         Reports[]
+//   relatedKeywords RelatedKeywords[]
+//   postLikes       PostLikes[]
+//   image           Image[]
+//   faceDetected    Boolean           @default(false)
+//   textDetected    Boolean           @default(false)
+//   created_at      DateTime          @default(now())
+// }
+
+// model Image {
+//   id     String @id @default(uuid())
+//   path   String
+//   postId String
+//   post   Posts  @relation(fields: [postId], references: [id], onDelete: Cascade)
+//   type   String
+// }
+
+// model RelatedKeywords {
+//   id         String   @id @default(uuid())
+//   text       String
+//   created_at DateTime @default(now())
+//   updated_at DateTime @updatedAt
+//   post       Posts    @relation(fields: [postId], references: [id], onDelete: Cascade)
+//   postId     String
+// }
+
+// model PostLikes {
+//   user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   post   Posts  @relation(fields: [postId], references: [id], onDelete: Cascade)
+//   userId String
+//   postId String
+
+//   @@id([userId, postId])
+// }

@@ -1,0 +1,37 @@
+// model Users {
+//   id                       String            @id @default(uuid())
+//   email                    String            @unique
+//   username                 String            @unique
+//   password                 String
+//   created_at               DateTime          @default(now())
+//   updated_at               DateTime          @updatedAt
+//   post                     Posts[]
+//   comments                 Comments[]
+//   reports                  Reports[]
+//   link                     Likes[]
+//   otps                     Otp[]
+//   isSuspended              Boolean           @default(false)
+//   isVerified               Boolean           @default(false)
+//   isNotificationEnabled    Boolean           @default(false)
+//   role                     Roles
+//   notifications            notifications[]
+//   age                      Int
+//   expoPushToken            String?           @default("")
+//   PostLikes                PostLikes[]
+//   restrictions             UserRestrictions[]
+//   isTemporaryPasswordReset Boolean           @default(true)
+//   isDeleted                Boolean           @default(false)
+
+//   @@map("users")
+// }
+
+// model UserRestrictions {
+//   id               String          @id @default(uuid())
+//   userId           String
+//   user             Users           @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   restrictionType  Restrictions    
+//   createdAt        DateTime        @default(now())
+
+//   @@unique([userId, restrictionType])
+//   @@map("user_restrictions")
+// }
