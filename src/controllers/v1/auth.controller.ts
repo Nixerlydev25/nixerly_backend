@@ -24,7 +24,7 @@ export const signupHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password, name } = request.body;
+    const { email, password, name, profileType } = request.body;
 
     const existingUser = await authModel.findUserByEmail(email);
 
@@ -38,6 +38,7 @@ export const signupHandler = async (
       email,
       password,
       name,
+      profileType,
     });
 
     const isMobileClient = request.headers["x-client"] === "mobile";
@@ -55,7 +56,6 @@ export const signupHandler = async (
         refreshToken,
         role: newUser.role,
         userId: newUser.id,
-        firstTimeLogin: newUser.firstTimeLogin,
         restrictions: newUser.restrictions.map(
           (restriction: any) => restriction.restrictionType
         ),
@@ -101,16 +101,6 @@ export const signinHandler = async (
       });
     }
 
-    if (
-      !user.isTemporaryPasswordReset &&
-      (user.role == "ADMIN" || user.role == "DEVELOPER")
-    ) {
-      return response.status(ResponseStatus.Unauthorized).send({
-        message: "Please reset your temporary password.",
-        data: user,
-      });
-    }
-
     const isMobileClient = request.headers["x-client"] === "mobile";
 
     const { accessToken, refreshToken } = setUserCookies(
@@ -127,8 +117,7 @@ export const signinHandler = async (
         refreshToken,
         isVerified: user ? user.isVerified : false,
         role: user.role,
-        isTemporaryPasswordReset: user.isTemporaryPasswordReset,
-        firstTimeLogin: user.firstTimeLogin,
+        defaultProfile : user.defaultProfile,
         restrictions: user.restrictions.map(
           (restriction: any) => restriction.restrictionType
         ),
@@ -187,12 +176,8 @@ export async function logoutHandler(
   next: NextFunction
 ) {
   try {
-    console.log("logoutHandler");
     response.clearCookie("access_token", LOGOUT_COOKIE_OPTIONS);
     response.clearCookie("refresh_token", LOGOUT_COOKIE_OPTIONS);
-    console.log("logoutHandler 2");
-    // log cookies
-    console.log("cookies", response.getHeaders());
     return response
       .status(ResponseStatus.OK)
       .json({ message: ResponseMessages.Success });

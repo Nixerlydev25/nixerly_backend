@@ -3,7 +3,7 @@ import * as http from "http";
 import app from "./app";
 import prisma from "./config/prisma.config";
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 4000;
 
 const httpServer: http.Server = http.createServer(app);
 

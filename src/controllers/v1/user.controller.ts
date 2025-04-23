@@ -3,8 +3,6 @@ import * as userModel from "../../model/v1/user.model";
 import { ResponseMessages, ResponseStatus } from "../../types/response.enums";
 import { NotFoundError, ValidationError } from "../../utils/errors";
 import OtpService from "../../services/email.service";
-import * as forgetPasswordSchema from "../../schema/v1/user.valdiation";
-import { updateUserDetailsSchema } from "../../schema/v1/auth.validation";
 
 export const getCurrentUserDetails = async (
   request: Request,
@@ -83,7 +81,7 @@ export const forgotPasswordHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { email } = forgetPasswordSchema.forgotPassword.parse(request.body);
+    const { email } = request.body;
 
     const user = await userModel.findUserByEmail(email);
 
@@ -110,7 +108,7 @@ export const verifyOtpHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { email, otp } = forgetPasswordSchema.verifyOtp.parse(request.body);
+    const { email, otp } = request.body;
     console.log(email, otp);
 
     const user = await userModel.findUserByEmail(email);
@@ -142,10 +140,7 @@ export const resetPasswordHandler = async (
   next: NextFunction
 ) => {
   try {
-    console.log(request.body);
-    const { email, newPassword } = forgetPasswordSchema.resetPassword.parse(
-      request.body
-    );
+    const { email, newPassword } = request.body;
 
     const user = await userModel.findUserByEmail(email);
 
@@ -171,34 +166,14 @@ export const updateUserDetailsHandler = async (
   try {
     const { userId } = request.user;
     const {
-      organization,
-      profession,
-      howDidYouHearAboutUs,
-      schoolName,
-      yearsOfExperience,
-      subjectsTaught,
-      gradeLevel,
-      educationalQualification,
-      teacherLicenseNumber,
-    } = updateUserDetailsSchema.parse(request.body);
+      defaultProfile,
+      ...userDetails
+    } = request.body;
 
-    const updatedUser = await userModel.updateUserDetails(userId, {
-      organization,
-      profession,
-      howDidYouHearAboutUs,
-      schoolName,
-      yearsOfExperience,
-      subjectsTaught,
-      gradeLevel,
-      educationalQualification,
-      teacherLicenseNumber,
-    });
+    const updatedUser = await userModel.updateUserDetails(userId, defaultProfile, userDetails);
 
-    return response.status(ResponseStatus.OK).json({
-      // message: ResponseMessages.Success,
-      ...updatedUser,
-    });
+    return response.status(ResponseStatus.OK).json(updatedUser);
   } catch (error: any) {
-   next(error)
+    next(error);
   }
 };

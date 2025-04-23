@@ -2,7 +2,7 @@ import "express";
 import { NextFunction, Request, Response } from "express";
 import { signJWT, verifyJWT } from "../utils/jwt.utils";
 import { environment } from "../types/global";
-import { Role } from "@prisma/client";
+import { ProfileType, Role } from "@prisma/client";
 import { ResponseStatus } from "../types/response.enums";
 
 interface JWTPayload {
@@ -12,6 +12,7 @@ interface JWTPayload {
   name: string;
   isTemporaryPasswordReset?: boolean;
   oAuthAccessToken: string;
+  defaultProfile?: ProfileType;
 }
 
 declare module "express-serve-static-core" {
@@ -113,6 +114,7 @@ async function revalidatedAccessToken(
       userId: userId,
       oAuthAccessToken: request.user.oAuthAccessToken,
       role: request.user.role,
+      defaultProfile: request.user.defaultProfile,
     },
     "12h"
   );
