@@ -1,10 +1,11 @@
 import { Router } from "express";
 import GoogleAuthController from "../../../controllers/oauth/google.controller";
+import { OAUTH_ROUTES } from "../../../constants/routes.constants";
 
 const oAuthRouter = Router();
 
 // // oAuth google
-oAuthRouter.get("/google", (request, response) =>
+oAuthRouter.get(OAUTH_ROUTES.GOOGLE, (request, response) =>
   GoogleAuthController.redirectToGoogleAuth(request, response),
 );
 

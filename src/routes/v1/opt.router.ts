@@ -1,31 +1,30 @@
 import express from "express";
 import * as optController from "../../controllers/v1/otp.controller";
 import isAuthorized from "../../middleware/isAuthorized";
-import { Roles } from "@prisma/client";
+import { Role } from "@prisma/client";
+import { OTP_ROUTES } from "../../constants/routes.constants";
 
 const otpRouter = express();
 
 // Private Routes
 otpRouter.post(
-  "/send-otp",
+  OTP_ROUTES.SEND_OTP,
   isAuthorized([
-    Roles.USER,
-    Roles.SUPER_ADMIN,
-    Roles.ADMIN,
-    Roles.ANALYST,
-    Roles.DEVELOPER,
+    Role.WORKER,
+    Role.SUPER_ADMIN,
+    Role.ADMIN,
+    Role.DEVELOPER,
   ]),
   optController.sendOtpHandler
 );
 
 otpRouter.put(
-  "/verify-otp",
+  OTP_ROUTES.VERIFY_OTP,
   isAuthorized([
-    Roles.USER,
-    Roles.SUPER_ADMIN,
-    Roles.ADMIN,
-    Roles.ANALYST,
-    Roles.DEVELOPER,
+    Role.WORKER,
+    Role.SUPER_ADMIN,
+    Role.ADMIN,
+    Role.DEVELOPER,
   ]),
   optController.verifyOtpHandler
 );
