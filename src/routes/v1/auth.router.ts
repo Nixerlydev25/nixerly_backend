@@ -7,47 +7,48 @@ import {
   resetPasswordSchema,
   signUpSchema,
 } from "../../schema/v1/auth.validation";
+import { AUTH_ROUTES } from "../../constants/routes.constants";
 
 const authRouter = express();
 
 // sign up & login handler
 authRouter.post(
-  "/signup",
+  AUTH_ROUTES.SIGNUP,
   validateSchema(signUpSchema),
   authController.signupHandler
 );
 authRouter.post(
-  "/signin",
+  AUTH_ROUTES.SIGNIN,
   validateSchema(loginSchema),
   authController.signinHandler
 );
 
 //Forget Password Routes
 authRouter.post(
-  "/reset-password",
+  AUTH_ROUTES.RESET_PASSWORD,
   validateSchema(resetPasswordSchema),
   authController.resetPasswordHandler
 );
 
 //Delete Account API
-authRouter.get("/deleteMyAccount", authController.deleteMyAccount);
+authRouter.get(AUTH_ROUTES.DELETE_ACCOUNT, authController.deleteMyAccount);
 
 // refresh accessToken ( only for mobile apps )
-authRouter.put("/refresh", authController.refreshAccessToken);
+authRouter.put(AUTH_ROUTES.REFRESH, authController.refreshAccessToken);
 
 // reset password
 authRouter.put(
-  "/passwordRecovery",
+  AUTH_ROUTES.PASSWORD_RECOVERY,
   validateSchema(loginSchema),
   authController.passwordRecoveryHandler
 );
 
 // logout handler ( only for web app )
-authRouter.get("/logout", authController.logoutHandler);
+authRouter.get(AUTH_ROUTES.LOGOUT, authController.logoutHandler);
 
 // auth check
-authRouter.get("/isauthenticated", authController.isAuthenticated);
+authRouter.get(AUTH_ROUTES.IS_AUTHENTICATED, authController.isAuthenticated);
 
-authRouter.use("/oauth", oAuthRouter);
+authRouter.use(AUTH_ROUTES.OAUTH, oAuthRouter);
 
 export default authRouter;

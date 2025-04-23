@@ -24,11 +24,13 @@ model User {
   defaultProfile    ProfileType      @default(WORKER)
   otps              Otp[]
   restrictions      UserRestriction[]
+  firstTimeLogin    Boolean          @default(true)
   // Profile Relations
   workerProfile     WorkerProfile?   @relation("UserWorkerProfile")
   businessProfile   BusinessProfile? @relation("UserBusinessProfile")
   // Job Relations  
   jobsPosted        Job[]            @relation("JobPoster")
+  isOnboardingComplete  Boolean     @default(false)
   jobApplications   JobApplication[]
   contracts         Contract[]       @relation("ContractWorker")
   contractsPosted   Contract[]       @relation("ContractPoster")
@@ -42,47 +44,6 @@ model User {
   @@map("users")
 }
 
-model UserRestriction {
-  id              String          @id @default(uuid())
-  userId          String
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restrictionType RestrictionType
-  createdAt       DateTime        @default(now())
-  expiresAt       DateTime?
-  reason          String?         @db.Text
-
-  @@unique([userId, restrictionType])
-  @@map("user_restrictions")
-}
-
-enum RestrictionType {
-  APPLY_TO_JOBS
-  SEND_MESSAGES
-  POST_JOBS
-  HIRE_WORKERS
-  VIEW_PROFILES
-  SUBMIT_REVIEWS
-  SUBMIT_REPORTS
-}
-
-enum Role {
-  WORKER
-  BUSINESS
-  ADMIN
-}
-
-enum ProfileType {
-  WORKER
-  BUSINESS
-}
-
-enum OAuthProvider {
-  GOOGLE
-  OUTLOOK
-  FACEBOOK
-  GITHUB
-  EMAIL_PASSWORD
-}
 
 // WORKER PROFILE --------------------------------------------
 model WorkerProfile {
@@ -130,6 +91,51 @@ model BusinessProfile {
   
   @@map("business_profiles")
 }
+
+model UserRestriction {
+  id              String          @id @default(uuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restrictionType RestrictionType
+  createdAt       DateTime        @default(now())
+  expiresAt       DateTime?
+  reason          String?         @db.Text
+
+  @@unique([userId, restrictionType])
+  @@map("user_restrictions")
+}
+
+enum RestrictionType {
+  APPLY_TO_JOBS
+  SEND_MESSAGES
+  POST_JOBS
+  HIRE_WORKERS
+  VIEW_PROFILES
+  SUBMIT_REVIEWS
+  SUBMIT_REPORTS
+}
+
+enum Role {
+  WORKER
+  BUSINESS
+  ADMIN
+  SUPER_ADMIN
+  DEVELOPER
+}
+
+enum ProfileType {
+  WORKER
+  BUSINESS
+}
+
+enum OAuthProvider {
+  GOOGLE
+  OUTLOOK
+  FACEBOOK
+  GITHUB
+  EMAIL_PASSWORD
+}
+
 
 // MESSAGING --------------------------------------------
 model Conversation {

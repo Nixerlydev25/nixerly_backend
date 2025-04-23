@@ -1,4 +1,4 @@
-import { OAuthProvider, Restrictions, Roles } from "@prisma/client";
+import { OAuthProvider, Role, ProfileType } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { generateUserName, hashPassword } from "../../utils";
 import { DatabaseError, ValidationError } from "../../utils/errors";
@@ -12,11 +12,12 @@ interface CreateUser extends LoginUser {
   password: string;
   name: string;
   email: string;
+  profileType: ProfileType;
 }
 
 export const findUserByEmail = async (email: string) => {
   try {
-    const user = await prisma.users.findFirst({
+    const user = await prisma.user.findFirst({
       where: {
         email,
       },
@@ -38,14 +39,21 @@ export const createUser = async (data: CreateUser) => {
   try {
     const { name, email, password } = data;
 
-    const newUser = await prisma.users.create({
+    const newUser = await prisma.user.create({
       data: {
         email,
         name,
         password: hashPassword(password),
         provider: OAuthProvider.EMAIL_PASSWORD,
         isSuspended: false,
-        role: Roles.USER
+        role : data.profileType === ProfileType.WORKER ? Role.WORKER : Role.BUSINESS,
+        defaultProfile: data.profileType,
+        workerProfile : {
+          create: {}
+        },
+        businessProfile : {
+          create: {}
+        }
       },
       include: {
         restrictions: true,
@@ -60,13 +68,12 @@ export const createUser = async (data: CreateUser) => {
 
 export const updatePassword = async (userId: string, newPassword: string) => {
   try {
-    await prisma.users.update({
+    await prisma.user.update({
       where: {
         id: userId,
       },
       data: {
         password: hashPassword(newPassword),
-        isTemporaryPasswordReset: true,
       },
     });
   } catch (err: any) {
@@ -76,7 +83,7 @@ export const updatePassword = async (userId: string, newPassword: string) => {
 
 export const fetchUserVerifiedStatus = async (userId: string) => {
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         id: userId,
       },
@@ -93,7 +100,7 @@ export const fetchUserVerifiedStatus = async (userId: string) => {
 
 export const deleteUser = async (userId: string) => {
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId,isDeleted:false },
     });
 
@@ -101,7 +108,7 @@ export const deleteUser = async (userId: string) => {
       throw new ValidationError("User Does Not Exist");
     }
 
-    const updatedUser = await prisma.users.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { isDeleted: true },
     });

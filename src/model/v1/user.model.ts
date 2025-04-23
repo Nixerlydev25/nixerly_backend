@@ -1,3 +1,4 @@
+import { ProfileType } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { hashPassword } from "../../utils";
 import { DatabaseError } from "../../utils/errors";
@@ -6,7 +7,7 @@ export const updateUserVerificationStatus = async (
   userId: string,
   isVerified: boolean
 ): Promise<void> => {
-  await prisma.users.update({
+  await prisma.user.update({
     where: { id: userId },
     data: { isVerified },
   });
@@ -14,7 +15,7 @@ export const updateUserVerificationStatus = async (
 
 export const getUser = async (userID: string) => {
   try{
-  const users = await prisma.users.findUnique({
+  const users = await prisma.user.findUnique({
     where: { id: userID }, // replace with user id
     select: {
       email: true,
@@ -29,7 +30,7 @@ export const getUser = async (userID: string) => {
 
 export const getUserRole = async (userID: string) => {
   try {
-    const users = await prisma.users.findUnique({
+    const users = await prisma.user.findUnique({
       where: { id: userID },
       select: {
         role: true,
@@ -43,13 +44,13 @@ export const getUserRole = async (userID: string) => {
 
 export const toggleFirstTimeLogin = async (id: string) => {
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id },
     });
 
     if (!user) return null;
 
-    const updatedUser = await prisma.users.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
       data: { firstTimeLogin: !user.firstTimeLogin },
     });
@@ -63,7 +64,7 @@ export const toggleFirstTimeLogin = async (id: string) => {
 
 export const markUserAsDeleted = async (userId: string) => {
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
     });
 
@@ -71,7 +72,7 @@ export const markUserAsDeleted = async (userId: string) => {
       return null;
     }
 
-    const updatedUser = await prisma.users.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { isDeleted: true },
     });
@@ -84,7 +85,7 @@ export const markUserAsDeleted = async (userId: string) => {
 
 export const getCurrentUserDetails = async (userId: string) => {
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -93,20 +94,13 @@ export const getCurrentUserDetails = async (userId: string) => {
         isSuspended: true,
         isVerified: true,
         role: true,
-        isTemporaryPasswordReset: true,
         isDeleted: true,
         restrictions:true,
-        created_at: true,
-        onboardingCompleted: true,
-        organization: true,
-        profession: true,
-        howDidYouHearAboutUs: true,
-        schoolName: true,
-        yearsOfExperience: true,
-        subjectsTaught: true,
-        gradeLevel: true,
-        educationalQualification: true,
-        teacherLicenseNumber: true,
+        createdAt: true,
+        isOnboardingComplete: true,
+        defaultProfile: true,
+        workerProfile: true,
+        businessProfile: true,
       },
     });
 
@@ -121,7 +115,7 @@ export const getCurrentUserDetails = async (userId: string) => {
 
 export const findUserByEmail = async (email: string) => {
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -135,7 +129,7 @@ export const resetPassword = async (userId: string, newPassword: string) => {
   try {
     const hashedPassword = hashPassword(newPassword);
 
-    const updatedUser = await prisma.users.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword },
     });
@@ -160,16 +154,33 @@ interface UserDetails {
   teacherLicenseNumber?: string;
 }
 
-export const updateUserDetails = async (userId: string, userDetails: UserDetails) => {
+export const updateUserDetails = async (
+  userId: string,
+  defaultProfile: ProfileType,
+  userDetails: Record<string, any>
+) => {
   try {
-    const updatedUser = await prisma.users.update({
+    const baseUserUpdate = {
+      isOnboardingComplete: true,
+    };
+
+    if (defaultProfile === ProfileType.WORKER) {
+      await prisma.workerProfile.update({
+        where: { userId },
+        data: userDetails,
+      });
+    } else if (defaultProfile === ProfileType.BUSINESS) {
+      await prisma.businessProfile.update({
+        where: { userId },
+        data: userDetails,
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        ...userDetails,
-        onboardingCompleted: true
-      },
+      data: baseUserUpdate,
     });
-    
+
     return updatedUser;
   } catch (error: any) {
     throw new DatabaseError(error.message);
