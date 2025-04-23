@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { ProfileType } from "@prisma/client";
 
 dotenv.config();
 
@@ -13,6 +14,7 @@ interface JWTPayload {
   isTemporaryPasswordReset?: boolean;
   oAuthAccessToken?: string;
   name?: string;
+  defaultProfile?: ProfileType;
 }
 
 export const signJWT = (payload: JWTPayload, expiresIn: string ): string => {

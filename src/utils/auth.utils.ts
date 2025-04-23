@@ -1,4 +1,4 @@
-import { Users } from "@prisma/client";
+import { User } from "@prisma/client";
 import { Response } from "express";
 import { signJWT } from "./jwt.utils";
 import { environment } from "../types/global";
@@ -9,7 +9,7 @@ const IS_PRODUCTION = process.env.NODE_ENV === environment.PRODUCTION;
 
 export function setUserCookies(
   response: Response,
-  user: Users,
+  user: User,
   isMobileClient: boolean,
 ) {
   
@@ -19,6 +19,7 @@ export function setUserCookies(
       userId: `${user.id}`,
       role: user.role,
       name: user.name,
+      defaultProfile : user.defaultProfile,
     },
     "12h",
   );
@@ -29,6 +30,7 @@ export function setUserCookies(
       userId: `${user.id}`,
       role: user.role,
       name: user.name,
+      defaultProfile : user.defaultProfile,
     },
     "1y",
   );

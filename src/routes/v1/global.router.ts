@@ -6,30 +6,30 @@ import restrictionsRouter from "./restrictions.router";
 import userRouter from "./user.router";
 import healthRouter from "./health.router";
 import subscriptionRouter from "./subscription.router";
-import { API_ROUTES } from "../../constants/routes.constants";
+import { ROUTES } from "../../constants/routes.constants";
 
 const Api2 = Router();
 // authentication. 
 //TODO : unit test.
-Api2.use(API_ROUTES.AUTH, authRouter);
+Api2.use(ROUTES.API.AUTH, authRouter);
 
 // otp routes
 //TODO : unit test.
-Api2.use(API_ROUTES.OTP, otpRouter);
+Api2.use(ROUTES.API.OTP, otpRouter);
 
 // roles routes
-Api2.use(API_ROUTES.ROLES, roleRouter);
+Api2.use(ROUTES.API.ROLES, roleRouter);
 
 // Notification router for sending and saving notifications
-Api2.use(API_ROUTES.RESTRICTIONS, restrictionsRouter);
+Api2.use(ROUTES.API.RESTRICTIONS, restrictionsRouter);
 
-Api2.use(API_ROUTES.USER, userRouter);
+Api2.use(ROUTES.API.USER, userRouter);
 
 // health route for server status
 //TODO : unit test.
-Api2.use(API_ROUTES.HEALTH, healthRouter);
+Api2.use(ROUTES.API.HEALTH, healthRouter);
 
 // subscription routes
-Api2.use(API_ROUTES.SUBSCRIPTION, subscriptionRouter);
+Api2.use(ROUTES.API.SUBSCRIPTION, subscriptionRouter);
 
 export default Api2;
