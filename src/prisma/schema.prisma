@@ -44,6 +44,7 @@ model WorkerProfile {
   city                String?
   state               String?
   country             String?
+  workerCategories    WorkerCategory[] // Worker can have multiple categories
   hourlyRate          Float?
   experience          Experience[]
   education           Education[]   // Education moved exclusively to worker profile
@@ -63,7 +64,6 @@ model WorkerProfile {
   reportsReceived     Report[]      @relation("WorkerReported") // Reports received by worker
   sentMessages        Message[]     @relation("WorkerSentMessages") // Messages sent by worker
   receivedMessages    Message[]     @relation("WorkerReceivedMessages") // Messages received by worker
-  workerCategories    WorkerCategory[] // Worker can have multiple categories
   
   @@map("worker_profiles")
 }
@@ -520,7 +520,6 @@ enum CategoryName {
   FLOORING
   PEST_CONTROL
   APPLIANCE_REPAIR
-  GENERAL_MAINTENANCE
   MANAGEMENT
   INSPECTION
   TECHNICIAN
@@ -559,40 +558,131 @@ enum SkillName {
   DUCT_CLEANING
   SYSTEM_MAINTENANCE
   
-  // Management & Oversight
+  // Painting
+  INTERIOR_PAINTING
+  EXTERIOR_PAINTING
+  WALLPAPER_INSTALLATION
+  STAINING
+  PAINT_REMOVAL
+  
+  // Landscaping
+  LAWN_MAINTENANCE
+  TREE_TRIMMING
+  GARDEN_DESIGN
+  IRRIGATION_INSTALLATION
+  HARDSCAPING
+  
+  // Cleaning
+  DEEP_CLEANING
+  WINDOW_CLEANING
+  CARPET_CLEANING
+  PRESSURE_WASHING
+  SANITIZATION
+  
+  // Moving
+  FURNITURE_MOVING
+  PACKING_SERVICES
+  HEAVY_LIFTING
+  EQUIPMENT_TRANSPORTATION
+  LOGISTICS_PLANNING
+  
+  // Automotive
+  ENGINE_REPAIR
+  BRAKE_SERVICE
+  TRANSMISSION_REPAIR
+  AUTO_ELECTRICAL
+  BODY_WORK
+  
+  // Roofing
+  ROOF_INSTALLATION
+  SHINGLE_REPAIR
+  LEAK_DETECTION
+  GUTTER_INSTALLATION
+  ROOF_INSPECTION
+  
+  // Masonry
+  BRICK_LAYING
+  STONE_WORK
+  CONCRETE_POURING
+  FOUNDATION_REPAIR
+  TUCKPOINTING
+  
+  // Welding
+  ARC_WELDING
+  MIG_WELDING
+  TIG_WELDING
+  PIPE_WELDING
+  STRUCTURAL_WELDING
+  
+  // Flooring
+  TILE_INSTALLATION
+  HARDWOOD_FLOORING
+  CARPET_INSTALLATION
+  VINYL_FLOORING
+  FLOOR_REFINISHING
+  
+  // Pest Control
+  INSECT_EXTERMINATION
+  RODENT_CONTROL
+  TERMITE_TREATMENT
+  WILDLIFE_REMOVAL
+  PREVENTATIVE_TREATMENTS
+  
+  // Appliance Repair
+  REFRIGERATOR_REPAIR
+  WASHER_DRYER_SERVICE
+  DISHWASHER_REPAIR
+  OVEN_REPAIR
+  MICROWAVE_SERVICE
+  
+  // General Maintenance
+  HANDYMAN_SERVICES
+  PROPERTY_MAINTENANCE
+  PREVENTATIVE_MAINTENANCE
+  EQUIPMENT_SERVICING
+  FACILITY_UPKEEP
+  
+  // Management
   SUPERVISOR
   CONSTRUCTION_MANAGER
-  QAQC_ENGINEER
-  HSA_ADVISOR
-  SITE_INSPECTOR
-  PROJECT_COORDINATOR
-
+  PROJECT_MANAGEMENT
+  TEAM_LEADERSHIP
+  RESOURCE_PLANNING
+  
+  // Inspection
+  BUILDING_INSPECTION
+  SAFETY_INSPECTION
+  QUALITY_CONTROL
+  CODE_COMPLIANCE
+  STRUCTURAL_ASSESSMENT
+  
   // Technician
   INSTRUMENT_TECHNICIAN
   MAINTENANCE_TECHNICIAN
-  MECHANIC
-
+  ELECTRONICS_TECHNICIAN
+  CALIBRATION_SPECIALIST
+  EQUIPMENT_DIAGNOSTICS
+  
   // Fabrication
   PIPEFITTING
   METAL_FABRICATION
   WELDING_ASSEMBLY
   STRUCTURAL_FABRICATION
-
+  CUSTOM_FABRICATION
+  
   // Maintenance
   EQUIPMENT_REPAIR
-  FACILITY_UPKEEP
   MECHANICAL_OVERHAUL
   PLANT_MAINTENANCE
-
+  PREVENTIVE_MAINTENANCE
+  
   // Groundworks
   EXCAVATION
   TRENCHING
   SITE_CLEARANCE
   LAND_GRADING
   DEWATERING
-  SOIL_STABILISATION
-  COMPACTION
-
+  
   // Rigging
   CRANE_OPERATION
   SLINGING
