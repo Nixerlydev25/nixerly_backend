@@ -10,7 +10,8 @@ interface LoginUser {
 
 interface CreateUser extends LoginUser {
   password: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   profileType: ProfileType;
 }
@@ -37,16 +38,17 @@ export const findUserByEmail = async (email: string) => {
 
 export const createUser = async (data: CreateUser) => {
   try {
-    const { name, email, password } = data;
+    const { firstName, lastName, email, password } = data;
 
     const newUser = await prisma.user.create({
       data: {
         email,
-        name,
+        firstName,
+        lastName,
         password: hashPassword(password),
         provider: OAuthProvider.EMAIL_PASSWORD,
         isSuspended: false,
-        role : data.profileType === ProfileType.WORKER ? Role.WORKER : Role.BUSINESS,
+        role : data.profileType,
         defaultProfile: data.profileType,
         workerProfile : {
           create: {}
@@ -89,7 +91,8 @@ export const fetchUserVerifiedStatus = async (userId: string) => {
       },
       select: {
         isVerified: true,
-        name: true,
+        firstName: true,
+        lastName: true,
       },
     });
     return user;

@@ -71,12 +71,13 @@ class GoogleAuthController {
           refreshToken,
           isVerified: user ? user.isVerified : false,
           role: user.role,
-          isTemporaryPasswordReset: user.isTemporaryPasswordReset,
           firstTimeLogin: user.firstTimeLogin,
           restrictions: user.restrictions.map(
             (restriction) => restriction.restrictionType
           ),
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          defaultProfile: user.defaultProfile,
         });
       }
 

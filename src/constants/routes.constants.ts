@@ -6,6 +6,7 @@ export const ROUTES = {
         RESTRICTIONS: '/restrictions',
         USER: '/user',
         HEALTH: '/health',
+        LANGUAGE: '/language',
         SUBSCRIPTION: '/subscription'
     },
     AUTH: {
@@ -19,6 +20,11 @@ export const ROUTES = {
         IS_AUTHENTICATED: '/is-authenticated',
         OAUTH: '/oauth'
     },
+    LANGUAGE: {
+        CREATE: '/create',
+        UPDATE: '/update',
+        DELETE: '/delete'
+    },
     OAUTH: {
         GOOGLE: '/google',
         GOOGLE_CALLBACK: '/google/callback'
@@ -29,7 +35,9 @@ export const ROUTES = {
     },
     USER: {
         CURRENT_USER: '/current-user',
-        UPDATE_USER_DETAILS: '/update-user-details', 
+        UPDATE_WORKER_PROFILE: '/update-worker-profile',
+        UPDATE_BUSINESS_PROFILE: '/update-business-profile',
+        UPDATE_USER: '/update-user',
         TOGGLE_FIRST_TIME_LOGIN: '/toggle-first-time-login',
         DELETE_ACCOUNT: '/delete-account',
         FORGOT_PASSWORD: '/forgot-password',

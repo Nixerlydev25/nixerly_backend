@@ -8,11 +8,10 @@ import { ResponseStatus } from "../types/response.enums";
 interface JWTPayload {
   email: string;
   userId: string;
+  firstName: string;
+  lastName: string;
+  defaultProfile: ProfileType;
   role: Role;
-  name: string;
-  isTemporaryPasswordReset?: boolean;
-  oAuthAccessToken: string;
-  defaultProfile?: ProfileType;
 }
 
 declare module "express-serve-static-core" {
@@ -112,9 +111,10 @@ async function revalidatedAccessToken(
     {
       email: request.user.email,
       userId: userId,
-      oAuthAccessToken: request.user.oAuthAccessToken,
       role: request.user.role,
       defaultProfile: request.user.defaultProfile,
+      firstName: request.user.firstName,
+      lastName: request.user.lastName,
     },
     "12h"
   );

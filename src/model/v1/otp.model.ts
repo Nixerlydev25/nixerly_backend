@@ -35,7 +35,7 @@ export const findValidOtp = async (userId: string, otp: number): Promise<any> =>
         userId,
         otp,
         isExpired: false,
-        created_at: {
+        createdAt: {
           gte: new Date(Date.now() - 10 * 60 * 1000),
         },
       },
@@ -60,7 +60,7 @@ export const expireOtpById = async (id: string): Promise<void> => {
 
 export const findValidOtpByEmail = async (email: string, otp: number) => {
   try {
-    const user = await prisma.users.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return null;
 
     return await prisma.otp.findFirst({

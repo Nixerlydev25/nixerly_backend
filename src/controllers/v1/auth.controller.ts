@@ -3,10 +3,8 @@ import * as authModel from "../../model/v1/auth.model";
 import { ResponseMessages, ResponseStatus } from "../../types/response.enums";
 
 import * as bcryptHelper from "../../utils";
-import { z } from "zod";
 import { setUserCookies } from "../../utils/auth.utils";
 import { signJWT, verifyJWT } from "../../utils/jwt.utils";
-// import * as userModel from "../../model/v1/user.model";
 import OtpService from "../../services/email.service";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
@@ -24,7 +22,7 @@ export const signupHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password, name, profileType } = request.body;
+    const { email, password, firstName, lastName, profileType } = request.body;
 
     const existingUser = await authModel.findUserByEmail(email);
 
@@ -37,7 +35,8 @@ export const signupHandler = async (
     const newUser = await authModel.createUser({
       email,
       password,
-      name,
+      firstName,
+      lastName,
       profileType,
     });
 
@@ -60,7 +59,8 @@ export const signupHandler = async (
           (restriction: any) => restriction.restrictionType
         ),
         isVerified: newUser.isVerified,
-        name: newUser.name,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
       });
     }
 
@@ -121,7 +121,8 @@ export const signinHandler = async (
         restrictions: user.restrictions.map(
           (restriction: any) => restriction.restrictionType
         ),
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
       });
     }
 
@@ -212,8 +213,10 @@ export const refreshAccessToken = async (
       {
         email: payload.email,
         userId: payload.userId,
-        oAuthAccessToken: payload.oAuthAccessToken,
         role: payload.role,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        defaultProfile: payload.defaultProfile,
       },
       "12h" // expires in 12 hour
     );

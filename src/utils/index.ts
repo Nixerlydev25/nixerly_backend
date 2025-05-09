@@ -1,15 +1,13 @@
 import bcrypt from "bcrypt";
-import { Roles } from "@prisma/client";
 import { getUserRole } from "../model/v1/user.model";
+import { Role } from "@prisma/client";
 
 const roleHierarchy = {
-  [Roles.SUPER_ADMIN]: 5,
-  [Roles.ADMIN]: 4,
-  [Roles.DEVELOPER]: 4,
-  [Roles.ANALYST]: 3,
-  [Roles.MODERATOR]: 3,
-  [Roles.USER]: 2,
-  [Roles.GUEST]: 1,
+  [Role.SUPER_ADMIN]: 5,
+  [Role.ADMIN]: 4,
+  [Role.DEVELOPER]: 4,
+  [Role.WORKER]: 3,
+  [Role.BUSINESS]: 2,
 };
 
 export const generateUserName = (): string => {
@@ -32,7 +30,7 @@ export function comparePassword(password: string, hashedPassword: string) {
   }
 }
 
-export const validateRoleHierarchy = async (requesterRole: Roles, targetUserId: string): Promise<boolean> => {
+export const validateRoleHierarchy = async (requesterRole: Role, targetUserId: string): Promise<boolean> => {
   try {
     const targetUser = await getUserRole(targetUserId);
 
@@ -44,7 +42,11 @@ export const validateRoleHierarchy = async (requesterRole: Roles, targetUserId: 
       return false;
     }
 
-    return roleHierarchy[requesterRole as keyof typeof roleHierarchy] >= roleHierarchy[targetUser.role as keyof typeof roleHierarchy];
+    const requesterRoleValue = roleHierarchy[requesterRole];
+    const targetUserRoleValue = roleHierarchy[targetUser.role];
+
+    return requesterRoleValue >= targetUserRoleValue;
+    
   } catch (error) {
     throw new Error("Error checking user roles");
   }

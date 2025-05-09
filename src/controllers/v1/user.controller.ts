@@ -3,6 +3,7 @@ import * as userModel from "../../model/v1/user.model";
 import { ResponseMessages, ResponseStatus } from "../../types/response.enums";
 import { NotFoundError, ValidationError } from "../../utils/errors";
 import OtpService from "../../services/email.service";
+import { ProfileType } from "@prisma/client";
 
 export const getCurrentUserDetails = async (
   request: Request,
@@ -10,13 +11,13 @@ export const getCurrentUserDetails = async (
   next: NextFunction
 ) => {
   try {
-    const userId = request?.user?.userId;
+    const {userId, defaultProfile } = request.user;
 
     if (!userId) {
       throw new NotFoundError("User not authenticated");
     }
 
-    const currentUser = await userModel.getCurrentUserDetails(userId);
+    const currentUser = await userModel.getCurrentUserDetails(userId, defaultProfile);
 
     if (!currentUser) {
       throw new NotFoundError("User not found");
@@ -158,19 +159,64 @@ export const resetPasswordHandler = async (
   }
 };
 
-export const updateUserDetailsHandler = async (
+export const updateWorkerProfileHandler = async (
   request: Request,
   response: Response,
   next: NextFunction
 ) => {
   try {
     const { userId } = request.user;
-    const {
-      defaultProfile,
-      ...userDetails
-    } = request.body;
+    const { onboardingStep, workerProfile } = request.body;
 
-    const updatedUser = await userModel.updateUserDetails(userId, defaultProfile, userDetails);
+    const updatedUser = await userModel.updateWorkerProfile(
+      userId,
+      onboardingStep,
+      workerProfile
+    );
+
+    return response.status(ResponseStatus.OK).json(updatedUser);
+  } catch (error: any) {
+    next(error);
+  }
+};
+
+export const updateBusinessProfileHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { onboardingStep, businessProfile } = request.body;
+
+    const updatedUser = await userModel.updateBusinessProfile(
+      userId,
+      onboardingStep,
+      businessProfile
+    );
+
+    return response.status(ResponseStatus.OK).json(updatedUser);
+  } catch (error: any) {
+    next(error);
+  }
+};
+
+export const updateUserHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { firstName, lastName, email, defaultProfile, firstTimeLogin } = request.body;
+
+    const updatedUser = await userModel.updateUser(userId, {
+      firstName,
+      lastName,
+      email,
+      defaultProfile,
+      firstTimeLogin,
+    });
 
     return response.status(ResponseStatus.OK).json(updatedUser);
   } catch (error: any) {

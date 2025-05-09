@@ -1,10 +1,10 @@
-import { Roles } from "@prisma/client";
+import { Role } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { DatabaseError } from "../../utils/errors";
 
-export const updateUserRole = async (id: string, role: Roles) => {
+export const updateUserRole = async (id: string, role: Role) => {
   try {
-    const updatedUser = await prisma.users.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
       data: { role },
     });

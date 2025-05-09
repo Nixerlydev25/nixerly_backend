@@ -1,31 +1,31 @@
-import { Router } from 'express';
-import { SubscriptionController } from '../../controllers/subscription.controller';
-import express from 'express';
+// import { Router } from 'express';
+// import { SubscriptionController } from '../../controllers/subscription.controller';
+// import express from 'express';
 
-const router = Router();
+// const router = Router();
 
-// Create checkout session for subscription
-router.post(
-  '/create-checkout-session',
-  SubscriptionController.createCheckoutSession
-);
+// // Create checkout session for subscription
+// router.post(
+//   '/create-checkout-session',
+//   SubscriptionController.createCheckoutSession
+// );
 
-// Handle Stripe webhook
-router.post(
-  '/webhook',
-  SubscriptionController.handleWebhook
-);
+// // Handle Stripe webhook
+// router.post(
+//   '/webhook',
+//   SubscriptionController.handleWebhook
+// );
 
-// Get current user's subscription
-router.get(
-  '/current',
-  SubscriptionController.getCurrentSubscription
-);
+// // Get current user's subscription
+// router.get(
+//   '/current',
+//   SubscriptionController.getCurrentSubscription
+// );
 
-// Cancel subscription
-router.post(
-  '/cancel',
-  SubscriptionController.cancelSubscription
-);
+// // Cancel subscription
+// router.post(
+//   '/cancel',
+//   SubscriptionController.cancelSubscription
+// );
 
-export default router; 
+// export default router; 

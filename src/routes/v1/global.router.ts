@@ -5,8 +5,10 @@ import roleRouter from "./role.router";
 import restrictionsRouter from "./restrictions.router";
 import userRouter from "./user.router";
 import healthRouter from "./health.router";
-import subscriptionRouter from "./subscription.router";
 import { ROUTES } from "../../constants/routes.constants";
+import languageRouter from "./language.router";
+
+// import subscriptionRouter from "./subscription.router";
 
 const Api2 = Router();
 // authentication. 
@@ -23,6 +25,9 @@ Api2.use(ROUTES.API.ROLES, roleRouter);
 // Notification router for sending and saving notifications
 Api2.use(ROUTES.API.RESTRICTIONS, restrictionsRouter);
 
+// language routes
+Api2.use(ROUTES.API.LANGUAGE, languageRouter);
+
 Api2.use(ROUTES.API.USER, userRouter);
 
 // health route for server status
@@ -30,6 +35,6 @@ Api2.use(ROUTES.API.USER, userRouter);
 Api2.use(ROUTES.API.HEALTH, healthRouter);
 
 // subscription routes
-Api2.use(ROUTES.API.SUBSCRIPTION, subscriptionRouter);
+// Api2.use(ROUTES.API.SUBSCRIPTION, subscriptionRouter);
 
 export default Api2;

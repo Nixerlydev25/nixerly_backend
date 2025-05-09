@@ -1,7 +1,7 @@
 import express from "express";
 import * as authController from "../../controllers/v1/auth.controller";
 import oAuthRouter from "./oauth/oauth.router";
-import { validateSchema } from "../../middleware/validation";
+import * as ValidationMiddleware from "../../middleware/validation";
 import {
   loginSchema,
   resetPasswordSchema,
@@ -14,19 +14,20 @@ const authRouter = express();
 // sign up & login handler
 authRouter.post(
   ROUTES.AUTH.SIGNUP,
-  validateSchema(signUpSchema),
+  ValidationMiddleware.bodyValidation(signUpSchema),
   authController.signupHandler
 );
+
 authRouter.post(
   ROUTES.AUTH.SIGNIN,
-  validateSchema(loginSchema),
+  ValidationMiddleware.bodyValidation(loginSchema),
   authController.signinHandler
 );
 
 //Forget Password Routes
 authRouter.post(
   ROUTES.AUTH.RESET_PASSWORD,
-  validateSchema(resetPasswordSchema),
+  ValidationMiddleware.bodyValidation(resetPasswordSchema),
   authController.resetPasswordHandler
 );
 
@@ -39,7 +40,7 @@ authRouter.put(ROUTES.AUTH.REFRESH, authController.refreshAccessToken);
 // reset password
 authRouter.put(
   ROUTES.AUTH.PASSWORD_RECOVERY,
-  validateSchema(loginSchema),
+  ValidationMiddleware.bodyValidation(loginSchema),
   authController.passwordRecoveryHandler
 );
 

@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { ResponseMessages, ResponseStatus } from "../types/response.enums";
 import * as restrictionModel from "../model/v1/restrictions.model";
-import { Restrictions, Roles } from "@prisma/client";
+import { RestrictionType, Role, UserRestriction } from "@prisma/client";
 
 const isAuthorized = (
-  requiredRoles?: Roles[],
-  restrictedTo?: Restrictions[]
+  requiredRoles?: Role[],
+  restrictedTo?: RestrictionType[]
 ) => {
   return async (request: Request, response: Response, next: NextFunction) => {
     if (!request.user || !request.user.email) {
@@ -38,7 +38,7 @@ const isAuthorized = (
 
 export default isAuthorized;
 
-const hasRequiredRole = (userRole: Roles, requiredRoles?: Roles[]): boolean => {
+const hasRequiredRole = (userRole: Role, requiredRoles?: Role[]): boolean => {
   return requiredRoles
     ? requiredRoles.some((role) => userRole.includes(role))
     : true;
@@ -46,12 +46,12 @@ const hasRequiredRole = (userRole: Roles, requiredRoles?: Roles[]): boolean => {
 
 const hasAnyRestriction = async (
   userId: string,
-  restrictedTo?: Restrictions[]
+  restrictedTo?: RestrictionType[]
 ): Promise<boolean> => {
   if (!restrictedTo) return false;
 
   const userRestrictions = await restrictionModel.getUserRestrictions(userId);
-  return userRestrictions.some((restriction) =>
+  return userRestrictions.some((restriction: UserRestriction) =>
     restrictedTo.includes(restriction.restrictionType)
   );
 };

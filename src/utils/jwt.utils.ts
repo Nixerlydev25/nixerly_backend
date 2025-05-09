@@ -1,24 +1,23 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { ProfileType } from "@prisma/client";
+import { ProfileType, Role } from "@prisma/client";
 
 dotenv.config();
 
 const SECRET_KEY = process.env.SECRET_KEY || "secret_key_here";
 
 interface JWTPayload {
-  email?: string;
-  userId?: string;
-  permissions?: any;
-  role?: string;
-  isTemporaryPasswordReset?: boolean;
-  oAuthAccessToken?: string;
-  name?: string;
-  defaultProfile?: ProfileType;
+  email: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  defaultProfile: ProfileType;
+  role: Role;
 }
 
 export const signJWT = (payload: JWTPayload, expiresIn: string ): string => {
-  return jwt.sign(payload, SECRET_KEY, { expiresIn });
+    // @ts-ignore
+    return jwt.sign(payload, SECRET_KEY, { expiresIn });
 };
 
 export const verifyJWT = (token: string): { payload: JWTPayload | null; expired: boolean } => {

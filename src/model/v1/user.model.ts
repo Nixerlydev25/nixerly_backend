@@ -1,4 +1,4 @@
-import { ProfileType } from "@prisma/client";
+import { ProfileType, OnboardingStepBusinessProfile, OnboardingStepWorkerProfile } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { hashPassword } from "../../utils";
 import { DatabaseError } from "../../utils/errors";
@@ -14,16 +14,17 @@ export const updateUserVerificationStatus = async (
 };
 
 export const getUser = async (userID: string) => {
-  try{
-  const users = await prisma.user.findUnique({
-    where: { id: userID }, // replace with user id
-    select: {
-      email: true,
-      name: true,
-    },
-  });
-  return users;
-  }catch (error: any) {
+  try {
+    const users = await prisma.user.findUnique({
+      where: { id: userID }, // replace with user id
+      select: {
+        email: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+    return users;
+  } catch (error: any) {
     throw new DatabaseError(error.message);
   }
 };
@@ -61,7 +62,6 @@ export const toggleFirstTimeLogin = async (id: string) => {
   }
 };
 
-
 export const markUserAsDeleted = async (userId: string) => {
   try {
     const user = await prisma.user.findUnique({
@@ -83,24 +83,22 @@ export const markUserAsDeleted = async (userId: string) => {
   }
 };
 
-export const getCurrentUserDetails = async (userId: string) => {
+export const getCurrentUserDetails = async (
+  userId: string,
+  defaultProfile: ProfileType
+) => {
   try {
+    const includeProfile =
+      defaultProfile === "WORKER"
+        ? { workerProfile: true }
+        : defaultProfile === "BUSINESS"
+        ? { businessProfile: true }
+        : {};
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        isSuspended: true,
-        isVerified: true,
-        role: true,
-        isDeleted: true,
-        restrictions:true,
-        createdAt: true,
-        isOnboardingComplete: true,
-        defaultProfile: true,
-        workerProfile: true,
-        businessProfile: true,
+      include: {
+        ...includeProfile,
       },
     });
 
@@ -110,9 +108,7 @@ export const getCurrentUserDetails = async (userId: string) => {
   }
 };
 
-
 // PASSWORD RECOVERY.
-
 export const findUserByEmail = async (email: string) => {
   try {
     const user = await prisma.user.findUnique({
@@ -140,45 +136,66 @@ export const resetPassword = async (userId: string, newPassword: string) => {
   }
 };
 
-// Update user details
-
-interface UserDetails {
-  organization?: string;
-  profession?: string;
-  howDidYouHearAboutUs?: string;
-  schoolName?: string;
-  yearsOfExperience?: number;
-  subjectsTaught?: string;
-  gradeLevel?: string;
-  educationalQualification?: string;
-  teacherLicenseNumber?: string;
-}
-
-export const updateUserDetails = async (
+export const updateWorkerProfile = async (
   userId: string,
-  defaultProfile: ProfileType,
-  userDetails: Record<string, any>
+  onboardingStep: OnboardingStepWorkerProfile,
+  workerProfileData: Record<string, any>
 ) => {
   try {
-    const baseUserUpdate = {
-      isOnboardingComplete: true,
-    };
-
-    if (defaultProfile === ProfileType.WORKER) {
-      await prisma.workerProfile.update({
-        where: { userId },
-        data: userDetails,
-      });
-    } else if (defaultProfile === ProfileType.BUSINESS) {
-      await prisma.businessProfile.update({
-        where: { userId },
-        data: userDetails,
-      });
-    }
+    await prisma.workerProfile.update({
+      where: { userId },
+      data: { ...workerProfileData, onboardingStep },
+    });
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: baseUserUpdate,
+      data: {},
+      include: { workerProfile: true },
+    });
+
+    return updatedUser;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const updateBusinessProfile = async (
+  userId: string,
+  onboardingStep: OnboardingStepBusinessProfile,
+  businessProfileData: Record<string, any>
+) => {
+  try {
+    await prisma.businessProfile.update({
+      where: { userId },
+      data: { ...businessProfileData, onboardingStep },
+    });
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {},
+      include: { businessProfile: true },
+    });
+
+    return updatedUser;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const updateUser = async (
+  userId: string,
+  userData: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    defaultProfile?: ProfileType;
+    firstTimeLogin?: boolean;
+  }
+) => {
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: userData,
     });
 
     return updatedUser;

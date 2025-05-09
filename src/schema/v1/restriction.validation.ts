@@ -1,19 +1,16 @@
 import { z } from "zod";
-import { Restrictions } from "@prisma/client"; 
+import { RestrictionType } from "@prisma/client"; 
 
 export const createRestrictionSchema = z.object({
   userId: z.string(),
   restrictionType: z.enum([
-    Restrictions.CREATE_POST,
-    Restrictions.EDIT_POST,
-    Restrictions.DELETE_POST,
-    Restrictions.VIEW_POST,
-    Restrictions.CREATE_COMMENT,
-    Restrictions.VIEW_COMMENT,
-    Restrictions.ANALYTICS,
-    Restrictions.REPORT,
-    Restrictions.ACCOUNT,
-    Restrictions.CONTENT,
+    RestrictionType.APPLY_TO_JOBS,
+    RestrictionType.SEND_MESSAGES,
+    RestrictionType.POST_JOBS,
+    RestrictionType.HIRE_WORKERS,
+    RestrictionType.VIEW_PROFILES,
+    RestrictionType.SUBMIT_REVIEWS,
+    RestrictionType.SUBMIT_REPORTS,
   ]),
 });
 
@@ -24,15 +21,12 @@ export const getRestrictionSchema = z.object({
 export const removeRestrictionSchema = z.object({
   userId: z.string(),
   restrictionType: z.enum([
-    Restrictions.CREATE_POST,
-    Restrictions.EDIT_POST,
-    Restrictions.DELETE_POST,
-    Restrictions.VIEW_POST,
-    Restrictions.CREATE_COMMENT,
-    Restrictions.VIEW_COMMENT,
-    Restrictions.ANALYTICS,
-    Restrictions.REPORT,
-    Restrictions.ACCOUNT,
-    Restrictions.CONTENT,
+    RestrictionType.APPLY_TO_JOBS,
+    RestrictionType.SEND_MESSAGES,
+    RestrictionType.POST_JOBS,
+    RestrictionType.HIRE_WORKERS,
+    RestrictionType.VIEW_PROFILES,
+    RestrictionType.SUBMIT_REVIEWS,
+    RestrictionType.SUBMIT_REPORTS,
   ]),
 });

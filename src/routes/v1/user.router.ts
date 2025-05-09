@@ -2,57 +2,75 @@ import { Router } from "express";
 import * as userController from "../../controllers/v1/user.controller";
 import isAuthorized from "../../middleware/isAuthorized";
 import { Role } from "@prisma/client";
-import { validateSchema } from "../../middleware/validation";
+import * as ValidationMiddleware from "../../middleware/validation";
 import {
   forgotPassword,
   resetPassword,
   verifyOtp,
 } from "../../schema/v1/user.valdiation";
-import { updateUserDetailsSchema } from "../../schema/v1/auth.validation";
+import { 
+  updateWorkerProfileSchema, 
+  updateBusinessProfileSchema, 
+  updateUserSchema 
+} from "../../schema/v1/auth.validation";
 import { ROUTES } from "../../constants/routes.constants";
 
 const userRouter = Router();
 
 userRouter.get(
   ROUTES.USER.CURRENT_USER,
-  isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN]),
+  isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN, Role.BUSINESS]),
   userController.getCurrentUserDetails
 );
 
 userRouter.patch(
-  ROUTES.USER.UPDATE_USER_DETAILS,
-  isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN]),
-  validateSchema(updateUserDetailsSchema),
-  userController.updateUserDetailsHandler
+  ROUTES.USER.UPDATE_WORKER_PROFILE,
+  isAuthorized([Role.WORKER]),
+  ValidationMiddleware.bodyValidation(updateWorkerProfileSchema),
+  userController.updateWorkerProfileHandler
+);
+
+userRouter.patch(
+  ROUTES.USER.UPDATE_BUSINESS_PROFILE,
+  isAuthorized([Role.BUSINESS]),
+  ValidationMiddleware.bodyValidation(updateBusinessProfileSchema),
+  userController.updateBusinessProfileHandler
+);
+
+userRouter.patch(
+  ROUTES.USER.UPDATE_USER,
+  isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN, Role.BUSINESS]),
+  ValidationMiddleware.bodyValidation(updateUserSchema),
+  userController.updateUserHandler
 );
 
 userRouter.put(
   ROUTES.USER.TOGGLE_FIRST_TIME_LOGIN,
-  isAuthorized([Role.SUPER_ADMIN, Role.ADMIN, Role.DEVELOPER, Role.WORKER]),
+  isAuthorized([Role.SUPER_ADMIN, Role.ADMIN, Role.DEVELOPER, Role.WORKER, Role.BUSINESS]),
   userController.toggleFirstTimeLogin
 );
 
 userRouter.delete(
   ROUTES.USER.DELETE_ACCOUNT,
-  isAuthorized([Role.SUPER_ADMIN, Role.ADMIN, Role.DEVELOPER]),
+  isAuthorized([Role.SUPER_ADMIN, Role.ADMIN, Role.DEVELOPER, Role.BUSINESS]),
   userController.deleteUserAccount
 );
 
 userRouter.post(
   ROUTES.USER.FORGOT_PASSWORD,
-  validateSchema(forgotPassword),
+  ValidationMiddleware.bodyValidation(forgotPassword),
   userController.forgotPasswordHandler
 );
 
 userRouter.post(
   ROUTES.USER.VERIFY_OTP,
-  validateSchema(verifyOtp),
+  ValidationMiddleware.bodyValidation(verifyOtp),
   userController.verifyOtpHandler
 );
 
 userRouter.post(
   ROUTES.USER.RESET_PASSWORD,
-  validateSchema(resetPassword),
+  ValidationMiddleware.bodyValidation(resetPassword),
   userController.resetPasswordHandler
 );
 

@@ -1,13 +1,13 @@
-import { Restrictions } from "@prisma/client";
+import { RestrictionType } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { ResponseStatus } from "../../types/response.enums";
 import { DatabaseError, ValidationError } from "../../utils/errors";
 
 export const addRestriction = async (
   userId: string,
-  restrictionType: Restrictions
+  restrictionType: RestrictionType
 ) => {
-  const existingRestriction = await prisma.userRestrictions.findFirst({
+  const existingRestriction = await prisma.userRestriction.findFirst({
     where: {
       userId,
       restrictionType,
@@ -21,7 +21,7 @@ export const addRestriction = async (
     );
   }
 
-  const restriction = await prisma.userRestrictions.create({
+  const restriction = await prisma.userRestriction.create({
     data: {
       userId,
       restrictionType,
@@ -33,7 +33,7 @@ export const addRestriction = async (
 
 export const getAllRestrictions = async () => {
   try {
-    const restrictions = await prisma.userRestrictions.findMany();
+    const restrictions = await prisma.userRestriction.findMany();
     return restrictions;
   } catch (error: any) {
     throw new DatabaseError(error.message);
@@ -42,7 +42,7 @@ export const getAllRestrictions = async () => {
 
 export const getUserRestrictions = async (userId: string) => {
   try {
-    const restrictions = await prisma.userRestrictions.findMany({
+    const restrictions = await prisma.userRestriction.findMany({
       where: {
         userId,
       },
@@ -55,10 +55,10 @@ export const getUserRestrictions = async (userId: string) => {
 
 export const removeRestriction = async (
   userId: string,
-  restrictionType: Restrictions
+  restrictionType: RestrictionType
 ) => {
   try {
-    const restriction = await prisma.userRestrictions.deleteMany({
+    const restriction = await prisma.userRestriction.deleteMany({
       where: {
         userId,
         restrictionType,
