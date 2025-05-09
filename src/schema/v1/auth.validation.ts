@@ -21,12 +21,13 @@ export const signUpSchema = z.object({
 
 export const updateWorkerProfileSchema = z.object({
   onboardingStep: z.nativeEnum(OnboardingStepWorkerProfile).optional(),
-  workerProfile: z.object({
-    profession: z.string().optional(),
-    organization: z.string().optional(),
-    howDidYouHearAboutUs: z.string().optional(),
-    schoolName: z.string().optional(),
-  }),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  country: z.string().optional(),
+  hourlyRate: z.number().optional(),
+  availability: z.boolean().optional(),
 });
 
 export const updateBusinessProfileSchema = z.object({

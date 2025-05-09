@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { SkillsModel } from '../model/skills.model';
-import { ApiError } from '../utils/ApiError';
+import { SkillsModel } from '../../model/skills.model';
+import { ApiError } from '../../utils/ApiError';
 
 export const SkillsController = {
   // Add category with skills to worker profile

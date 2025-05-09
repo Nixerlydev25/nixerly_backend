@@ -40,15 +40,15 @@ model WorkerProfile {
   userId              String        @unique
   user                User          @relation("UserWorkerProfile", fields: [userId], references: [id], onDelete: Cascade)
   title               String?       // Professional Title
-  hourlyRate          Float?
   description         String?       @db.Text
+  city                String?
+  state               String?
+  country             String?
+  hourlyRate          Float?
   experience          Experience[]
   education           Education[]   // Education moved exclusively to worker profile
   certificates        Certificate[]
   portfolio           Project[]
-  city                String?
-  state               String?
-  country             String?
   languages           WorkerLanguage[]
   availability        Boolean       @default(true)
   totalEarnings       Float         @default(0)

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { SkillsController } from '../controllers/skills.controller';
+import { SkillsController } from '../controllers/v1/skills.controller';
 import { authenticate } from '../middleware/auth';
 import { validateWorkerAccess } from '../middleware/validateWorkerAccess';
 

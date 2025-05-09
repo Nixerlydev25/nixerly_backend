@@ -166,7 +166,7 @@ export const updateWorkerProfileHandler = async (
 ) => {
   try {
     const { userId } = request.user;
-    const { onboardingStep, workerProfile } = request.body;
+    const { onboardingStep, ...workerProfile } = request.body;
 
     const updatedUser = await userModel.updateWorkerProfile(
       userId,

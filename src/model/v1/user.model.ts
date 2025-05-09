@@ -139,7 +139,15 @@ export const resetPassword = async (userId: string, newPassword: string) => {
 export const updateWorkerProfile = async (
   userId: string,
   onboardingStep: OnboardingStepWorkerProfile,
-  workerProfileData: Record<string, any>
+  workerProfileData: {
+    title: string;
+    description: string;
+    city: string;
+    state: string;
+    country: string;
+    hourlyRate: number;
+    availability: boolean;
+  }
 ) => {
   try {
     await prisma.workerProfile.update({

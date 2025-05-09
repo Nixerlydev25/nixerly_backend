@@ -24,14 +24,16 @@ CREATE TABLE `worker_profiles` (
     `id` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NULL,
-    `hourlyRate` DOUBLE NULL,
     `description` TEXT NULL,
-    `location` VARCHAR(191) NULL,
+    `city` VARCHAR(191) NULL,
+    `state` VARCHAR(191) NULL,
+    `country` VARCHAR(191) NULL,
+    `hourlyRate` DOUBLE NULL,
     `availability` BOOLEAN NOT NULL DEFAULT true,
     `totalEarnings` DOUBLE NOT NULL DEFAULT 0,
     `completedJobs` INTEGER NOT NULL DEFAULT 0,
     `avgRating` DOUBLE NOT NULL DEFAULT 0,
-    `onboardingStep` ENUM('PERSONAL_INFO', 'PROFESSIONAL_INFO', 'EDUCATIONAL_INFO', 'REVIEW', 'COMPLETED') NOT NULL DEFAULT 'PERSONAL_INFO',
+    `onboardingStep` ENUM('PERSONAL_INFO', 'LANGUAGE_INFO', 'SKILLS_INFO', 'HOURLY_RATE_INFO', 'PROFESSIONAL_INFO', 'AVAILABILITY_INFO', 'COMPLETED') NOT NULL DEFAULT 'PERSONAL_INFO',
 
     UNIQUE INDEX `worker_profiles_userId_key`(`userId`),
     PRIMARY KEY (`id`)
@@ -50,7 +52,7 @@ CREATE TABLE `business_profiles` (
     `yearFounded` INTEGER NULL,
     `totalSpent` DOUBLE NOT NULL DEFAULT 0,
     `postedJobs` INTEGER NOT NULL DEFAULT 0,
-    `onboardingStep` ENUM('COMPANY_INFO', 'BUSINESS_DETAILS', 'REVIEW', 'COMPLETED') NOT NULL DEFAULT 'COMPANY_INFO',
+    `onboardingStep` ENUM('COMPANY_INFO', 'BUSINESS_DETAILS', 'COMPLETED') NOT NULL DEFAULT 'COMPANY_INFO',
 
     UNIQUE INDEX `business_profiles_userId_key`(`userId`),
     PRIMARY KEY (`id`)
@@ -104,12 +106,12 @@ CREATE TABLE `jobs` (
     `budget` DOUBLE NULL,
     `hourlyRateMin` DOUBLE NULL,
     `hourlyRateMax` DOUBLE NULL,
-    `categoryId` VARCHAR(191) NOT NULL,
     `businessProfileId` VARCHAR(191) NOT NULL,
     `status` ENUM('OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED') NOT NULL DEFAULT 'OPEN',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `expiresAt` DATETIME(3) NULL,
+    `categoryId` VARCHAR(191) NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -256,79 +258,13 @@ CREATE TABLE `assets` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `worker_skills` (
-    `id` VARCHAR(191) NOT NULL,
-    `name` VARCHAR(191) NOT NULL,
-    `workerId` VARCHAR(191) NOT NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `job_skills` (
-    `id` VARCHAR(191) NOT NULL,
-    `name` VARCHAR(191) NOT NULL,
-    `jobId` VARCHAR(191) NOT NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `categories` (
-    `id` VARCHAR(191) NOT NULL,
-    `name` ENUM('PLUMBING', 'ELECTRICAL', 'CARPENTRY', 'HVAC', 'PAINTING', 'LANDSCAPING', 'CLEANING', 'MOVING', 'AUTOMOTIVE', 'ROOFING', 'MASONRY', 'WELDING', 'FLOORING', 'PEST_CONTROL', 'APPLIANCE_REPAIR', 'GENERAL_MAINTENANCE', 'MANAGEMENT', 'INSPECTION', 'TECHNICIAN', 'FABRICATION', 'MAINTENANCE', 'GROUNDWORKS', 'RIGGING') NOT NULL,
-    `description` TEXT NULL,
-
-    UNIQUE INDEX `categories_name_key`(`name`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `sub_categories` (
-    `id` VARCHAR(191) NOT NULL,
-    `name` ENUM('PIPE_INSTALLATION', 'DRAIN_CLEANING', 'FIXTURE_INSTALLATION', 'WATER_HEATER_SERVICE', 'LEAK_REPAIR', 'WIRING_INSTALLATION', 'LIGHTING_INSTALLATION', 'ELECTRICAL_REPAIR', 'PANEL_UPGRADES', 'GENERATOR_INSTALLATION', 'CABINET_MAKING', 'FRAMING', 'FINISH_CARPENTRY', 'DOOR_INSTALLATION', 'WINDOW_INSTALLATION', 'AC_INSTALLATION', 'HEATING_REPAIR', 'VENTILATION_WORK', 'DUCT_CLEANING', 'SYSTEM_MAINTENANCE', 'SUPERVISOR', 'CONSTRUCTION_MANAGER', 'QAQC_ENGINEER', 'HSA_ADVISOR', 'SITE_INSPECTOR', 'PROJECT_COORDINATOR', 'INSTRUMENT_TECHNICIAN', 'MAINTENANCE_TECHNICIAN', 'MECHANIC', 'PIPEFITTING', 'METAL_FABRICATION', 'WELDING_ASSEMBLY', 'STRUCTURAL_FABRICATION', 'EQUIPMENT_REPAIR', 'FACILITY_UPKEEP', 'MECHANICAL_OVERHAUL', 'PLANT_MAINTENANCE', 'EXCAVATION', 'TRENCHING', 'SITE_CLEARANCE', 'LAND_GRADING', 'DEWATERING', 'SOIL_STABILISATION', 'COMPACTION', 'CRANE_OPERATION', 'SLINGING', 'WINCHING', 'HOISTING', 'SCAFFOLD_RIGGING') NOT NULL,
-    `categoryId` VARCHAR(191) NOT NULL,
-
-    UNIQUE INDEX `sub_categories_name_key`(`name`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `worker_categories` (
-    `id` VARCHAR(191) NOT NULL,
-    `workerId` VARCHAR(191) NOT NULL,
-    `categoryId` VARCHAR(191) NOT NULL,
-
-    UNIQUE INDEX `worker_categories_workerId_categoryId_key`(`workerId`, `categoryId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `worker_subcategories` (
-    `id` VARCHAR(191) NOT NULL,
-    `workerCategoryId` VARCHAR(191) NOT NULL,
-    `subCategoryId` VARCHAR(191) NOT NULL,
-
-    UNIQUE INDEX `worker_subcategories_workerCategoryId_subCategoryId_key`(`workerCategoryId`, `subCategoryId`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `languages` (
-    `id` VARCHAR(191) NOT NULL,
-    `name` VARCHAR(191) NOT NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `worker_languages` (
     `id` VARCHAR(191) NOT NULL,
     `workerId` VARCHAR(191) NOT NULL,
-    `languageId` VARCHAR(191) NOT NULL,
+    `language` ENUM('ENGLISH', 'SPANISH', 'FRENCH', 'GERMAN', 'CHINESE', 'JAPANESE', 'ARABIC', 'RUSSIAN', 'PORTUGUESE', 'HINDI', 'ITALIAN', 'DUTCH', 'KOREAN', 'TURKISH', 'SWEDISH', 'POLISH', 'TAMIL', 'URDU', 'BENGALI', 'MARATHI', 'KANNADA', 'TELUGU', 'MALAYALAM', 'GUJARATI', 'PUNJABI', 'HARYANVI', 'KURDISH', 'AFRIKAANS', 'AZERBAIJANI', 'BULGARIAN', 'CROATIAN', 'CZECH', 'DANISH') NOT NULL,
     `proficiency` ENUM('BASIC', 'CONVERSATIONAL', 'FLUENT', 'NATIVE') NOT NULL,
 
-    UNIQUE INDEX `worker_languages_workerId_languageId_key`(`workerId`, `languageId`),
+    UNIQUE INDEX `worker_languages_workerId_language_key`(`workerId`, `language`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -340,6 +276,36 @@ CREATE TABLE `otps` (
     `isExpired` BOOLEAN NOT NULL DEFAULT false,
     `userId` VARCHAR(191) NOT NULL,
 
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `categories` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` ENUM('PLUMBING', 'ELECTRICAL', 'CARPENTRY', 'HVAC', 'PAINTING', 'LANDSCAPING', 'CLEANING', 'MOVING', 'AUTOMOTIVE', 'ROOFING', 'MASONRY', 'WELDING', 'FLOORING', 'PEST_CONTROL', 'APPLIANCE_REPAIR', 'GENERAL_MAINTENANCE', 'MANAGEMENT', 'INSPECTION', 'TECHNICIAN', 'FABRICATION', 'MAINTENANCE', 'GROUNDWORKS', 'RIGGING') NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `skills` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` ENUM('PIPE_INSTALLATION', 'DRAIN_CLEANING', 'FIXTURE_INSTALLATION', 'WATER_HEATER_SERVICE', 'LEAK_REPAIR', 'WIRING_INSTALLATION', 'LIGHTING_INSTALLATION', 'ELECTRICAL_REPAIR', 'PANEL_UPGRADES', 'GENERATOR_INSTALLATION', 'CABINET_MAKING', 'FRAMING', 'FINISH_CARPENTRY', 'DOOR_INSTALLATION', 'WINDOW_INSTALLATION', 'AC_INSTALLATION', 'HEATING_REPAIR', 'VENTILATION_WORK', 'DUCT_CLEANING', 'SYSTEM_MAINTENANCE', 'SUPERVISOR', 'CONSTRUCTION_MANAGER', 'QAQC_ENGINEER', 'HSA_ADVISOR', 'SITE_INSPECTOR', 'PROJECT_COORDINATOR', 'INSTRUMENT_TECHNICIAN', 'MAINTENANCE_TECHNICIAN', 'MECHANIC', 'PIPEFITTING', 'METAL_FABRICATION', 'WELDING_ASSEMBLY', 'STRUCTURAL_FABRICATION', 'EQUIPMENT_REPAIR', 'FACILITY_UPKEEP', 'MECHANICAL_OVERHAUL', 'PLANT_MAINTENANCE', 'EXCAVATION', 'TRENCHING', 'SITE_CLEARANCE', 'LAND_GRADING', 'DEWATERING', 'SOIL_STABILISATION', 'COMPACTION', 'CRANE_OPERATION', 'SLINGING', 'WINCHING', 'HOISTING', 'SCAFFOLD_RIGGING') NOT NULL,
+    `categoryId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `worker_categories` (
+    `id` VARCHAR(191) NOT NULL,
+    `workerId` VARCHAR(191) NOT NULL,
+    `categoryId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `worker_categories_workerId_categoryId_key`(`workerId`, `categoryId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -374,10 +340,10 @@ ALTER TABLE `messages` ADD CONSTRAINT `messages_receiverWorkerId_fkey` FOREIGN K
 ALTER TABLE `messages` ADD CONSTRAINT `messages_receiverBusinessId_fkey` FOREIGN KEY (`receiverBusinessId`) REFERENCES `business_profiles`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `jobs` ADD CONSTRAINT `jobs_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `categories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `jobs` ADD CONSTRAINT `jobs_businessProfileId_fkey` FOREIGN KEY (`businessProfileId`) REFERENCES `business_profiles`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `jobs` ADD CONSTRAINT `jobs_businessProfileId_fkey` FOREIGN KEY (`businessProfileId`) REFERENCES `business_profiles`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `jobs` ADD CONSTRAINT `jobs_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `categories`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `job_applications` ADD CONSTRAINT `job_applications_jobId_fkey` FOREIGN KEY (`jobId`) REFERENCES `jobs`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -434,31 +400,16 @@ ALTER TABLE `assets` ADD CONSTRAINT `assets_projectId_fkey` FOREIGN KEY (`projec
 ALTER TABLE `assets` ADD CONSTRAINT `assets_certificateId_fkey` FOREIGN KEY (`certificateId`) REFERENCES `certificates`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `worker_skills` ADD CONSTRAINT `worker_skills_workerId_fkey` FOREIGN KEY (`workerId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `worker_languages` ADD CONSTRAINT `worker_languages_workerId_fkey` FOREIGN KEY (`workerId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `job_skills` ADD CONSTRAINT `job_skills_jobId_fkey` FOREIGN KEY (`jobId`) REFERENCES `jobs`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `otps` ADD CONSTRAINT `otps_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `sub_categories` ADD CONSTRAINT `sub_categories_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `categories`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `skills` ADD CONSTRAINT `skills_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `categories`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `worker_categories` ADD CONSTRAINT `worker_categories_workerId_fkey` FOREIGN KEY (`workerId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `worker_categories` ADD CONSTRAINT `worker_categories_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `categories`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `worker_subcategories` ADD CONSTRAINT `worker_subcategories_workerCategoryId_fkey` FOREIGN KEY (`workerCategoryId`) REFERENCES `worker_categories`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `worker_subcategories` ADD CONSTRAINT `worker_subcategories_subCategoryId_fkey` FOREIGN KEY (`subCategoryId`) REFERENCES `sub_categories`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `worker_languages` ADD CONSTRAINT `worker_languages_workerId_fkey` FOREIGN KEY (`workerId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `worker_languages` ADD CONSTRAINT `worker_languages_languageId_fkey` FOREIGN KEY (`languageId`) REFERENCES `languages`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `otps` ADD CONSTRAINT `otps_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
