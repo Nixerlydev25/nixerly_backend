@@ -7,6 +7,7 @@ export const ROUTES = {
         USER: '/user',
         HEALTH: '/health',
         LANGUAGE: '/language',
+        SKILLS: '/skills',
         SUBSCRIPTION: '/subscription'
     },
     AUTH: {
@@ -50,5 +51,11 @@ export const ROUTES = {
     RESTRICTION: {
         ROOT: '/',
         USER_RESTRICTIONS: '/:user-id'
+    },
+    WROKER_SKILLS: {
+        CREATE: '/',
+        GET_ALL: '/',
+        UPDATE: '/',
+        DELETE: '/'
     }
 } as const;

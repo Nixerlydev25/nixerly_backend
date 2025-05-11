@@ -2,10 +2,9 @@ import { Language, Proficiency } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { DatabaseError } from "../../utils/errors";
 
-export const createUserLanguage = async (
+export const createUserLanguages = async (
   userId: string,
-  language: Language,
-  proficiency: Proficiency
+  languages: { language: Language; proficiency: Proficiency }[]
 ) => {
   try {
     // Fetch worker profile ID for the user
@@ -20,13 +19,18 @@ export const createUserLanguage = async (
 
     const workerId = workerProfile.id;
 
-    return await prisma.workerLanguage.create({
-      data: {
-        workerId,
-        language,
-        proficiency,
-      },
-    });
+    // Create multiple languages in a transaction
+    return await prisma.$transaction(
+      languages.map(({ language, proficiency }) =>
+        prisma.workerLanguage.create({
+          data: {
+            workerId,
+            language,
+            proficiency,
+          },
+        })
+      )
+    );
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

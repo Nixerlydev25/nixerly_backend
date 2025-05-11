@@ -7,6 +7,7 @@ import userRouter from "./user.router";
 import healthRouter from "./health.router";
 import { ROUTES } from "../../constants/routes.constants";
 import languageRouter from "./language.router";
+import skillsRouter from "./skills.router";
 
 // import subscriptionRouter from "./subscription.router";
 
@@ -27,6 +28,9 @@ Api2.use(ROUTES.API.RESTRICTIONS, restrictionsRouter);
 
 // language routes
 Api2.use(ROUTES.API.LANGUAGE, languageRouter);
+
+// skills routes
+Api2.use(ROUTES.API.SKILLS, skillsRouter);
 
 Api2.use(ROUTES.API.USER, userRouter);
 

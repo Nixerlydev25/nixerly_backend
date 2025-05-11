@@ -44,7 +44,7 @@ model WorkerProfile {
   city                String?
   state               String?
   country             String?
-  workerCategories    WorkerCategory[] // Worker can have multiple categories
+  skills              WorkerSkill[] // Worker can have multiple skills
   hourlyRate          Float?
   experience          Experience[]
   education           Education[]   // Education moved exclusively to worker profile
@@ -141,11 +141,10 @@ enum OAuthProvider {
 
 enum OnboardingStepWorkerProfile {
   PERSONAL_INFO
-  LANGUAGE_INFO
-  SKILLS_INFO
-  HOURLY_RATE_INFO
+  SKILLS_HOURLY_RATE_INFO
   PROFESSIONAL_INFO
   AVAILABILITY_INFO
+  LANGUAGE_INFO
   COMPLETED
 }
 
@@ -205,8 +204,7 @@ model Job {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   expiresAt         DateTime?
-  categoryId        String?
-  category          Category?        @relation(fields: [categoryId], references: [id])
+  skills            JobSkill[]       // Job can have multiple skills
   
   @@map("jobs")
 }
@@ -470,63 +468,27 @@ model Otp {
   @@map("otps")
 }
 
-// CATEGORIES & SKILLS --------------------------------------------
-model Category {
-  id              String          @id @default(uuid())
-  name            CategoryName
-  skills          Skill[]
-  workerCategories WorkerCategory[]
-  jobs            Job[]
-  createdAt       DateTime        @default(now())
-
-  @@map("categories")
-}
-
-model Skill {
-  id              String          @id @default(uuid())
-  name            SkillName
-  categoryId      String
-  category        Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  createdAt       DateTime        @default(now())
-
-  @@map("skills")
-}
-
-model WorkerCategory {
+// SKILLS --------------------------------------------
+model WorkerSkill {
   id              String          @id @default(uuid())
   workerId        String
   workerProfile   WorkerProfile   @relation(fields: [workerId], references: [id], onDelete: Cascade)
-  categoryId      String
-  category        Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  skillName       SkillName
   createdAt       DateTime        @default(now())
 
-  @@unique([workerId, categoryId])
-  @@map("worker_categories")
+  @@unique([workerId, skillName])
+  @@map("worker_skills")
 }
 
-enum CategoryName {
-  PLUMBING
-  ELECTRICAL
-  CARPENTRY
-  HVAC
-  PAINTING
-  LANDSCAPING
-  CLEANING
-  MOVING
-  AUTOMOTIVE
-  ROOFING
-  MASONRY
-  WELDING
-  FLOORING
-  PEST_CONTROL
-  APPLIANCE_REPAIR
-  MANAGEMENT
-  INSPECTION
-  TECHNICIAN
-  FABRICATION
-  MAINTENANCE
-  GROUNDWORKS
-  RIGGING
+model JobSkill {
+  id              String          @id @default(uuid())
+  jobId           String
+  job             Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skillName       SkillName
+  createdAt       DateTime        @default(now())
+
+  @@unique([jobId, skillName])
+  @@map("job_skills")
 }
 
 enum SkillName {

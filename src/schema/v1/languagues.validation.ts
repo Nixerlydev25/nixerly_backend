@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 export const createUserLanguageSchema = z.object({
-  language: z.string().min(1),
-  proficiency: z.string().min(1),
+  languages: z.array(z.object({
+    language: z.string().min(1),
+    proficiency: z.string().min(1),
+  })).min(1),
 });
 
 export const updateUserLanguageSchema = z.object({

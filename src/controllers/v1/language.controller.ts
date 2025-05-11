@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ResponseStatus } from "../../types/response.enums";
 import * as userLanguageModel from "../../model/v1/language.model";
+
 export const createUserLanguageHandler = async (
   request: Request,
   response: Response,
@@ -8,14 +9,13 @@ export const createUserLanguageHandler = async (
 ) => {
   try {
     const { userId } = request.user;
-    const { language, proficiency } = request.body;
+    const { languages } = request.body;
 
-    const newLanguage = await userLanguageModel.createUserLanguage(
+    const newLanguages = await userLanguageModel.createUserLanguages(
       userId,
-      language,
-      proficiency
+      languages
     );
-    response.status(ResponseStatus.Created).json(newLanguage);
+    response.status(ResponseStatus.Created).json(newLanguages);
   } catch (error) {
     next(error);
   }
