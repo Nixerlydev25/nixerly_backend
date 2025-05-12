@@ -8,7 +8,9 @@ export const ROUTES = {
         HEALTH: '/health',
         LANGUAGE: '/language',
         SKILLS: '/skills',
-        SUBSCRIPTION: '/subscription'
+        SUBSCRIPTION: '/subscription',
+        EXPERIENCE: '/experience',
+        EDUCATION:'/education'
     },
     AUTH: {
         SIGNUP: '/sign-up',

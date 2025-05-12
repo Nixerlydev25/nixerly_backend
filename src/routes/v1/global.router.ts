@@ -8,6 +8,8 @@ import healthRouter from "./health.router";
 import { ROUTES } from "../../constants/routes.constants";
 import languageRouter from "./language.router";
 import skillsRouter from "./skills.router";
+import educationRouter from "./educations.router";
+import experienceRouter from "./certifications.router";
 
 // import subscriptionRouter from "./subscription.router";
 
@@ -31,6 +33,13 @@ Api2.use(ROUTES.API.LANGUAGE, languageRouter);
 
 // skills routes
 Api2.use(ROUTES.API.SKILLS, skillsRouter);
+
+// certification routes
+Api2.use(ROUTES.API.EXPERIENCE, experienceRouter);
+
+// education rotes
+Api2.use(ROUTES.API.EDUCATION, educationRouter);
+
 
 Api2.use(ROUTES.API.USER, userRouter);
 
