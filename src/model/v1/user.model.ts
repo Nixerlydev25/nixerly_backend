@@ -1,4 +1,8 @@
-import { ProfileType, OnboardingStepBusinessProfile, OnboardingStepWorkerProfile } from "@prisma/client";
+import {
+  ProfileType,
+  OnboardingStepBusinessProfile,
+  OnboardingStepWorkerProfile,
+} from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { hashPassword } from "../../utils";
 import { DatabaseError } from "../../utils/errors";
@@ -169,13 +173,23 @@ export const updateWorkerProfile = async (
 
 export const updateBusinessProfile = async (
   userId: string,
-  onboardingStep: OnboardingStepBusinessProfile,
   businessProfileData: Record<string, any>
 ) => {
   try {
     await prisma.businessProfile.update({
       where: { userId },
-      data: { ...businessProfileData, onboardingStep },
+      data: {
+        onboardingStep: businessProfileData.onboardingStep,
+        companyName: businessProfileData.companyName,
+        description: businessProfileData.description,
+        industry: businessProfileData.industry,
+        city: businessProfileData.city,
+        state: businessProfileData.state,
+        country: businessProfileData.country,
+        website: businessProfileData.website,
+        employeeCount: businessProfileData.employeeCount,
+        yearFounded: businessProfileData.yearFounded,
+      },
     });
 
     const updatedUser = await prisma.user.update({
