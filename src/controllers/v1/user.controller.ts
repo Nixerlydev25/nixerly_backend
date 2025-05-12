@@ -187,11 +187,10 @@ export const updateBusinessProfileHandler = async (
 ) => {
   try {
     const { userId } = request.user;
-    const { onboardingStep, businessProfile } = request.body;
+    const { ...businessProfile } = request.body;
 
     const updatedUser = await userModel.updateBusinessProfile(
       userId,
-      onboardingStep,
       businessProfile
     );
 

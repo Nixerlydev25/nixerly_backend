@@ -1,4 +1,8 @@
-import { OnboardingStepBusinessProfile, OnboardingStepWorkerProfile, ProfileType } from "@prisma/client";
+import {
+  OnboardingStepBusinessProfile,
+  OnboardingStepWorkerProfile,
+  ProfileType,
+} from "@prisma/client";
 import { z } from "zod";
 
 export const signUpSchema = z.object({
@@ -32,14 +36,15 @@ export const updateWorkerProfileSchema = z.object({
 
 export const updateBusinessProfileSchema = z.object({
   onboardingStep: z.nativeEnum(OnboardingStepBusinessProfile).optional(),
-  businessProfile: z.object({
-    companyName: z.string().optional(),
-    description: z.string().optional(),
-    industry: z.string().optional(),
-    location: z.string().optional(),
-    website: z.string().optional(),
-    employeeCount: z.number().optional(),
-  }),
+  companyName: z.string().optional(),
+  description: z.string().optional(),
+  industry: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  country: z.string().optional(),
+  website: z.string().optional().nullable(),
+  employeeCount: z.number().optional(),
+  yearFounded: z.number().optional(),
 });
 
 export const updateUserSchema = z.object({

@@ -76,7 +76,9 @@ model BusinessProfile {
   companyName       String?
   description       String?       @db.Text
   industry          String?
-  location          String?
+  city              String?
+  state             String?
+  country           String?
   website           String?
   employeeCount     Int?
   yearFounded       Int?
@@ -150,7 +152,7 @@ enum OnboardingStepWorkerProfile {
 
 enum OnboardingStepBusinessProfile {
   COMPANY_INFO
-  BUSINESS_DETAILS
+  // BUSINESS_DETAILS
   COMPLETED
 }
 
