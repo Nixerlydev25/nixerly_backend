@@ -57,5 +57,17 @@ export const ROUTES = {
         GET_ALL: '/',
         UPDATE: '/',
         DELETE: '/'
+    },
+    WORKER_CERTIFICATIONS: {
+        CREATE: '/',
+        GET_ALL: '/',
+        UPDATE: '/',
+        DELETE: '/'
+    },
+    WORKER_EDUCATIONS: {
+        CREATE: '/',
+        GET_ALL: '/',
+        UPDATE: '/',
+        DELETE: '/'
     }
 } as const;
