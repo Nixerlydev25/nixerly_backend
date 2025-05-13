@@ -10,7 +10,8 @@ export const ROUTES = {
         SKILLS: '/skills',
         SUBSCRIPTION: '/subscription',
         EXPERIENCE: '/experience',
-        EDUCATION:'/education'
+        EDUCATION:'/education',
+        WORKER: '/worker'
     },
     AUTH: {
         SIGNUP: '/sign-up',
@@ -71,5 +72,8 @@ export const ROUTES = {
         GET_ALL: '/',
         UPDATE: '/',
         DELETE: '/'
+    },
+    WORKER_PROFILE: {
+        GET_ALL: '/get-all-workers-profiles',
     }
 } as const;
