@@ -5,10 +5,10 @@ import * as experienceController from "../../controllers/v1/experience.controlle
 import isAuthorized from "../../middleware/isAuthorized";
 import * as ValidationMiddleware from "../../middleware/validation";
 import {
-  createCertificateSchema,
-  updateCertificateSchema,
-  deleteCertificateSchema,
-} from "../../schema/v1/certificate.validation";
+  createExperienceSchema,
+  updateExperienceSchema,
+  deleteExperienceSchema,
+} from "../../schema/v1/experience.validation";
 
 const experienceRouter = Router();
 
@@ -16,7 +16,7 @@ const experienceRouter = Router();
 experienceRouter.post(
   ROUTES.WORKER_CERTIFICATIONS.CREATE,
   isAuthorized([Role.WORKER, Role.ADMIN]),
-  ValidationMiddleware.bodyValidation(createCertificateSchema),
+  ValidationMiddleware.bodyValidation(createExperienceSchema),
   experienceController.createExperienceHandler
 );
 
@@ -31,7 +31,7 @@ experienceRouter.get(
 experienceRouter.put(
   ROUTES.WORKER_CERTIFICATIONS.UPDATE,
   isAuthorized([Role.WORKER, Role.ADMIN]),
-  ValidationMiddleware.bodyValidation(updateCertificateSchema),
+  ValidationMiddleware.bodyValidation(updateExperienceSchema),
   experienceController.updateExperienceHandler
 );
 
@@ -39,7 +39,7 @@ experienceRouter.put(
 experienceRouter.delete(
   ROUTES.WORKER_CERTIFICATIONS.DELETE,
   isAuthorized([Role.WORKER, Role.ADMIN]),
-  ValidationMiddleware.bodyValidation(deleteCertificateSchema),
+  ValidationMiddleware.bodyValidation(deleteExperienceSchema),
   experienceController.deleteExperienceHandler
 );
 
