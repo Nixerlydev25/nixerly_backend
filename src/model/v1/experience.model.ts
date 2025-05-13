@@ -1,7 +1,21 @@
 import prisma from "../../config/prisma.config";
 import { DatabaseError } from "../../utils/errors";
+import { z } from "zod";
+import { createExperienceSchema } from "../../schema/v1/experience.validation";
 
-export const createExperience = async (userId: string, data: any) => {
+type CreateExperienceInput = z.infer<typeof createExperienceSchema>[number];
+type UpdateExperienceInput = {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  startDate: string;
+  endDate?: string;
+  description: string;
+  current: boolean;
+};
+
+export const createExperience = async (userId: string, experiences: CreateExperienceInput[]) => {
   try {
     const workerProfile = await prisma.workerProfile.findFirst({
       where: { userId },
@@ -9,11 +23,17 @@ export const createExperience = async (userId: string, data: any) => {
     });
     if (!workerProfile) throw new DatabaseError("Worker profile not found");
 
-    return await prisma.experience.create({
-      data: {
-        ...data,
+    return await prisma.experience.createMany({
+      data: experiences.map((experience) => ({
+        startDate: new Date(experience.startDate),
+        endDate: experience.endDate ? new Date(experience.endDate) : null,
+        location: experience.location,
+        title: experience.title,
+        company: experience.company,
+        description: experience.description,
+        currentlyWorking: experience.current,
         workerId: workerProfile.id,
-      },
+      })),
     });
   } catch (error: any) {
     throw new DatabaseError(error.message);
@@ -30,7 +50,7 @@ export const getWorkerExperiences = async (workerId: string) => {
   }
 };
 
-export const updateExperience = async (userId: string, data: any) => {
+export const updateExperience = async (userId: string, data: UpdateExperienceInput) => {
   try {
     const workerProfile = await prisma.workerProfile.findFirst({
       where: { userId },
@@ -65,7 +85,7 @@ export const deleteExperience = async (userId: string, id: string) => {
       where: { id },
     });
     if (!experience || experience.workerId !== workerProfile.id)
-      throw new DatabaseError("Exerience not found");
+      throw new DatabaseError("Experience not found");
 
     return await prisma.experience.delete({
       where: { id },

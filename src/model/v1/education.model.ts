@@ -1,7 +1,11 @@
 import prisma from "../../config/prisma.config";
 import { DatabaseError } from "../../utils/errors";
+import { z } from "zod";
+import { createEducationSchema } from "../../schema/v1/education.validation";
 
-export const createEducation = async (userId: string, data: any) => {
+type CreateEducationInput = z.infer<typeof createEducationSchema>[number];
+
+export const createEducation = async (userId: string, educationData: CreateEducationInput[]) => {
   try {
     const workerProfile = await prisma.workerProfile.findFirst({
       where: { userId },
@@ -9,11 +13,17 @@ export const createEducation = async (userId: string, data: any) => {
     });
     if (!workerProfile) throw new DatabaseError("Worker profile not found");
 
-    return await prisma.education.create({
-      data: {
-        ...data,
+    return await prisma.education.createMany({
+      data: educationData.map(education => ({
+        school: education.school,
+        degree: education.degree,
+        fieldOfStudy: education.fieldOfStudy,
+        startDate: new Date(education.startDate),
+        endDate: education.endDate ? new Date(education.endDate) : null,
+        description: education.description,
+        currentlyStudying: education.currentlyStudying,
         workerId: workerProfile.id,
-      },
+      })),
     });
   } catch (error: any) {
     throw new DatabaseError(error.message);

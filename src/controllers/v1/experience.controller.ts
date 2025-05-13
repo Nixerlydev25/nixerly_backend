@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import { ResponseStatus } from "../../types/response.enums";
 import * as ExperienceModel from "../../model/v1/experience.model";
+import { z } from "zod";
+import { createExperienceSchema } from "../../schema/v1/experience.validation";
+
+type CreateExperienceInput = z.infer<typeof createExperienceSchema>[number];
 
 export const createExperienceHandler = async (
   request: Request,
@@ -9,11 +13,11 @@ export const createExperienceHandler = async (
 ) => {
   try {
     const { userId } = request.user;
-    const data = request.body;
-    const created = await ExperienceModel.createExperience(userId, data);
+    const experiences = request.body;
+    const created = await ExperienceModel.createExperience(userId, experiences);
     response.status(ResponseStatus.Created).json({
       success: true,
-      message: "experience created successfully",
+      message: "Experiences created successfully",
       data: created,
     });
   } catch (error) {
@@ -49,7 +53,7 @@ export const updateExperienceHandler = async (
     const updated = await ExperienceModel.updateExperience(userId, data);
     response.status(ResponseStatus.OK).json({
       success: true,
-    message: "experience updated successfully",
+      message: "Experience updated successfully",
       data: updated,
     });
   } catch (error) {
@@ -68,7 +72,7 @@ export const deleteExperienceHandler = async (
     await ExperienceModel.deleteExperience(userId, id);
     response.status(ResponseStatus.OK).json({
       success: true,
-      message: "experience deleted successfully",
+      message: "Experience deleted successfully",
     });
   } catch (error) {
     next(error);

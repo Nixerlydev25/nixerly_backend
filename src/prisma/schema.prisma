@@ -144,9 +144,10 @@ enum OAuthProvider {
 enum OnboardingStepWorkerProfile {
   PERSONAL_INFO
   SKILLS_HOURLY_RATE_INFO
-  PROFESSIONAL_INFO
-  AVAILABILITY_INFO
+  EXPERIENCE_INFO
+  EDUCATION_INFO
   LANGUAGE_INFO
+  AVAILABILITY_INFO
   COMPLETED
 }
 
@@ -357,8 +358,8 @@ model Experience {
   location        String
   startDate       DateTime
   endDate         DateTime?
+  currentlyWorking Boolean @default(false)
   description     String        @db.Text
-  current         Boolean       @default(false)
 
   @@map("experiences")
 }
@@ -371,6 +372,7 @@ model Education {
   degree          String
   fieldOfStudy    String
   startDate       DateTime
+  currentlyStudying Boolean @default(false)
   endDate         DateTime?
   description     String?       @db.Text
 

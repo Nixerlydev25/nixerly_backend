@@ -9,8 +9,8 @@ export const createEducationHandler = async (
 ) => {
   try {
     const { userId } = request.user;
-    const data = request.body;
-    const created = await educationModel.createEducation(userId, data);
+    const educationData = request.body;
+    const created = await educationModel.createEducation(userId, educationData);
     response.status(ResponseStatus.Created).json({
       success: true,
       message: "Education created successfully",
