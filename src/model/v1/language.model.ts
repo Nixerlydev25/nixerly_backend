@@ -4,7 +4,7 @@ import { DatabaseError } from "../../utils/errors";
 
 export const createUserLanguages = async (
   userId: string,
-  languages: { language: Language; proficiency: Proficiency }[]
+  languages: { name: Language; proficiency: Proficiency }[]
 ) => {
   try {
     // Fetch worker profile ID for the user
@@ -20,17 +20,19 @@ export const createUserLanguages = async (
     const workerId = workerProfile.id;
 
     // Create multiple languages in a transaction
-    return await prisma.$transaction(
-      languages.map(({ language, proficiency }) =>
-        prisma.workerLanguage.create({
-          data: {
-            workerId,
-            language,
+    await prisma.workerProfile.update({
+      where: {
+        id: workerId,
+      },
+      data: {
+        languages: {
+          create: languages.map(({ name, proficiency }) => ({
+            language: name,
             proficiency,
-          },
-        })
-      )
-    );
+          })),
+        },
+      },
+    });
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
@@ -38,7 +40,7 @@ export const createUserLanguages = async (
 
 export const updateUserLanguage = async (
   userId: string,
-  language: Language,
+  name: Language,
   proficiency: Proficiency
 ) => {
   try {
@@ -58,7 +60,7 @@ export const updateUserLanguage = async (
       where: {
         workerId_language: {
           workerId,
-          language,
+          language: name,
         },
       },
       data: {

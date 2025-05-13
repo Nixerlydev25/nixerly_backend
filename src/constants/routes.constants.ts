@@ -8,7 +8,9 @@ export const ROUTES = {
         HEALTH: '/health',
         LANGUAGE: '/language',
         SKILLS: '/skills',
-        SUBSCRIPTION: '/subscription'
+        SUBSCRIPTION: '/subscription',
+        EXPERIENCE: '/experience',
+        EDUCATION:'/education'
     },
     AUTH: {
         SIGNUP: '/sign-up',
@@ -53,6 +55,18 @@ export const ROUTES = {
         USER_RESTRICTIONS: '/:user-id'
     },
     WROKER_SKILLS: {
+        CREATE: '/',
+        GET_ALL: '/',
+        UPDATE: '/',
+        DELETE: '/'
+    },
+    WORKER_CERTIFICATIONS: {
+        CREATE: '/',
+        GET_ALL: '/',
+        UPDATE: '/',
+        DELETE: '/'
+    },
+    WORKER_EDUCATIONS: {
         CREATE: '/',
         GET_ALL: '/',
         UPDATE: '/',
