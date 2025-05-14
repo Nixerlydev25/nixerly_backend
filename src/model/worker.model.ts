@@ -102,6 +102,7 @@ export class WorkerModel {
 
       return { workers: transformedWorkers, totalCount };
     } catch (error) {
+      console.log(error)
       throw new DatabaseError('Error fetching workers');
     }
   }
