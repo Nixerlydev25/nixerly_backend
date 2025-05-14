@@ -355,7 +355,9 @@ model Experience {
   workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
   title           String
   company         String
-  location        String
+  country         String?
+  city            String?
+  state           String?
   startDate       DateTime
   endDate         DateTime?
   currentlyWorking Boolean @default(false)

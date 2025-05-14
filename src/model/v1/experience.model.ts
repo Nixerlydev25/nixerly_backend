@@ -27,7 +27,9 @@ export const createExperience = async (userId: string, experiences: CreateExperi
       data: experiences.map((experience) => ({
         startDate: new Date(experience.startDate),
         endDate: experience.endDate ? new Date(experience.endDate) : null,
-        location: experience.location,
+        country: experience.country,
+        city: experience.city,
+        state: experience.state,
         title: experience.title,
         company: experience.company,
         description: experience.description,
