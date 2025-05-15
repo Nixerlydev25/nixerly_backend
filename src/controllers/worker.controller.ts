@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { WorkerModel } from "../model/worker.model";
+import * as WorkerModel from "../model/worker.model";
 import { ResponseStatus } from "../types/response.enums";
 import { SkillName } from "@prisma/client";
 import { WorkerFilters, SortOption } from "../utils/filters";
@@ -83,6 +83,28 @@ export const getWorkerDetails = async (
 
     response.status(ResponseStatus.OK).json(worker);
   } catch (error) {
+    next(error);
+  }
+};
+
+
+export const updateWorkerProfileHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { onboardingStep, ...workerProfile } = request.body;
+
+    const updatedUser = await WorkerModel.updateWorkerProfile(
+      userId,
+      onboardingStep,
+      workerProfile
+    );
+
+    return response.status(ResponseStatus.OK).json(updatedUser);
+  } catch (error: any) {
     next(error);
   }
 };

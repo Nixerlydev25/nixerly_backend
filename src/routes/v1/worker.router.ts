@@ -6,6 +6,7 @@ import * as ValidationMiddleware from "../../middleware/validation";
 import { getWorkerDetailsSchema } from "../../schema/v1/worker.validation";
 
 import { Role } from "@prisma/client";
+import { updateWorkerProfileSchema } from "../../schema/v1/auth.validation";
 const workerRouter = Router();
 
 workerRouter.get(
@@ -20,5 +21,13 @@ workerRouter.get(
   ValidationMiddleware.paramValidation(getWorkerDetailsSchema, 'workerId'),
   workerController.getWorkerDetails
 );
+
+workerRouter.patch(
+  ROUTES.USER.UPDATE_WORKER_PROFILE,
+  isAuthorized([Role.WORKER]),
+  ValidationMiddleware.bodyValidation(updateWorkerProfileSchema),
+  workerController.updateWorkerProfileHandler
+);
+
 
 export default workerRouter;

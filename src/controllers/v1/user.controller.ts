@@ -159,27 +159,6 @@ export const resetPasswordHandler = async (
   }
 };
 
-export const updateWorkerProfileHandler = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    const { userId } = request.user;
-    const { onboardingStep, ...workerProfile } = request.body;
-
-    const updatedUser = await userModel.updateWorkerProfile(
-      userId,
-      onboardingStep,
-      workerProfile
-    );
-
-    return response.status(ResponseStatus.OK).json(updatedUser);
-  } catch (error: any) {
-    next(error);
-  }
-};
-
 export const updateBusinessProfileHandler = async (
   request: Request,
   response: Response,

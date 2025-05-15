@@ -24,13 +24,6 @@ userRouter.get(
 );
 
 userRouter.patch(
-  ROUTES.USER.UPDATE_WORKER_PROFILE,
-  isAuthorized([Role.WORKER]),
-  ValidationMiddleware.bodyValidation(updateWorkerProfileSchema),
-  userController.updateWorkerProfileHandler
-);
-
-userRouter.patch(
   ROUTES.USER.UPDATE_BUSINESS_PROFILE,
   isAuthorized([Role.BUSINESS]),
   ValidationMiddleware.bodyValidation(updateBusinessProfileSchema),
