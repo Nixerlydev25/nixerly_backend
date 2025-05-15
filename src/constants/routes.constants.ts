@@ -61,17 +61,19 @@ export const ROUTES = {
         UPDATE: '/',
         DELETE: '/'
     },
-    WORKER_CERTIFICATIONS: {
+    WORKER_EXPERIENCE: {
         CREATE: '/',
         GET_ALL: '/',
         UPDATE: '/',
-        DELETE: '/'
+        DELETE: '/',
+        UPDATE_ALL: '/update-all'
     },
     WORKER_EDUCATIONS: {
         CREATE: '/',
         GET_ALL: '/',
         UPDATE: '/',
-        DELETE: '/'
+        DELETE: '/',
+        UPDATE_ALL: '/update-all'
     },
     WORKER_PROFILE: {
         GET_ALL: '/get-all-workers-profiles',

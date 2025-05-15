@@ -37,3 +37,7 @@ export const updateEducationSchema = z.object({
 export const deleteEducationSchema = z.object({
   id: z.string({ required_error: "ID is required" }),
 });
+
+export const getWorkerEducationSchema = z.string({
+  required_error: "Worker ID is required",
+});

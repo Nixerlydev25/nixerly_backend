@@ -5,39 +5,41 @@ import * as experienceController from "../../controllers/v1/experience.controlle
 import isAuthorized from "../../middleware/isAuthorized";
 import * as ValidationMiddleware from "../../middleware/validation";
 import {
-  createExperienceSchema,
   updateExperienceSchema,
   deleteExperienceSchema,
+  createOrUpdateExperienceSchema,
 } from "../../schema/v1/experience.validation";
 
 const experienceRouter = Router();
 
-// Create certificate
 experienceRouter.post(
-  ROUTES.WORKER_CERTIFICATIONS.CREATE,
+  ROUTES.WORKER_EXPERIENCE.CREATE,
   isAuthorized([Role.WORKER, Role.ADMIN]),
-  ValidationMiddleware.bodyValidation(createExperienceSchema),
+  ValidationMiddleware.bodyValidation(createOrUpdateExperienceSchema),
   experienceController.createExperienceHandler
 );
 
-// Get all certificates for a worker
 experienceRouter.get(
-  ROUTES.WORKER_CERTIFICATIONS.GET_ALL + ":workerId",
+  ROUTES.WORKER_EXPERIENCE.GET_ALL,
   isAuthorized([Role.WORKER, Role.ADMIN]),
   experienceController.getWorkerExperiencesHandler
 );
 
-// Update certificate
 experienceRouter.put(
-  ROUTES.WORKER_CERTIFICATIONS.UPDATE,
+  ROUTES.WORKER_EXPERIENCE.UPDATE,
   isAuthorized([Role.WORKER, Role.ADMIN]),
   ValidationMiddleware.bodyValidation(updateExperienceSchema),
   experienceController.updateExperienceHandler
 );
 
-// Delete certificate
+experienceRouter.put(
+  ROUTES.WORKER_EXPERIENCE.UPDATE_ALL,
+  isAuthorized([Role.WORKER, Role.ADMIN]),
+  experienceController.updateAllExperiencesHandler
+);
+
 experienceRouter.delete(
-  ROUTES.WORKER_CERTIFICATIONS.DELETE,
+  ROUTES.WORKER_EXPERIENCE.DELETE,
   isAuthorized([Role.WORKER, Role.ADMIN]),
   ValidationMiddleware.bodyValidation(deleteExperienceSchema),
   experienceController.deleteExperienceHandler

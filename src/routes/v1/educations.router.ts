@@ -22,7 +22,7 @@ educationRouter.post(
 
 // Get all educations for a worker
 educationRouter.get(
-  ROUTES.WORKER_EDUCATIONS.GET_ALL + ":workerId",
+  ROUTES.WORKER_EDUCATIONS.GET_ALL,
   isAuthorized([Role.WORKER, Role.ADMIN]),
   educationController.getWorkerEducationHandler
 );
@@ -33,6 +33,14 @@ educationRouter.put(
   isAuthorized([Role.WORKER, Role.ADMIN]),
   ValidationMiddleware.bodyValidation(updateEducationSchema),
   educationController.updateEducationHandler
+);
+
+// Update all educations at once
+educationRouter.put(
+  ROUTES.WORKER_EDUCATIONS.UPDATE_ALL,
+  isAuthorized([Role.WORKER, Role.ADMIN]),
+  ValidationMiddleware.bodyValidation(createEducationSchema),
+  educationController.updateAllEducationsHandler
 );
 
 // Delete education

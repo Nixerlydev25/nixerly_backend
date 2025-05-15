@@ -1,9 +1,9 @@
 import prisma from "../../config/prisma.config";
 import { DatabaseError } from "../../utils/errors";
 import { z } from "zod";
-import { createExperienceSchema } from "../../schema/v1/experience.validation";
+import { createOrUpdateExperienceSchema } from "../../schema/v1/experience.validation";
 
-type CreateExperienceInput = z.infer<typeof createExperienceSchema>[number];
+type CreateExperienceInput = z.infer<typeof createOrUpdateExperienceSchema>[number];
 type UpdateExperienceInput = {
   id: string;
   title: string;
@@ -91,6 +91,39 @@ export const deleteExperience = async (userId: string, id: string) => {
 
     return await prisma.experience.delete({
       where: { id },
+    });
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const updateAllExperiences = async (userId: string, experiences: CreateExperienceInput[]) => {
+  try {
+    const workerProfile = await prisma.workerProfile.findFirst({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!workerProfile) throw new DatabaseError("Worker profile not found");
+
+    // Delete all existing experiences for this worker
+    await prisma.experience.deleteMany({
+      where: { workerId: workerProfile.id },
+    });
+
+    // Create all new experiences
+    return await prisma.experience.createMany({
+      data: experiences.map((experience) => ({
+        startDate: new Date(experience.startDate),
+        endDate: experience.endDate ? new Date(experience.endDate) : null,
+        country: experience.country,
+        city: experience.city,
+        state: experience.state,
+        title: experience.title,
+        company: experience.company,
+        description: experience.description,
+        currentlyWorking: experience.current,
+        workerId: workerProfile.id,
+      })),
     });
   } catch (error: any) {
     throw new DatabaseError(error.message);

@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-export const createExperienceSchema = z.array(
+export const createOrUpdateExperienceSchema = z.array(
   z.object({
     title: z.string({ required_error: "Job title is required" }),
     company: z.string({ required_error: "Company name is required" }),
-    country:  z.string({ required_error: "Country is required" }),
+    country: z.string({ required_error: "Country is required" }),
     city: z.string({ required_error: "City is required" }),
     state: z.string({ required_error: "State is required" }),
     startDate: z
@@ -15,7 +15,9 @@ export const createExperienceSchema = z.array(
       .datetime("Invalid date format. Please provide a valid ISO date string")
       .optional(),
     description: z.string({ required_error: "Job description is required" }),
-    current: z.boolean({ required_error: "Current employment status is required" }),
+    current: z.boolean({
+      required_error: "Current employment status is required",
+    }),
   })
 );
 
@@ -32,9 +34,15 @@ export const updateExperienceSchema = z.object({
     .datetime("Invalid date format. Please provide a valid ISO date string")
     .optional(),
   description: z.string({ required_error: "Job description is required" }),
-  current: z.boolean({ required_error: "Current employment status is required" }),
+  current: z.boolean({
+    required_error: "Current employment status is required",
+  }),
 });
 
 export const deleteExperienceSchema = z.object({
   id: z.string({ required_error: "Experience ID is required" }),
+});
+
+export const getWorkerExperienceSchema = z.string({
+  required_error: "Worker ID is required",
 });

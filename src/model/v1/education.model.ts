@@ -84,3 +84,34 @@ export const deleteEducation = async (userId: string, id: string) => {
     throw new DatabaseError(error.message);
   }
 };
+
+export const updateAllEducations = async (userId: string, educationData: CreateEducationInput[]) => {
+  try {
+    const workerProfile = await prisma.workerProfile.findFirst({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!workerProfile) throw new DatabaseError("Worker profile not found");
+
+    // Delete all existing education entries for this worker
+    await prisma.education.deleteMany({
+      where: { workerId: workerProfile.id },
+    });
+
+    // Create all new education entries
+    return await prisma.education.createMany({
+      data: educationData.map(education => ({
+        school: education.school,
+        degree: education.degree,
+        fieldOfStudy: education.fieldOfStudy,
+        startDate: new Date(education.startDate),
+        endDate: education.endDate ? new Date(education.endDate) : null,
+        description: education.description,
+        currentlyStudying: education.currentlyStudying,
+        workerId: workerProfile.id,
+      })),
+    });
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};

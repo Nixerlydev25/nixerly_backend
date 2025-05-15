@@ -15,7 +15,7 @@ import workerRouter from "./worker.router";
 // import subscriptionRouter from "./subscription.router";
 
 const Api2 = Router();
-// authentication. 
+// authentication.
 //TODO : unit test.
 Api2.use(ROUTES.API.AUTH, authRouter);
 
