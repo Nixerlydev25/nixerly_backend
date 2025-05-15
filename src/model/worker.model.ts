@@ -1,71 +1,22 @@
-import {  OnboardingStepWorkerProfile, SkillName } from '@prisma/client';
+import { OnboardingStepWorkerProfile } from '@prisma/client';
 import { DatabaseError } from '../utils/errors';
 import prisma from '../config/prisma.config';
-
-interface WorkerFilters {
-  skills?: SkillName[];
-  minHourlyRate?: number;
-  maxHourlyRate?: number;
-  minTotalEarnings?: number;
-  maxTotalEarnings?: number;
-  minAvgRating?: number;
-  maxAvgRating?: number;
-}
+import { WorkerFilters, createWorkerFilterClause, createWorkerSortClause } from '../utils/filters';
 
 export class WorkerModel {
-  static async getAllWorkers(skip: number, limit: number, filters?: WorkerFilters) {
+  static async getAllWorkers(skip: number, limit: number, filters?: WorkerFilters, sortOption?: string) {
     try {
-      const whereClause: any = {
-        // Only return workers who have completed onboarding
-        onboardingStep: OnboardingStepWorkerProfile.COMPLETED
+      // Create base where clause with completed onboarding requirement
+      const whereClause = {
+        onboardingStep: OnboardingStepWorkerProfile.COMPLETED,
+        ...createWorkerFilterClause(filters)
       };
 
-      // Apply filters if they exist
-      if (filters) {
-        // Skills filter
-        if (filters.skills && filters.skills.length > 0) {
-          whereClause.skills = {
-            some: {
-              skillName: {
-                in: filters.skills
-              }
-            }
-          };
-        }
-
-        // Hourly rate range
-        if (filters.minHourlyRate !== undefined || filters.maxHourlyRate !== undefined) {
-          whereClause.hourlyRate = {};
-          if (filters.minHourlyRate !== undefined) {
-            whereClause.hourlyRate.gte = filters.minHourlyRate;
-          }
-          if (filters.maxHourlyRate !== undefined) {
-            whereClause.hourlyRate.lte = filters.maxHourlyRate;
-          }
-        }
-
-        // Total earnings range
-        if (filters.minTotalEarnings !== undefined || filters.maxTotalEarnings !== undefined) {
-          whereClause.totalEarnings = {};
-          if (filters.minTotalEarnings !== undefined) {
-            whereClause.totalEarnings.gte = filters.minTotalEarnings;
-          }
-          if (filters.maxTotalEarnings !== undefined) {
-            whereClause.totalEarnings.lte = filters.maxTotalEarnings;
-          }
-        }
-
-        // Average rating range
-        if (filters.minAvgRating !== undefined || filters.maxAvgRating !== undefined) {
-          whereClause.avgRating = {};
-          if (filters.minAvgRating !== undefined) {
-            whereClause.avgRating.gte = filters.minAvgRating;
-          }
-          if (filters.maxAvgRating !== undefined) {
-            whereClause.avgRating.lte = filters.maxAvgRating;
-          }
-        }
-      }
+      // Create orderBy clause based on sort option
+      console.log({sortOption})
+      const orderByClause = createWorkerSortClause(sortOption);
+      
+      console.log({orderByClause})
 
       const [workers, totalCount] = await Promise.all([
         prisma.workerProfile.findMany({
@@ -83,11 +34,7 @@ export class WorkerModel {
             education: true,
             languages: true
           },
-          orderBy: {
-            user: {
-              createdAt: 'desc'
-            }
-          }
+          orderBy: orderByClause
         }),
         prisma.workerProfile.count({
           where: whereClause
