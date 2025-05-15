@@ -33,7 +33,7 @@ async function deserializeUser(
   let accessToken = null;
   let refreshToken = null;
   const isMobileClient = request.headers["x-client"] === "mobile";
-
+  console.log({isMobileClient})
   if (isMobileClient) {
     accessToken = request.headers["x-client-access"] as string;
     refreshToken = request.headers["x-client-refresh"] as string;

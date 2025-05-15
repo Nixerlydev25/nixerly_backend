@@ -75,5 +75,6 @@ export const ROUTES = {
     },
     WORKER_PROFILE: {
         GET_ALL: '/get-all-workers-profiles',
+        GET_DETAILS: '/:workerId',
     }
 } as const;

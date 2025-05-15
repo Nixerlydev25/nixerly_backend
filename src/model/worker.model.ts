@@ -53,4 +53,48 @@ export class WorkerModel {
       throw new DatabaseError('Error fetching workers');
     }
   }
+
+  /**
+   * Get a worker by ID with all details except conversations
+   * @param workerId The ID of the worker to retrieve
+   * @returns The worker profile with related data or null if not found
+   */
+  static async getWorkerById(workerId: string) {
+    try {
+      const worker = await prisma.workerProfile.findUnique({
+        where: {
+          id: workerId,
+          onboardingStep: OnboardingStepWorkerProfile.COMPLETED
+        },
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+              defaultProfile: true,
+            }
+          },
+          skills: true,
+          experience: true,
+          education: true,
+          languages: true,
+          // Explicitly exclude conversations
+        }
+      });
+
+      if (!worker) return null;
+
+      // Transform the skills for better readability
+      const transformedSkills = worker.skills.map(skill => skill.skillName);
+
+      // Return the worker with transformed skills
+      return {
+        ...worker,
+        skills: transformedSkills
+      };
+    } catch (error) {
+      console.log(error);
+      throw new DatabaseError('Error fetching worker details');
+    }
+  }
 } 

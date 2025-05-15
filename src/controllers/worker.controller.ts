@@ -60,3 +60,29 @@ export const getAllWorkers = async (
     next(error);
   }
 };
+
+/**
+ * Get detailed information about a specific worker
+ * Excludes conversation data
+ */
+export const getWorkerDetails = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { workerId } = request.params;
+    
+    const worker = await WorkerModel.getWorkerById(workerId);
+    
+    if (!worker) {
+      return response.status(ResponseStatus.NotFound).json({
+        message: "Worker not found"
+      });
+    }
+
+    response.status(ResponseStatus.OK).json(worker);
+  } catch (error) {
+    next(error);
+  }
+};
