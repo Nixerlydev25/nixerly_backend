@@ -33,9 +33,21 @@ CREATE TABLE `worker_profiles` (
     `totalEarnings` DOUBLE NOT NULL DEFAULT 0,
     `completedJobs` INTEGER NOT NULL DEFAULT 0,
     `avgRating` DOUBLE NOT NULL DEFAULT 0,
-    `onboardingStep` ENUM('PERSONAL_INFO', 'SKILLS_HOURLY_RATE_INFO', 'EXPERIENCE_INFO', 'EDUCATION_INFO', 'AVAILABILITY_INFO', 'LANGUAGE_INFO', 'COMPLETED') NOT NULL DEFAULT 'PERSONAL_INFO',
+    `onboardingStep` ENUM('PERSONAL_INFO', 'SKILLS_HOURLY_RATE_INFO', 'EXPERIENCE_INFO', 'EDUCATION_INFO', 'LANGUAGE_INFO', 'AVAILABILITY_INFO', 'COMPLETED') NOT NULL DEFAULT 'PERSONAL_INFO',
 
     UNIQUE INDEX `worker_profiles_userId_key`(`userId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `profile_pictures` (
+    `id` VARCHAR(191) NOT NULL,
+    `workerProfileId` VARCHAR(191) NOT NULL,
+    `s3Key` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `profile_pictures_workerProfileId_key`(`workerProfileId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -210,11 +222,13 @@ CREATE TABLE `experiences` (
     `workerId` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `company` VARCHAR(191) NOT NULL,
-    `location` VARCHAR(191) NOT NULL,
+    `country` VARCHAR(191) NULL,
+    `city` VARCHAR(191) NULL,
+    `state` VARCHAR(191) NULL,
     `startDate` DATETIME(3) NOT NULL,
     `endDate` DATETIME(3) NULL,
+    `currentlyWorking` BOOLEAN NOT NULL DEFAULT false,
     `description` TEXT NOT NULL,
-    `current` BOOLEAN NOT NULL DEFAULT false,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -227,6 +241,7 @@ CREATE TABLE `education` (
     `degree` VARCHAR(191) NOT NULL,
     `fieldOfStudy` VARCHAR(191) NOT NULL,
     `startDate` DATETIME(3) NOT NULL,
+    `currentlyStudying` BOOLEAN NOT NULL DEFAULT false,
     `endDate` DATETIME(3) NULL,
     `description` TEXT NULL,
 
@@ -250,11 +265,11 @@ CREATE TABLE `certificates` (
 CREATE TABLE `assets` (
     `id` VARCHAR(191) NOT NULL,
     `key` VARCHAR(191) NOT NULL,
+    `mediaType` VARCHAR(191) NOT NULL,
     `projectId` VARCHAR(191) NULL,
     `certificateId` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
-    UNIQUE INDEX `assets_certificateId_key`(`certificateId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -304,6 +319,9 @@ CREATE TABLE `job_skills` (
 
 -- AddForeignKey
 ALTER TABLE `worker_profiles` ADD CONSTRAINT `worker_profiles_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `profile_pictures` ADD CONSTRAINT `profile_pictures_workerProfileId_fkey` FOREIGN KEY (`workerProfileId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `business_profiles` ADD CONSTRAINT `business_profiles_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

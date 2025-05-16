@@ -64,8 +64,19 @@ model WorkerProfile {
   reportsReceived     Report[]      @relation("WorkerReported") // Reports received by worker
   sentMessages        Message[]     @relation("WorkerSentMessages") // Messages sent by worker
   receivedMessages    Message[]     @relation("WorkerReceivedMessages") // Messages received by worker
-  
+  profilePicture      ProfilePicture? // One-to-one relation with profile picture
   @@map("worker_profiles")
+}
+
+model ProfilePicture {
+  id              String        @id @default(uuid())
+  workerProfileId String        @unique
+  workerProfile   WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  s3Key           String        // S3 key for the profile picture
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("profile_pictures")
 }
 
 // BUSINESS PROFILE --------------------------------------------
@@ -390,7 +401,7 @@ model Certificate {
   issueDate       DateTime
   expiryDate      DateTime?
   credentialUrl   String?
-  asset           Asset?        // Relation to certificate image
+  assets          Asset[]       // Relation to certificate images
 
   @@map("certificates")
 }
@@ -399,9 +410,10 @@ model Certificate {
 model Asset {
   id              String        @id @default(uuid())
   key             String        // S3 key for the image
+  mediaType       String        // Type of media (e.g., "image/jpeg", "image/png", "application/pdf")
   projectId       String?       // Optional relation to Project
   project         Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  certificateId   String?       @unique // Optional relation to Certificate - added @unique to fix the one-to-one relation
+  certificateId   String?       // Optional relation to Certificate
   certificate     Certificate?  @relation(fields: [certificateId], references: [id], onDelete: Cascade)
   createdAt       DateTime      @default(now())
 

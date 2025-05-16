@@ -194,3 +194,81 @@ export const updateUser = async (
     throw new DatabaseError(error.message);
   }
 };
+
+export const getWorkerProfileDetails = async (userId: string) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        defaultProfile: true,
+        isVerified: true,
+        firstTimeLogin: true,
+        createdAt: true,
+        updatedAt: true,
+        workerProfile: {
+          include: {
+            skills: true,
+            experience: true,
+            education: true,
+            certificates: true,
+            portfolio: {
+              include: {
+                assets: true,
+              },
+            },
+            languages: true,
+            profilePicture: true,
+          },
+        },
+      },
+    });
+
+    if (!user || !user.workerProfile) {
+      return null;
+    }
+
+    // Transform the skills to be an array of just skillNames
+    const transformedUser = {
+      ...user,
+      workerProfile: {
+        ...user.workerProfile,
+        skills: user.workerProfile.skills.map((skill) => skill.skillName),
+        languages: user.workerProfile.languages.map((language) => language.language),
+      },
+    };
+
+    return transformedUser;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const getBusinessProfileDetails = async (userId: string) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        defaultProfile: true,
+        isVerified: true,
+        firstTimeLogin: true,
+        createdAt: true,
+        updatedAt: true,
+        businessProfile: true,
+      },
+    });
+    
+    return user;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};

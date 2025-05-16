@@ -201,3 +201,51 @@ export const updateUserHandler = async (
     next(error);
   }
 };
+
+export const getWorkerProfileDetailsHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+
+    if (!userId) {
+      throw new NotFoundError("User not authenticated");
+    }
+
+    const userDetails = await userModel.getWorkerProfileDetails(userId);
+
+    if (!userDetails) {
+      throw new NotFoundError("Worker profile not found");
+    }
+
+    return response.status(ResponseStatus.OK).json(userDetails);
+  } catch (error: any) {
+    return next(error);
+  }
+};
+
+export const getBusinessProfileDetailsHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+
+    if (!userId) {
+      throw new NotFoundError("User not authenticated");
+    }
+
+    const userDetails = await userModel.getBusinessProfileDetails(userId);
+
+    if (!userDetails) {
+      throw new NotFoundError("Business profile not found");
+    }
+
+    return response.status(ResponseStatus.OK).json(userDetails);
+  } catch (error: any) {
+    return next(error);
+  }
+};

@@ -23,6 +23,18 @@ userRouter.get(
   userController.getCurrentUserDetails
 );
 
+userRouter.get(
+  ROUTES.USER.GET_WORKER_PROFILE_DETAILS,
+  isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN]),
+  userController.getWorkerProfileDetailsHandler
+);
+
+userRouter.get(
+  ROUTES.USER.GET_BUSINESS_PROFILE_DETAILS,
+  isAuthorized([Role.BUSINESS, Role.ADMIN, Role.SUPER_ADMIN]),
+  userController.getBusinessProfileDetailsHandler
+);
+
 userRouter.patch(
   ROUTES.USER.UPDATE_BUSINESS_PROFILE,
   isAuthorized([Role.BUSINESS]),

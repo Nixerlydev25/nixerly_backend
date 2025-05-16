@@ -46,7 +46,9 @@ export const ROUTES = {
         DELETE_ACCOUNT: '/delete-account',
         FORGOT_PASSWORD: '/forgot-password',
         VERIFY_OTP: '/verify-otp',
-        RESET_PASSWORD: '/reset-password'
+        RESET_PASSWORD: '/reset-password',
+        GET_WORKER_PROFILE_DETAILS: '/worker-profile-details',
+        GET_BUSINESS_PROFILE_DETAILS: '/business-profile-details'
     },
     ROLE: {
         UPDATE_ROLE: '/:id'
