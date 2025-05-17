@@ -48,7 +48,9 @@ export const ROUTES = {
         VERIFY_OTP: '/verify-otp',
         RESET_PASSWORD: '/reset-password',
         GET_WORKER_PROFILE_DETAILS: '/worker-profile-details',
-        GET_BUSINESS_PROFILE_DETAILS: '/business-profile-details'
+        GET_BUSINESS_PROFILE_DETAILS: '/business-profile-details',
+        GET_PROFILE_PICTURE_UPLOAD_URL: '/profile-picture-upload-url',
+        SAVE_PROFILE_PICTURE: '/save-profile-picture'
     },
     ROLE: {
         UPDATE_ROLE: '/:id'
