@@ -1,4 +1,4 @@
-import { Job, SkillName, JobStatus } from "@prisma/client";
+import { Job, SkillName, JobStatus, JobType } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { DatabaseError } from "../../utils/errors";
 
@@ -13,6 +13,9 @@ export const createJob = async (
     skills: SkillName[];
     expiresAt?: Date;
     requirements: string;
+    jobType?: JobType;
+    startDate?: Date;
+    numberOfWorkersRequired: number;
   }
 ): Promise<Job> => {
   try {
@@ -28,6 +31,9 @@ export const createJob = async (
           hourlyRateMax: jobData.hourlyRateMax,
           businessProfileId,
           expiresAt: jobData.expiresAt,
+          jobType: jobData.jobType,
+          startDate: jobData.startDate,
+          numberOfWorkersRequired: jobData.numberOfWorkersRequired,
           skills: {
             create: jobData.skills.map((skillName) => ({
               skillName,

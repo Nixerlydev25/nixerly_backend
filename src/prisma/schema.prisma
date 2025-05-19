@@ -219,6 +219,9 @@ model Job {
   businessProfileId String           // Changed from posterId to businessProfileId
   businessProfile   BusinessProfile  @relation(fields: [businessProfileId], references: [id]) // Business posts jobs
   status            JobStatus        @default(OPEN)
+  jobType           JobType          @default(FULL_TIME)
+  startDate         DateTime?
+  numberOfWorkersRequired Int
   applications      JobApplication[]
   contracts         Contract[]
   createdAt         DateTime         @default(now())
@@ -270,6 +273,14 @@ enum JobStatus {
   COMPLETED
   CANCELLED
   EXPIRED
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERNSHIP
 }
 
 // JOB APPLICATIONS --------------------------------------------
