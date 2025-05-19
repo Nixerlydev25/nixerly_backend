@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "nodemon --exec ts-node src/index.ts --host 0.0.0.0",
     "build": "tsc && node copy.js",
     "start": "npm run build && node dist/index.js",
     "test": "jest --verbose",
