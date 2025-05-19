@@ -23,7 +23,7 @@ workerRouter.get(
 );
 
 workerRouter.patch(
-  ROUTES.USER.UPDATE_WORKER_PROFILE,
+  ROUTES.WORKER_PROFILE.UPDATE_WORKER_PROFILE,
   isAuthorized([Role.WORKER]),
   ValidationMiddleware.bodyValidation(updateWorkerProfileSchema),
   workerController.updateWorkerProfileHandler

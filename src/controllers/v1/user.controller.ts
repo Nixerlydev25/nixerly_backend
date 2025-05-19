@@ -3,7 +3,6 @@ import * as userModel from "../../model/v1/user.model";
 import { ResponseMessages, ResponseStatus } from "../../types/response.enums";
 import { NotFoundError, ValidationError } from "../../utils/errors";
 import OtpService from "../../services/email.service";
-import { ProfileType } from "@prisma/client";
 import { generatePresignedUrl } from "../../services/s3.service";
 import { v4 as uuidv4 } from "uuid";
 
@@ -158,26 +157,6 @@ export const resetPasswordHandler = async (
     });
   } catch (error: any) {
     return next(error);
-  }
-};
-
-export const updateBusinessProfileHandler = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    const { userId } = request.user;
-    const { ...businessProfile } = request.body;
-
-    const updatedUser = await userModel.updateBusinessProfile(
-      userId,
-      businessProfile
-    );
-
-    return response.status(ResponseStatus.OK).json(updatedUser);
-  } catch (error: any) {
-    next(error);
   }
 };
 

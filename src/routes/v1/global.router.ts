@@ -12,6 +12,7 @@ import educationRouter from "./educations.router";
 import experienceRouter from "./experience.router";
 import workerRouter from "./worker.router";
 import jobsRouter from "./jobs.router";
+import businessRouter from "./business.router";
 
 // import subscriptionRouter from "./subscription.router";
 
@@ -44,6 +45,9 @@ Api2.use(ROUTES.API.EDUCATION, educationRouter);
 
 // worker routes
 Api2.use(ROUTES.API.WORKER, workerRouter);
+
+// business routes
+Api2.use(ROUTES.API.BUSINESS, businessRouter);
 
 // jobs routes
 Api2.use(ROUTES.API.JOBS, jobsRouter);

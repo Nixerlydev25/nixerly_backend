@@ -12,6 +12,7 @@ export const ROUTES = {
         EXPERIENCE: '/experience',
         EDUCATION:'/education',
         WORKER: '/worker',
+        BUSINESS: '/business',
         JOBS: '/jobs'
     },
     AUTH: {
@@ -41,8 +42,6 @@ export const ROUTES = {
     },
     USER: {
         CURRENT_USER: '/current-user',
-        UPDATE_WORKER_PROFILE: '/update-worker-profile',
-        UPDATE_BUSINESS_PROFILE: '/update-business-profile',
         UPDATE_USER: '/update-user',
         TOGGLE_FIRST_TIME_LOGIN: '/toggle-first-time-login',
         DELETE_ACCOUNT: '/delete-account',
@@ -60,6 +59,11 @@ export const ROUTES = {
     RESTRICTION: {
         ROOT: '/',
         USER_RESTRICTIONS: '/:user-id'
+    },
+    BUSINESS_PROFILE: {
+        UPDATE_BUSINESS_PROFILE: '/update-business-profile',
+        GET_ALL_BUSINESS_PROFILES: '/get-all-business-profiles',
+        GET_BUSINESS_PROFILE_DETAILS: '/:businessId'
     },
     WROKER_SKILLS: {
         CREATE: '/',
@@ -84,6 +88,7 @@ export const ROUTES = {
     WORKER_PROFILE: {
         GET_ALL: '/get-all-workers-profiles',
         GET_DETAILS: '/:workerId',
+        UPDATE_WORKER_PROFILE: '/update-worker-profile',
     },
     JOBS: {
         CREATE: '/create',

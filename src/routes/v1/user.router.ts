@@ -10,9 +10,7 @@ import {
   getProfilePictureUploadUrl,
   saveProfilePicture,
 } from "../../schema/v1/user.valdiation";
-import { 
-  updateWorkerProfileSchema, 
-  updateBusinessProfileSchema, 
+import {
   updateUserSchema 
 } from "../../schema/v1/auth.validation";
 import { ROUTES } from "../../constants/routes.constants";
@@ -53,13 +51,6 @@ userRouter.post(
   isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN]),
   ValidationMiddleware.bodyValidation(saveProfilePicture),
   userController.saveProfilePictureHandler
-);
-
-userRouter.patch(
-  ROUTES.USER.UPDATE_BUSINESS_PROFILE,
-  isAuthorized([Role.BUSINESS]),
-  ValidationMiddleware.bodyValidation(updateBusinessProfileSchema),
-  userController.updateBusinessProfileHandler
 );
 
 userRouter.patch(

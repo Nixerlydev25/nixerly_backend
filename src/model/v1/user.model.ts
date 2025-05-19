@@ -139,39 +139,6 @@ export const resetPassword = async (userId: string, newPassword: string) => {
   }
 };
 
-export const updateBusinessProfile = async (
-  userId: string,
-  businessProfileData: Record<string, any>
-) => {
-  try {
-    await prisma.businessProfile.update({
-      where: { userId },
-      data: {
-        onboardingStep: businessProfileData.onboardingStep,
-        companyName: businessProfileData.companyName,
-        description: businessProfileData.description,
-        industry: businessProfileData.industry,
-        city: businessProfileData.city,
-        state: businessProfileData.state,
-        country: businessProfileData.country,
-        website: businessProfileData.website,
-        employeeCount: businessProfileData.employeeCount,
-        yearFounded: businessProfileData.yearFounded,
-      },
-    });
-
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: {},
-      include: { businessProfile: true },
-    });
-
-    return updatedUser;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
 export const updateUser = async (
   userId: string,
   userData: {
@@ -255,19 +222,6 @@ export const getBusinessProfileDetails = async (userId: string) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        defaultProfile: true,
-        isVerified: true,
-        firstTimeLogin: true,
-        createdAt: true,
-        updatedAt: true,
-        businessProfile: true,
-      },
     });
     
     return user;
