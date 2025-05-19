@@ -11,7 +11,8 @@ export const ROUTES = {
         SUBSCRIPTION: '/subscription',
         EXPERIENCE: '/experience',
         EDUCATION:'/education',
-        WORKER: '/worker'
+        WORKER: '/worker',
+        JOBS: '/jobs'
     },
     AUTH: {
         SIGNUP: '/sign-up',
@@ -27,7 +28,8 @@ export const ROUTES = {
     LANGUAGE: {
         CREATE: '/create',
         UPDATE: '/update',
-        DELETE: '/delete'
+        DELETE: '/delete',
+        UPDATE_ALL: '/update-all'
     },
     OAUTH: {
         GOOGLE: '/google',
@@ -82,5 +84,12 @@ export const ROUTES = {
     WORKER_PROFILE: {
         GET_ALL: '/get-all-workers-profiles',
         GET_DETAILS: '/:workerId',
+    },
+    JOBS: {
+        CREATE: '/create',
+        GET_ALL: '/get-all-jobs',
+        GET_DETAILS: '/:jobId',
+        UPDATE: '/:jobId',
+        DELETE: '/:jobId'
     }
 } as const;

@@ -56,3 +56,26 @@ export const deleteUserLanguageHandler = async (
     next(error);
   }
 };
+
+export const updateAllUserLanguagesHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { languages } = request.body;
+
+    const updatedLanguages = await userLanguageModel.updateAllUserLanguages(
+      userId,
+      languages
+    );
+    
+    response.status(ResponseStatus.OK).json({
+      message: "Languages updated successfully",
+      count: updatedLanguages.count
+    });
+  } catch (error) {
+    next(error);
+  }
+};
