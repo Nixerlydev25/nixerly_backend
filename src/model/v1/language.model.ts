@@ -101,3 +101,43 @@ export const deleteUserLanguage = async (
     throw new DatabaseError(error.message);
   }
 };
+
+export const updateAllUserLanguages = async (
+  userId: string,
+  languages: { name: Language; proficiency: Proficiency }[]
+) => {
+  try {
+    // Fetch worker profile ID for the user
+    const workerProfile = await prisma.workerProfile.findFirst({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!workerProfile) {
+      throw new DatabaseError("Worker profile not found for this user");
+    }
+
+    const workerId = workerProfile.id;
+
+    // Use a transaction to delete all existing languages and create new ones
+    return await prisma.$transaction(async (tx) => {
+      // Delete all existing languages
+      await tx.workerLanguage.deleteMany({
+        where: { workerId },
+      });
+
+      // Create new languages
+      const createdLanguages = await tx.workerLanguage.createMany({
+        data: languages.map(({ name, proficiency }) => ({
+          workerId,
+          language: name,
+          proficiency,
+        })),
+      });
+
+      return createdLanguages;
+    });
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};

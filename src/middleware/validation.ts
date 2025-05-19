@@ -23,3 +23,14 @@ export const paramValidation =
       next(error);
     }
   };
+
+export const queryValidation =
+  (schema: ZodSchema<any>) =>
+  (request: Request, response: Response, next: NextFunction) => {
+    try {
+      request.query = schema.parse(request.query);
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };

@@ -209,6 +209,10 @@ model Job {
   id                String           @id @default(uuid())
   title             String
   description       String           @db.Text
+  requirements      String           @db.Text  // Job requirements/qualifications
+  employmentType    EmploymentType   @default(FULL_TIME) // Full-time, part-time, etc
+  location          JobLocation?     // Location details
+  numberOfPositions Int              @default(1) // Total applicants required
   budget            Float?
   hourlyRateMin     Float?
   hourlyRateMax     Float?
@@ -221,8 +225,43 @@ model Job {
   updatedAt         DateTime         @updatedAt
   expiresAt         DateTime?
   skills            JobSkill[]       // Job can have multiple skills
+  workAreaImages    JobImage[]       // Images of work facility/area
   
   @@map("jobs")
+}
+
+model JobLocation {
+  id              String    @id @default(uuid())
+  jobId           String    @unique
+  job             Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  street          String?
+  city            String
+  state           String
+  country         String
+  postalCode      String?
+  isRemote        Boolean   @default(false)
+  
+  @@map("job_locations")
+}
+
+model JobImage {
+  id              String    @id @default(uuid())
+  jobId           String
+  job             Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  s3Key           String    // S3 key for the image
+  caption         String?
+  createdAt       DateTime  @default(now())
+
+  @@map("job_images")
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  INTERNSHIP
+  FREELANCE
 }
 
 enum JobStatus {
