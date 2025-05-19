@@ -24,7 +24,7 @@ jobsRouter.get(
 
 jobsRouter.get(
   ROUTES.JOBS.GET_DETAILS,
-  ValidationMiddleware.paramValidation(getJobDetailsSchema),
+  ValidationMiddleware.paramValidation(getJobDetailsSchema, "jobId"),
   jobController.getJobDetailsHandler
 );
 

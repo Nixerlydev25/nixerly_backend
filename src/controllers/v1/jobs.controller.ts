@@ -61,18 +61,13 @@ export const getJobDetailsHandler = async (
 ) => {
   try {
     const { jobId } = request.params;
-    const { userId } = request.user;
     const jobFound = await jobModel.getJobById(jobId);
     if (!jobFound) {
       throw new NotFoundError("Job not found");
     }
     const job = await jobModel.getJobDetails(jobId);
 
-    response.status(ResponseStatus.OK).json({
-      success: true,
-      message: "Job details fetched successfully",
-      data: job,
-    });
+    response.status(ResponseStatus.OK).json(job)
     
   } catch (error) {
     next(error);

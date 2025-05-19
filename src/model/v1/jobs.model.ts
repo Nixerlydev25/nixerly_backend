@@ -167,7 +167,7 @@ export const getJobById = async (jobId: string) => {
 
 export const getJobDetails = async (jobId: string) => {
   try {
-    return await prisma.job.findUnique({
+    const jobDetials =  await prisma.job.findUnique({
       where: { id: jobId },
       include: {
         businessProfile: true,
@@ -175,6 +175,16 @@ export const getJobDetails = async (jobId: string) => {
         workAreaImages: true,
       },
     });
+
+
+    const jobDetails = {
+      ...jobDetials,
+      skills: jobDetials?.skills.map((skill) => skill.skillName),
+      workAreaImages: jobDetials?.workAreaImages.map((image) => image.s3Key),
+    };
+
+    return jobDetails;
+    
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
