@@ -27,6 +27,8 @@ CREATE TABLE `worker_profiles` (
     `description` TEXT NULL,
     `city` VARCHAR(191) NULL,
     `state` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
     `country` VARCHAR(191) NULL,
     `hourlyRate` DOUBLE NULL,
     `availability` BOOLEAN NOT NULL DEFAULT true,
@@ -117,6 +119,9 @@ CREATE TABLE `jobs` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(191) NOT NULL,
     `description` TEXT NOT NULL,
+    `requirements` TEXT NOT NULL,
+    `employmentType` ENUM('FULL_TIME', 'PART_TIME', 'CONTRACT', 'TEMPORARY', 'INTERNSHIP', 'FREELANCE') NOT NULL DEFAULT 'FULL_TIME',
+    `numberOfPositions` INTEGER NOT NULL DEFAULT 1,
     `budget` DOUBLE NULL,
     `hourlyRateMin` DOUBLE NULL,
     `hourlyRateMax` DOUBLE NULL,
@@ -125,6 +130,32 @@ CREATE TABLE `jobs` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `expiresAt` DATETIME(3) NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `job_locations` (
+    `id` VARCHAR(191) NOT NULL,
+    `jobId` VARCHAR(191) NOT NULL,
+    `street` VARCHAR(191) NULL,
+    `city` VARCHAR(191) NOT NULL,
+    `state` VARCHAR(191) NOT NULL,
+    `country` VARCHAR(191) NOT NULL,
+    `postalCode` VARCHAR(191) NULL,
+    `isRemote` BOOLEAN NOT NULL DEFAULT false,
+
+    UNIQUE INDEX `job_locations_jobId_key`(`jobId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `job_images` (
+    `id` VARCHAR(191) NOT NULL,
+    `jobId` VARCHAR(191) NOT NULL,
+    `s3Key` VARCHAR(191) NOT NULL,
+    `caption` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -352,6 +383,12 @@ ALTER TABLE `messages` ADD CONSTRAINT `messages_receiverBusinessId_fkey` FOREIGN
 
 -- AddForeignKey
 ALTER TABLE `jobs` ADD CONSTRAINT `jobs_businessProfileId_fkey` FOREIGN KEY (`businessProfileId`) REFERENCES `business_profiles`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `job_locations` ADD CONSTRAINT `job_locations_jobId_fkey` FOREIGN KEY (`jobId`) REFERENCES `jobs`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `job_images` ADD CONSTRAINT `job_images_jobId_fkey` FOREIGN KEY (`jobId`) REFERENCES `jobs`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `job_applications` ADD CONSTRAINT `job_applications_jobId_fkey` FOREIGN KEY (`jobId`) REFERENCES `jobs`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

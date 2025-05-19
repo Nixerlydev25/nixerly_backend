@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { Role } from "@prisma/client";
-import { createUserLanguageSchema, updateUserLanguageSchema, deleteUserLanguageSchema } from "../../schema/v1/languagues.validation";
+import { 
+  createUserLanguageSchema, 
+  updateUserLanguageSchema, 
+  deleteUserLanguageSchema,
+  updateAllLanguagesSchema
+} from "../../schema/v1/languagues.validation";
 import { ROUTES } from "../../constants/routes.constants";
 import * as userLanguageController from "../../controllers/v1/language.controller";
 import isAuthorized from "../../middleware/isAuthorized";
@@ -27,6 +32,13 @@ userLanguageRouter.delete(
   isAuthorized([Role.WORKER, Role.ADMIN]),
   ValidationMiddleware.bodyValidation(deleteUserLanguageSchema),
   userLanguageController.deleteUserLanguageHandler
+);
+
+userLanguageRouter.put(
+  ROUTES.LANGUAGE.UPDATE_ALL,
+  isAuthorized([Role.WORKER, Role.ADMIN]),
+  ValidationMiddleware.bodyValidation(updateAllLanguagesSchema),
+  userLanguageController.updateAllUserLanguagesHandler
 );
 
 export default userLanguageRouter;
