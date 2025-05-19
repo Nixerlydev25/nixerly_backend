@@ -222,6 +222,7 @@ export const getBusinessProfileDetails = async (userId: string) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      include: { businessProfile: true },
     });
     
     return user;
