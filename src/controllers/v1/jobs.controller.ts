@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ResponseStatus } from "../../types/response.enums";
 import * as jobModel from "../../model/v1/jobs.model";
 import prisma from "../../config/prisma.config";
-import { DatabaseError } from "../../utils/errors";
+import { DatabaseError, NotFoundError } from "../../utils/errors";
 
 export const createJobHandler = async (
   request: Request,
@@ -41,6 +41,7 @@ export const getJobsHandler = async (
   next: NextFunction
 ) => {
   try {
+    console.log("getJobsHandler");
     const filters = request.query;
     const { jobs, pagination } = await jobModel.getJobs(filters as any);
 
@@ -48,6 +49,31 @@ export const getJobsHandler = async (
       ...pagination,
       jobs: jobs,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getJobDetailsHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { jobId } = request.params;
+    const { userId } = request.user;
+    const jobFound = await jobModel.getJobById(jobId);
+    if (!jobFound) {
+      throw new NotFoundError("Job not found");
+    }
+    const job = await jobModel.getJobDetails(jobId);
+
+    response.status(ResponseStatus.OK).json({
+      success: true,
+      message: "Job details fetched successfully",
+      data: job,
+    });
+    
   } catch (error) {
     next(error);
   }

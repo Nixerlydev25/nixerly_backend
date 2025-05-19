@@ -29,10 +29,12 @@ export const createJobSchema = z.object({
 export const getJobsQuerySchema = z.object({
   page: z.string().transform(Number).default("1"),
   limit: z.string().transform(Number).default("10"),
-  sortBy: z.enum(["createdAt", "budget", "hourlyRateMin"]).default("createdAt"),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  sortBy: z.enum(["createdAt", "budget", "hourlyRateMin"]).default("createdAt").optional(),
+  sortOrder: z.enum(["asc", "desc"]).default("desc").optional(),
   search: z.string().optional(),
   minHourlyRate: z.string().transform(Number).optional(),
   maxHourlyRate: z.string().transform(Number).optional(),
   status: z.nativeEnum(JobStatus).optional(),
 });
+
+export const getJobDetailsSchema = z.string().uuid("Invalid job ID")

@@ -154,3 +154,28 @@ export const getJobs = async (
     throw new DatabaseError(error.message);
   }
 };
+
+export const getJobById = async (jobId: string) => {
+  try {
+    return await prisma.job.findUnique({
+      where: { id: jobId },
+    });
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const getJobDetails = async (jobId: string) => {
+  try {
+    return await prisma.job.findUnique({
+      where: { id: jobId },
+      include: {
+        businessProfile: true,
+        skills: true,
+        workAreaImages: true,
+      },
+    });
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
