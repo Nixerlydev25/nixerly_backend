@@ -3,8 +3,6 @@ import * as userModel from "../../model/v1/user.model";
 import { ResponseMessages, ResponseStatus } from "../../types/response.enums";
 import { NotFoundError, ValidationError } from "../../utils/errors";
 import OtpService from "../../services/email.service";
-import { generatePresignedUrl } from "../../services/s3.service";
-import { v4 as uuidv4 } from "uuid";
 
 export const getCurrentUserDetails = async (
   request: Request,
@@ -226,51 +224,6 @@ export const getBusinessProfileDetailsHandler = async (
     }
 
     return response.status(ResponseStatus.OK).json(userDetails);
-  } catch (error: any) {
-    return next(error);
-  }
-};
-
-export const getProfilePictureUploadUrlHandler = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    const { userId } = request.user;
-    const { contentType, fileName } = request.body;
-
-    // Generate a unique key for the S3 object
-    const fileExtension = fileName.split('.').pop();
-    const s3Key = `profile-pictures/${userId}/${uuidv4()}.${fileExtension}`;
-
-    // Generate presigned URL
-    const presignedUrl = await generatePresignedUrl(s3Key, contentType);
-
-    return response.status(ResponseStatus.OK).json({
-      presignedUrl,
-      s3Key,
-    });
-  } catch (error: any) {
-    return next(error);
-  }
-};
-
-export const saveProfilePictureHandler = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    const { userId } = request.user;
-    const { s3Key } = request.body;
-
-    const profilePicture = await userModel.saveProfilePicture(userId, s3Key);
-
-    return response.status(ResponseStatus.OK).json({
-      message: ResponseMessages.Success,
-      profilePicture,
-    });
   } catch (error: any) {
     return next(error);
   }
