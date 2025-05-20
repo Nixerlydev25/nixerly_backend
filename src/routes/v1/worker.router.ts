@@ -7,6 +7,8 @@ import { getWorkerDetailsSchema } from "../../schema/v1/worker.validation";
 
 import { Role } from "@prisma/client";
 import { updateWorkerProfileSchema } from "../../schema/v1/auth.validation";
+import { saveProfilePicture, getProfilePictureUploadUrl } from "../../schema/v1/worker.validation";
+
 const workerRouter = Router();
 
 workerRouter.get(
@@ -27,6 +29,23 @@ workerRouter.patch(
   isAuthorized([Role.WORKER]),
   ValidationMiddleware.bodyValidation(updateWorkerProfileSchema),
   workerController.updateWorkerProfileHandler
+);
+
+
+// GET PROFILE PICTURE UPLOAD URL
+workerRouter.post(
+  ROUTES.WORKER_PROFILE.GET_PROFILE_PICTURE_UPLOAD_URL,
+  isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN]),
+  ValidationMiddleware.bodyValidation(getProfilePictureUploadUrl),
+  workerController.getProfilePictureUploadUrlHandler
+);
+
+// SAVE PROFILE PICTURE
+workerRouter.put(
+  ROUTES.WORKER_PROFILE.SAVE_PROFILE_PICTURE,
+  isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN]),
+  ValidationMiddleware.bodyValidation(saveProfilePicture),
+  workerController.saveProfilePictureHandler
 );
 
 

@@ -4,7 +4,7 @@ import {
 import prisma from "../../config/prisma.config";
 import { hashPassword } from "../../utils";
 import { DatabaseError } from "../../utils/errors";
-import { NotFoundError } from "../../utils/errors";
+import {S3Service} from "../../services/s3.service";
 
 export const updateUserVerificationStatus = async (
   userId: string,
@@ -199,6 +199,8 @@ export const getWorkerProfileDetails = async (userId: string) => {
     }
 
     // Transform the skills to be an array of just skillNames
+    const profilePictureUrl = await S3Service.getObjectUrl(user.workerProfile.profilePicture?.s3Key || "")
+
     const transformedUser = {
       ...user,
       workerProfile: {
@@ -209,6 +211,7 @@ export const getWorkerProfileDetails = async (userId: string) => {
           proficiency: language.proficiency,
           id: language.id,
         })),
+        profilePicture: profilePictureUrl
       },
     };
 
@@ -226,45 +229,6 @@ export const getBusinessProfileDetails = async (userId: string) => {
     });
     
     return user;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const saveProfilePicture = async (userId: string, s3Key: string) => {
-  try {
-    // First, get the worker profile ID
-    const workerProfile = await prisma.workerProfile.findUnique({
-      where: { userId },
-      select: { id: true },
-    });
-
-    if (!workerProfile) {
-      throw new NotFoundError("Worker profile not found");
-    }
-
-    // Check if profile picture already exists
-    const existingProfilePicture = await prisma.profilePicture.findUnique({
-      where: { workerProfileId: workerProfile.id },
-    });
-
-    if (existingProfilePicture) {
-      // Update existing profile picture
-      const updatedProfilePicture = await prisma.profilePicture.update({
-        where: { workerProfileId: workerProfile.id },
-        data: { s3Key },
-      });
-      return updatedProfilePicture;
-    } else {
-      // Create new profile picture
-      const newProfilePicture = await prisma.profilePicture.create({
-        data: {
-          workerProfileId: workerProfile.id,
-          s3Key,
-        },
-      });
-      return newProfilePicture;
-    }
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

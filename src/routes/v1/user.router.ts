@@ -7,8 +7,6 @@ import {
   forgotPassword,
   resetPassword,
   verifyOtp,
-  getProfilePictureUploadUrl,
-  saveProfilePicture,
 } from "../../schema/v1/user.valdiation";
 import {
   updateUserSchema 
@@ -34,23 +32,6 @@ userRouter.get(
   ROUTES.USER.GET_BUSINESS_PROFILE_DETAILS,
   isAuthorized([Role.BUSINESS, Role.ADMIN, Role.SUPER_ADMIN]),
   userController.getBusinessProfileDetailsHandler
-);
-
-
-// GET PROFILE PICTURE UPLOAD URL
-userRouter.post(
-  ROUTES.USER.GET_PROFILE_PICTURE_UPLOAD_URL,
-  isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN]),
-  ValidationMiddleware.bodyValidation(getProfilePictureUploadUrl),
-  userController.getProfilePictureUploadUrlHandler
-);
-
-// SAVE PROFILE PICTURE
-userRouter.post(
-  ROUTES.USER.SAVE_PROFILE_PICTURE,
-  isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN]),
-  ValidationMiddleware.bodyValidation(saveProfilePicture),
-  userController.saveProfilePictureHandler
 );
 
 userRouter.patch(
