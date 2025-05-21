@@ -5,6 +5,7 @@ import { SkillName } from "@prisma/client";
 import { WorkerFilters, SortOption } from "../utils/filters";
 import { v4 as uuidv4 } from 'uuid';
 import {S3Service} from "../services/s3.service";
+import { NotFoundError } from "../utils/errors";
 
 export const getAllWorkers = async (
   request: Request,

@@ -38,3 +38,40 @@ export const updateBusinessProfile = async (
     throw new DatabaseError(error.message);
   }
 };
+
+
+export const getBusinessProfileDetails = async (businessId: string) => {
+  try {
+    const user = await prisma.businessProfile.findUnique({
+      where: { id: businessId },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            defaultProfile: true,
+            email: true,
+          },
+        },
+        jobs: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            requirements: true,
+            employmentType: true,
+            numberOfPositions: true,
+            budget: true,
+            hourlyRateMin: true,
+            hourlyRateMax: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    return user;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};

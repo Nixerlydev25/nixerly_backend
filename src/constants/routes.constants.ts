@@ -61,7 +61,7 @@ export const ROUTES = {
     BUSINESS_PROFILE: {
         UPDATE_BUSINESS_PROFILE: '/update-business-profile',
         GET_ALL_BUSINESS_PROFILES: '/get-all-business-profiles',
-        GET_BUSINESS_PROFILE_DETAILS: '/:businessId'
+        GET_BUSINESS_PROFILE_DETAILS: '/business-profile-details/:businessId',
     },
     WROKER_SKILLS: {
         CREATE: '/',
@@ -88,7 +88,7 @@ export const ROUTES = {
         GET_DETAILS: '/:workerId',
         UPDATE_WORKER_PROFILE: '/update-worker-profile',
         GET_PROFILE_PICTURE_UPLOAD_URL: '/profile-picture-upload-url',
-        SAVE_PROFILE_PICTURE: '/save-profile-picture'
+        SAVE_PROFILE_PICTURE: '/save-profile-picture',
     },
     JOBS: {
         CREATE: '/create',

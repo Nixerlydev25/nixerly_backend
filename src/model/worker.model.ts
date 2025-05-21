@@ -122,7 +122,7 @@ export const updateWorkerProfile = async (
   try {
     // Create the update data object
     const updateData: any = { ...workerProfileData };
-    
+
     // Only include onboardingStep in the update if it's provided
     if (onboardingStep !== undefined) {
       updateData.onboardingStep = onboardingStep;

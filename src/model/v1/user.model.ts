@@ -225,7 +225,29 @@ export const getBusinessProfileDetails = async (userId: string) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { businessProfile: true },
+      select: {
+        email: true,
+        firstName: true,
+        lastName: true,
+        businessProfile: {
+          include: {
+            jobs: {
+              select: {
+                id: true,
+                title: true,
+                description:true,
+                requirements:true,
+                employmentType: true,
+                numberOfPositions: true,
+                budget: true,
+                hourlyRateMin: true,
+                hourlyRateMax: true,
+                status: true,
+              }
+            }, 
+          },
+        }
+      }
     });
     
     return user;
