@@ -199,7 +199,15 @@ export const getWorkerProfileDetails = async (userId: string) => {
     }
 
     // Transform the skills to be an array of just skillNames
-    const profilePictureUrl = await S3Service.getObjectUrl(user.workerProfile.profilePicture?.s3Key || "")
+    let profilePictureUrl = null;
+    if (user.workerProfile.profilePicture?.s3Key) {
+      try {
+        profilePictureUrl = await S3Service.getObjectUrl(user.workerProfile.profilePicture.s3Key);
+      } catch (error) {
+        console.error('Failed to get profile picture URL:', error);
+        // Continue execution even if profile picture URL generation fails
+      }
+    }
 
     const transformedUser = {
       ...user,
