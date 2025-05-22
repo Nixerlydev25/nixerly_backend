@@ -151,6 +151,7 @@ export const getAllBusinessJobs = async (
         expiresAt: true,
         location: true,
         createdAt: true,
+        updatedAt: true,
         _count: {
           select: {
             applications: true,
