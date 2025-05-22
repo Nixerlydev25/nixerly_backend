@@ -133,6 +133,9 @@ export const getAllBusinessJobs = async (
       where,
       skip,
       take: limit,
+      orderBy: {
+        createdAt: 'desc'
+      },
       select: {
         id: true,
         title: true,
@@ -147,11 +150,17 @@ export const getAllBusinessJobs = async (
         numberOfWorkersRequired: true,
         expiresAt: true,
         location: true,
+        createdAt: true,
         _count: {
           select: {
             applications: true,
           },
         },
+        businessProfile: {
+          select: {
+            companyName: true
+          }
+        }
       },
     });
 
@@ -159,6 +168,7 @@ export const getAllBusinessJobs = async (
     const allJobsPostsWithApplications = allJobsPosts.map(job => ({
       ...job,
       totalApplications: job._count.applications,
+      companyName: job.businessProfile.companyName
     }));
 
     const totalPages = Math.ceil(totalCount / limit);

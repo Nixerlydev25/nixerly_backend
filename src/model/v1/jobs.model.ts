@@ -204,7 +204,7 @@ export const getJobDetails = async (jobId: string, userId: string) => {
         businessProfile: true,
         skills: true,
         workAreaImages: true,
-      },
+      }
     });
 
     const hasWorkerApplied = await prisma.jobApplication.findFirst({
