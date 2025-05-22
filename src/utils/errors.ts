@@ -49,3 +49,13 @@ export class NotFoundError extends Error {
     this.name = "NotFoundError";
   }
 }
+
+export class UnauthorizedError extends Error {
+  public statusCode: number;
+
+  constructor(message: string) {
+    super(message);
+    this.statusCode = ResponseStatus.Unauthorized;
+    this.name = "UnauthorizedError";
+  }
+}

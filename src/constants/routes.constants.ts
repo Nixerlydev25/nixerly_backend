@@ -62,6 +62,7 @@ export const ROUTES = {
         UPDATE_BUSINESS_PROFILE: '/update-business-profile',
         GET_ALL_BUSINESS_PROFILES: '/get-all-business-profiles',
         GET_BUSINESS_PROFILE_DETAILS: '/business-profile-details/:businessId',
+        GET_ALL_BUSINESS_JOBS : "/get-all-business-jobs",
     },
     WROKER_SKILLS: {
         CREATE: '/',
@@ -94,8 +95,9 @@ export const ROUTES = {
         CREATE: '/create',
         GET_ALL: '/get-all-jobs',
         GET_DETAILS: '/:jobId',
-        UPDATE: '/:jobId',
-        DELETE: '/:jobId',
-        APPLY: '/apply/:jobId'
+        UPDATE: '/update/:jobId',
+        DELETE: '/delete/:jobId',
+        APPLY: '/apply/:jobId',
+        GET_APPLICANTS_OF_JOB: '/get-applicants-of-job/:jobId'
     }
 } as const;

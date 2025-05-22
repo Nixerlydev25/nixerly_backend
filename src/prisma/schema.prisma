@@ -271,10 +271,7 @@ enum EmploymentType {
 
 enum JobStatus {
   OPEN
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  EXPIRED
+  CLOSED
 }
 
 enum JobType {

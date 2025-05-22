@@ -4,7 +4,14 @@ import { ROUTES } from "../../constants/routes.constants";
 import * as jobController from "../../controllers/v1/jobs.controller";
 import isAuthorized from "../../middleware/isAuthorized";
 import * as ValidationMiddleware from "../../middleware/validation";
-import { applyJobParamSchema, applyJobSchema, createJobSchema, getJobDetailsSchema, getJobsQuerySchema } from "../../schema/v1/jobs.validation";
+import {
+  applyJobParamSchema,
+  applyJobSchema,
+  createJobSchema,
+  getApplicantsOfJobQuerySchema,
+  getJobDetailsSchema,
+  getJobsQuerySchema,
+} from "../../schema/v1/jobs.validation";
 
 const jobsRouter = Router();
 
@@ -36,4 +43,12 @@ jobsRouter.post(
   jobController.applyJobHandler
 );
 
-export default jobsRouter; 
+jobsRouter.get(
+  ROUTES.JOBS.GET_APPLICANTS_OF_JOB,
+  isAuthorized([Role.BUSINESS]),
+  ValidationMiddleware.paramValidation(getJobDetailsSchema, "jobId"),
+  ValidationMiddleware.queryValidation(getApplicantsOfJobQuerySchema),
+  jobController.getApplicantsOfJobHandler
+);
+
+export default jobsRouter;

@@ -8,6 +8,7 @@ import {
 import prisma from "../../config/prisma.config";
 import { DatabaseError } from "../../utils/errors";
 import { ResponseStatus } from "../../types/response.enums";
+import { stat } from "fs";
 
 export const createJob = async (
   businessProfileId: string,
@@ -181,8 +182,6 @@ export const getJobById = async (jobId: string) => {
 
 export const getJobDetails = async (jobId: string, userId: string) => {
   try {
-
-    
     const jobDetials = await prisma.job.findUnique({
       where: { id: jobId },
       include: {
@@ -220,14 +219,6 @@ export const applyJob = async (
   duration: JobApplicationDuration
 ) => {
   try {
-    console.log({
-      jobId,
-      workerId,
-      coverLetter,
-      proposedRate,
-      duration,
-    });
-
     // Check if the worker profile exists
     const workerProfile = await prisma.workerProfile.findUnique({
       where: { userId: workerId },
@@ -263,4 +254,80 @@ export const applyJob = async (
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
+};
+
+export const getApplicantsOfJob = async (
+  jobId: string,
+  filters: {
+    page: number;
+    limit: number;
+  }
+) => {
+  try {
+    const { page, limit } = filters;
+    const skip = (page - 1) * limit;
+
+    const applicants = await prisma.jobApplication.findMany({
+      where: { jobId },
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        workerProfile: {
+          select: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const totalCount = await prisma.jobApplication.count({ where: { jobId } });
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasMore = page < totalPages;
+
+    const totalApplications = await prisma.jobApplication.count({ where: { jobId } });
+    const averageHourlyRate = await prisma.jobApplication.aggregate({
+      where: { jobId },
+      _avg: { proposedRate: true },
+    });
+
+    return {
+      applicants,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage: page,
+        hasMore,
+      },
+      stats: {
+        totalApplications,
+        averageHourlyRateProposed: averageHourlyRate._avg.proposedRate,
+      },
+    };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const checkIfUserOwnsJob = async (userId: string, jobId: string) => {
+  const businessProfile = await prisma.businessProfile.findFirst({
+    where: { userId },
+  });
+
+  if (!businessProfile) {
+    return false;
+  }
+
+  const job = await prisma.job.findFirst({
+    where: { businessProfileId: businessProfile.id, id: jobId },
+  });
+
+  return job ? true : false;
 };

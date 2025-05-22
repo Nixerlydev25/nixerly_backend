@@ -40,7 +40,6 @@ export const updateBusinessProfile = async (
   }
 };
 
-
 export const getBusinessProfileDetails = async (businessId: string) => {
   try {
     const user = await prisma.businessProfile.findUnique({
@@ -72,6 +71,99 @@ export const getBusinessProfileDetails = async (businessId: string) => {
     });
 
     return user;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const getAllBusinessJobs = async (
+  userId: string,
+  filters: {
+    page: number;
+    limit: number;
+    search?: string;
+    status?: "OPEN" | "CLOSED";
+  }
+) => {
+  try {
+    console.log(filters);
+    // Check if the business profile exists
+    const businessProfile = await prisma.businessProfile.findUnique({
+      where: { userId: userId },
+    });
+
+    if (!businessProfile) {
+      throw new DatabaseError("Business Profile Not Found");
+    }
+
+    const { page, limit, search, status } = filters;
+    const skip = (page - 1) * limit;
+
+    // Build the where clause with optional search and status filters
+    const where = {
+      businessProfileId: businessProfile.id,
+      ...(search && {
+        title: {
+          contains: search,
+        },
+      }),
+      ...(status && { status }),
+    };
+
+    // Get total count for pagination
+    const totalCount = await prisma.job.count({ where });
+
+    // Get count for jobs with status OPEN and CLOSED
+    const openJobsCount = await prisma.job.count({
+      where: {
+        businessProfileId: businessProfile.id,
+        status: "OPEN",
+      },
+    });
+
+    const closedJobsCount = await prisma.job.count({
+      where: {
+        businessProfileId: businessProfile.id,
+        status: "CLOSED",
+      },
+    });
+
+    // Get jobs with pagination and optional search and status filters
+    const allJobsPosts = await prisma.job.findMany({
+      where,
+      skip,
+      take: limit,
+      select: {
+        title: true,
+        employmentType: true,
+        numberOfPositions: true,
+        budget: true,
+        hourlyRateMin: true,
+        hourlyRateMax: true,
+        status: true,
+        jobType: true,
+        startDate: true,
+        numberOfWorkersRequired: true,
+        expiresAt: true,
+      },
+    });
+
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasMore = page < totalPages;
+
+    return {
+      allJobsPosts,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage: page,
+        hasMore,
+      },
+      jobStatusCounts: {
+        open: openJobsCount,
+        closed: closedJobsCount,
+      },
+    };
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

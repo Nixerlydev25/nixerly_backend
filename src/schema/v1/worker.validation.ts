@@ -1,3 +1,4 @@
+import { JobStatus } from "@prisma/client";
 import { z } from "zod";
 
 export const getWorkerDetailsSchema = z
@@ -13,4 +14,11 @@ export const getProfilePictureUploadUrl = z.object({
 
 export const saveProfilePicture = z.object({
   s3Key: z.string().min(1, "S3 key is required"),
+});
+
+export const getJobsByBusiness = z.object({
+  page: z.string().transform(Number).default("1"),
+  limit: z.string().transform(Number).default("10"),
+  search: z.string().optional(),
+  status: z.nativeEnum(JobStatus).optional(),
 });

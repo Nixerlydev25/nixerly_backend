@@ -37,6 +37,11 @@ export const getJobsQuerySchema = z.object({
   status: z.nativeEnum(JobStatus).optional(),
 });
 
+export const getApplicantsOfJobQuerySchema = z.object({
+  page: z.string().transform(Number).default("1"),
+  limit: z.string().transform(Number).default("10"),
+});
+
 export const getJobDetailsSchema = z.string().uuid("Invalid job ID")
 
 export const applyJobSchema = z.object({

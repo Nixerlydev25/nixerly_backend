@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, request } from "express";
 import { ResponseStatus } from "../../types/response.enums";
 import * as jobModel from "../../model/v1/jobs.model";
 import prisma from "../../config/prisma.config";
-import { DatabaseError, NotFoundError } from "../../utils/errors";
+import { DatabaseError, NotFoundError, UnauthorizedError } from "../../utils/errors";
 
 export const createJobHandler = async (
   request: Request,
@@ -68,8 +68,7 @@ export const getJobDetailsHandler = async (
     }
     const job = await jobModel.getJobDetails(jobId, userId);
 
-    response.status(ResponseStatus.OK).json(job)
-    
+    response.status(ResponseStatus.OK).json(job);
   } catch (error) {
     next(error);
   }
@@ -91,12 +90,52 @@ export const applyJobHandler = async (
       throw new NotFoundError("Job not found");
     }
 
-    const appliedJob = await jobModel.applyJob(jobId, userId, coverLetter, proposedRate, duration);
+    const appliedJob = await jobModel.applyJob(
+      jobId,
+      userId,
+      coverLetter,
+      proposedRate,
+      duration
+    );
 
     response.status(ResponseStatus.Created).json({
       success: true,
       message: "Job applied successfully",
       data: appliedJob,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getApplicantsOfJobHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { jobId } = request.params;
+    const { userId } = request.user;
+    const filters = request.query;
+    
+    // check if job exists
+    const jobFound = await jobModel.getJobById(jobId);
+    if (!jobFound) {
+      throw new NotFoundError("Job not found");
+    }
+
+    // check if user owns the job
+    const isOwner = await jobModel.checkIfUserOwnsJob(userId, jobId);
+    if (!isOwner) {
+      throw new UnauthorizedError("You are not authorized to view this job");
+    }
+
+    const applicants = await jobModel.getApplicantsOfJob(jobId, filters as any);
+
+    response.status(ResponseStatus.OK).json({
+      success: true,
+      message: "Applicants fetched successfully",
+      data: applicants,
     });
   } catch (error) {
     next(error);

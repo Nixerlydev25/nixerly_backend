@@ -5,7 +5,7 @@ import isAuthorized from "../../middleware/isAuthorized";
 import { updateBusinessProfileSchema } from "../../schema/v1/auth.validation";
 import * as ValidationMiddleware from "../../middleware/validation";
 import * as businessController from "../../controllers/v1/business.controller";
-import { getWorkerDetailsSchema } from "../../schema/v1/worker.validation";
+import { getJobsByBusiness, getWorkerDetailsSchema } from "../../schema/v1/worker.validation";
 const businessRouter = Router();
 
 businessRouter.patch(
@@ -23,5 +23,12 @@ businessRouter.get(
   businessController.getBusinessProfileDetailsHandler
 );
 
+
+businessRouter.get(
+  ROUTES.BUSINESS_PROFILE.GET_ALL_BUSINESS_JOBS,
+  isAuthorized([Role.BUSINESS]),
+  ValidationMiddleware.queryValidation(getJobsByBusiness),
+  businessController.getMyBusinessJobsHandler
+);
 
 export default businessRouter;
