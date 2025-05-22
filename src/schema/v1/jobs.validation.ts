@@ -24,6 +24,13 @@ export const createJobSchema = z.object({
     .datetime("Invalid date format. Please provide a valid ISO date string")
     .optional(),
   numberOfWorkersRequired: z.number().min(1, "Number of workers required is required"),
+  location: z.object({
+    street: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    country: z.string().optional(),
+    postalCode: z.string().optional(),
+  }),
 });
 
 export const getJobsQuerySchema = z.object({

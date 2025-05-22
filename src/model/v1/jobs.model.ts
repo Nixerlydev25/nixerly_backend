@@ -24,6 +24,13 @@ export const createJob = async (
     jobType?: JobType;
     startDate?: Date;
     numberOfWorkersRequired: number;
+    location: {
+      street?: string;
+      city?: string;
+      state?: string;
+      country?: string;
+      postalCode?: string;
+    };
   }
 ): Promise<Job> => {
   try {
@@ -46,6 +53,15 @@ export const createJob = async (
             create: jobData.skills.map((skillName) => ({
               skillName,
             })),
+          },
+          location: {
+            create: {
+              street: jobData.location.street,
+              city: jobData.location.city,
+              state: jobData.location.state,
+              country: jobData.location.country,
+              postalCode: jobData.location.postalCode,
+            },
           },
         },
         include: {

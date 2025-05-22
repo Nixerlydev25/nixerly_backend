@@ -240,9 +240,9 @@ model JobLocation {
   jobId           String    @unique
   job             Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
   street          String?
-  city            String
-  state           String
-  country         String
+  city            String?
+  state           String?
+  country         String?
   postalCode      String?
   isRemote        Boolean   @default(false)
   

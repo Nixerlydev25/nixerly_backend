@@ -134,6 +134,7 @@ export const getAllBusinessJobs = async (
       skip,
       take: limit,
       select: {
+        id: true,
         title: true,
         employmentType: true,
         numberOfPositions: true,
@@ -145,14 +146,26 @@ export const getAllBusinessJobs = async (
         startDate: true,
         numberOfWorkersRequired: true,
         expiresAt: true,
+        location: true,
+        _count: {
+          select: {
+            applications: true,
+          },
+        },
       },
     });
+
+    // Add total applications count to each job post
+    const allJobsPostsWithApplications = allJobsPosts.map(job => ({
+      ...job,
+      totalApplications: job._count.applications,
+    }));
 
     const totalPages = Math.ceil(totalCount / limit);
     const hasMore = page < totalPages;
 
     return {
-      allJobsPosts,
+      allJobsPosts: allJobsPostsWithApplications,
       pagination: {
         totalCount,
         totalPages,
