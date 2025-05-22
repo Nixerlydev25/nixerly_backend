@@ -1,6 +1,13 @@
-import { Job, SkillName, JobStatus, JobType } from "@prisma/client";
+import {
+  Job,
+  SkillName,
+  JobStatus,
+  JobType,
+  JobApplicationDuration,
+} from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { DatabaseError } from "../../utils/errors";
+import { ResponseStatus } from "../../types/response.enums";
 
 export const createJob = async (
   businessProfileId: string,
@@ -62,20 +69,27 @@ export const createJob = async (
   }
 };
 
-export const getJobs = async (
-  filters: {
-    page: number;
-    limit: number;
-    sortBy: "createdAt" | "budget" | "hourlyRateMin";
-    sortOrder: "asc" | "desc";
-    search?: string;
-    minHourlyRate?: number;
-    maxHourlyRate?: number;
-    status?: JobStatus;
-  }
-) => {
+export const getJobs = async (filters: {
+  page: number;
+  limit: number;
+  sortBy: "createdAt" | "budget" | "hourlyRateMin";
+  sortOrder: "asc" | "desc";
+  search?: string;
+  minHourlyRate?: number;
+  maxHourlyRate?: number;
+  status?: JobStatus;
+}) => {
   try {
-    const { page, limit, sortBy, sortOrder, search, minHourlyRate, maxHourlyRate, status } = filters;
+    const {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      search,
+      minHourlyRate,
+      maxHourlyRate,
+      status,
+    } = filters;
     const skip = (page - 1) * limit;
 
     // Build the where clause
@@ -126,16 +140,16 @@ export const getJobs = async (
         },
         skills: {
           select: {
-            skillName: true
-          }
+            skillName: true,
+          },
         },
       },
     });
 
     // Transform the jobs to simplify skills array
-    const transformedJobs = jobs.map(job => ({
+    const transformedJobs = jobs.map((job) => ({
       ...job,
-      skills: job.skills.map(skill => skill.skillName)
+      skills: job.skills.map((skill) => skill.skillName),
     }));
 
     const totalPages = Math.ceil(totalCount / limit);
@@ -165,9 +179,11 @@ export const getJobById = async (jobId: string) => {
   }
 };
 
-export const getJobDetails = async (jobId: string) => {
+export const getJobDetails = async (jobId: string, userId: string) => {
   try {
-    const jobDetials =  await prisma.job.findUnique({
+
+    
+    const jobDetials = await prisma.job.findUnique({
       where: { id: jobId },
       include: {
         businessProfile: true,
@@ -176,15 +192,74 @@ export const getJobDetails = async (jobId: string) => {
       },
     });
 
+    const hasWorkerApplied = await prisma.jobApplication.findFirst({
+      where: {
+        jobId,
+        workerProfileId: userId,
+      },
+    });
 
     const jobDetails = {
+      hasWorkerApplied: hasWorkerApplied ? true : false,
       ...jobDetials,
       skills: jobDetials?.skills.map((skill) => skill.skillName),
       workAreaImages: jobDetials?.workAreaImages.map((image) => image.s3Key),
     };
 
     return jobDetails;
-    
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const applyJob = async (
+  jobId: string,
+  workerId: string,
+  coverLetter: string,
+  proposedRate: number,
+  duration: JobApplicationDuration
+) => {
+  try {
+    console.log({
+      jobId,
+      workerId,
+      coverLetter,
+      proposedRate,
+      duration,
+    });
+
+    // Check if the worker profile exists
+    const workerProfile = await prisma.workerProfile.findUnique({
+      where: { userId: workerId },
+    });
+
+    if (!workerProfile) {
+      throw new DatabaseError("Worker profile not found");
+    }
+
+    const jobApplication = await prisma.jobApplication.findFirst({
+      where: {
+        jobId,
+        workerProfileId: workerProfile.id,
+      },
+    });
+
+    if (jobApplication) {
+      throw new DatabaseError("You have already applied for this job");
+    }
+
+    return await prisma.jobApplication.create({
+      data: {
+        jobId,
+        workerProfileId: workerProfile.id,
+        coverLetter,
+        proposedRate,
+        duration,
+      },
+      include: {
+        job: true,
+      },
+    });
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

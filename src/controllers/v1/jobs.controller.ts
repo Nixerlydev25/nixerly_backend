@@ -61,14 +61,43 @@ export const getJobDetailsHandler = async (
 ) => {
   try {
     const { jobId } = request.params;
+    const { userId } = request.user;
     const jobFound = await jobModel.getJobById(jobId);
     if (!jobFound) {
       throw new NotFoundError("Job not found");
     }
-    const job = await jobModel.getJobDetails(jobId);
+    const job = await jobModel.getJobDetails(jobId, userId);
 
     response.status(ResponseStatus.OK).json(job)
     
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const applyJobHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { jobId } = request.params;
+    const { userId } = request.user;
+    const { coverLetter, proposedRate, duration } = request.body;
+
+    const jobFound = await jobModel.getJobById(jobId);
+
+    if (!jobFound) {
+      throw new NotFoundError("Job not found");
+    }
+
+    const appliedJob = await jobModel.applyJob(jobId, userId, coverLetter, proposedRate, duration);
+
+    response.status(ResponseStatus.Created).json({
+      success: true,
+      message: "Job applied successfully",
+      data: appliedJob,
+    });
   } catch (error) {
     next(error);
   }

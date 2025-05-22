@@ -5,7 +5,7 @@ export class DatabaseError extends Error {
 
   constructor(message: string) {
     super(message);
-    this.statusCode = ResponseStatus.InternalServerError;
+    this.statusCode = ResponseStatus.BadRequest;
     this.name = "DatabaseError";
   }
 }

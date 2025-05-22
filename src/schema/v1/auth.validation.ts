@@ -32,6 +32,7 @@ export const updateWorkerProfileSchema = z.object({
   country: z.string().optional(),
   hourlyRate: z.number().optional(),
   availability: z.boolean().optional(),
+  phoneNumber: z.string().optional(),
 });
 
 export const updateBusinessProfileSchema = z.object({
@@ -45,6 +46,7 @@ export const updateBusinessProfileSchema = z.object({
   website: z.string().optional().nullable(),
   employeeCount: z.number().optional(),
   yearFounded: z.number().optional(),
+  phoneNumber: z.string().optional(),
 });
 
 export const updateUserSchema = z.object({

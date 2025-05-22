@@ -95,6 +95,7 @@ export const ROUTES = {
         GET_ALL: '/get-all-jobs',
         GET_DETAILS: '/:jobId',
         UPDATE: '/:jobId',
-        DELETE: '/:jobId'
+        DELETE: '/:jobId',
+        APPLY: '/apply/:jobId'
     }
 } as const;

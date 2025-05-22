@@ -15,6 +15,7 @@ export const updateBusinessProfile = async (
     website?: string;
     employeeCount?: number;
     yearFounded?: number;
+    phoneNumber?: string;
   }
 ) => {
   try {

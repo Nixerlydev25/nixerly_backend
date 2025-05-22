@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SkillName, JobStatus, JobType } from "@prisma/client";
+import { SkillName, JobStatus, JobType, JobApplicationDuration } from "@prisma/client";
 
 // jobType           JobType          @default(FULL_TIME)
 //   startDate         DateTime?
@@ -38,3 +38,12 @@ export const getJobsQuerySchema = z.object({
 });
 
 export const getJobDetailsSchema = z.string().uuid("Invalid job ID")
+
+export const applyJobSchema = z.object({
+  coverLetter: z.string({ required_error: "Cover letter is required" }),
+  proposedRate: z.number().min(0, "Proposed rate must be greater than 0"),
+  duration: z.nativeEnum(JobApplicationDuration),
+});
+
+
+export const applyJobParamSchema = z.string().uuid("Invalid job ID")

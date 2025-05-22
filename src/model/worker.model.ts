@@ -117,6 +117,7 @@ export const updateWorkerProfile = async (
     country: string;
     hourlyRate: number;
     availability: boolean;
+    phoneNumber: string;
   }
 ) => {
   try {
