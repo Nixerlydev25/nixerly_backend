@@ -41,12 +41,19 @@ export const getJobsHandler = async (
   next: NextFunction
 ) => {
   try {
-    console.log("getJobsHandler");
     const filters = request.query;
-    const { jobs, pagination } = await jobModel.getJobs(filters as any);
+    const { jobs, pagination:{totalCount,
+      totalPages,
+      currentPage,
+      hasMore,} } = await jobModel.getJobs(filters as any);
 
     response.status(ResponseStatus.OK).json({
-      ...pagination,
+      pagination:{
+        totalCount,
+        totalPages,
+        currentPage,
+        hasMore,
+      },
       jobs: jobs,
     });
   } catch (error) {

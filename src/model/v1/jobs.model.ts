@@ -36,7 +36,6 @@ export const createJob = async (
 ): Promise<Job> => {
   try {
     return await prisma.$transaction(async (tx) => {
-
       // Create the job
       const job = await tx.job.create({
         data: {
@@ -98,6 +97,8 @@ export const getJobs = async (filters: {
   minHourlyRate?: number;
   maxHourlyRate?: number;
   status?: JobStatus;
+  budget?: number;
+  skills?: SkillName[];
 }) => {
   try {
     const {
@@ -109,6 +110,8 @@ export const getJobs = async (filters: {
       minHourlyRate,
       maxHourlyRate,
       status,
+      budget,
+      skills,
     } = filters;
     const skip = (page - 1) * limit;
 
@@ -116,55 +119,59 @@ export const getJobs = async (filters: {
     const where = {
       AND: [
         // Search in title and description
-        search
-          ? {
-              OR: [
-                { title: { contains: search, mode: "insensitive" } },
-                { description: { contains: search, mode: "insensitive" } },
-              ],
-            }
-          : {},
+        ...(search
+          ? [
+              {
+                OR: [
+                  { title: { contains: search } },
+                  { description: { contains: search } },
+                ],
+              },
+            ]
+          : []),
         // Hourly rate range
-        minHourlyRate ? { hourlyRateMin: { gte: minHourlyRate } } : {},
-        maxHourlyRate ? { hourlyRateMax: { lte: maxHourlyRate } } : {},
+        ...(minHourlyRate ? [{ hourlyRateMin: { gte: minHourlyRate } }] : []),
+        ...(maxHourlyRate ? [{ hourlyRateMax: { lte: maxHourlyRate } }] : []),
         // Status filter
-        status ? { status } : {},
+        ...(status ? [{ status }] : []),
+        ...(budget ? [{ budget: { gte: budget } }] : []),
+        ...(skills ? [{ skills: { some: { skillName: { in: skills } } } }] : []),
       ],
     };
 
-    // Get total count for pagination
-    const totalCount = await prisma.job.count({ where });
-
-    // Get jobs with business profile details
-    const jobs = await prisma.job.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: {
-        [sortBy]: sortOrder,
-      },
-      include: {
-        businessProfile: {
-          select: {
-            id: true,
-            companyName: true,
-            description: true,
-            industry: true,
-            city: true,
-            state: true,
-            country: true,
-            website: true,
-            employeeCount: true,
-            yearFounded: true,
+    // Use Promise.all to fetch totalCount and jobs concurrently
+    const [totalCount, jobs] = await Promise.all([
+      prisma.job.count({ where }),
+      prisma.job.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        include: {
+          businessProfile: {
+            select: {
+              id: true,
+              companyName: true,
+              description: true,
+              industry: true,
+              city: true,
+              state: true,
+              country: true,
+              website: true,
+              employeeCount: true,
+              yearFounded: true,
+            },
+          },
+          skills: {
+            select: {
+              skillName: true,
+            },
           },
         },
-        skills: {
-          select: {
-            skillName: true,
-          },
-        },
-      },
-    });
+      }),
+    ]);
 
     // Transform the jobs to simplify skills array
     const transformedJobs = jobs.map((job) => ({
@@ -207,7 +214,7 @@ export const getJobDetails = async (jobId: string, userId: string) => {
         businessProfile: true,
         skills: true,
         workAreaImages: true,
-      }
+      },
     });
 
     const hasWorkerApplied = await prisma.jobApplication.findFirst({
@@ -313,7 +320,9 @@ export const getApplicantsOfJob = async (
     const totalPages = Math.ceil(totalCount / limit);
     const hasMore = page < totalPages;
 
-    const totalApplications = await prisma.jobApplication.count({ where: { jobId } });
+    const totalApplications = await prisma.jobApplication.count({
+      where: { jobId },
+    });
     const averageHourlyRate = await prisma.jobApplication.aggregate({
       where: { jobId },
       _avg: { proposedRate: true },
