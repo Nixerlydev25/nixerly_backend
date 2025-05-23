@@ -18,6 +18,7 @@ export const createJob = async (
     budget?: number;
     hourlyRateMin?: number;
     hourlyRateMax?: number;
+    salary?: number;
     skills: SkillName[];
     expiresAt?: Date;
     requirements: string;
@@ -35,6 +36,7 @@ export const createJob = async (
 ): Promise<Job> => {
   try {
     return await prisma.$transaction(async (tx) => {
+
       // Create the job
       const job = await tx.job.create({
         data: {
@@ -47,6 +49,7 @@ export const createJob = async (
           businessProfileId,
           expiresAt: jobData.expiresAt,
           jobType: jobData.jobType,
+          salary: jobData.salary,
           startDate: jobData.startDate,
           numberOfWorkersRequired: jobData.numberOfWorkersRequired,
           skills: {

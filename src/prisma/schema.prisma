@@ -215,13 +215,14 @@ model Job {
   employmentType    EmploymentType   @default(FULL_TIME) // Full-time, part-time, etc
   location          JobLocation?     // Location details
   numberOfPositions Int              @default(1) // Total applicants required
-  budget            Float?
-  hourlyRateMin     Float?
-  hourlyRateMax     Float?
+  budget            Float?           // Used for CONTRACT type jobs
+  hourlyRateMin     Float?          // Used for HOURLY type jobs
+  hourlyRateMax     Float?          // Used for HOURLY type jobs
+  salary            Float?          // Used for SALARY type jobs
   businessProfileId String           // Changed from posterId to businessProfileId
   businessProfile   BusinessProfile  @relation(fields: [businessProfileId], references: [id]) // Business posts jobs
   status            JobStatus        @default(OPEN)
-  jobType           JobType          @default(FULL_TIME)
+  jobType           JobType          @default(HOURLY)
   startDate         DateTime?
   numberOfWorkersRequired Int
   applications      JobApplication[]
@@ -275,11 +276,9 @@ enum JobStatus {
 }
 
 enum JobType {
-  FULL_TIME
-  PART_TIME
+  HOURLY
   CONTRACT
-  TEMPORARY
-  INTERNSHIP
+  SALARY
 }
 
 // JOB APPLICATIONS --------------------------------------------
