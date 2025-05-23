@@ -3,7 +3,6 @@ import {
   SkillName,
   JobStatus,
   JobType,
-  JobApplicationDuration,
 } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { DatabaseError } from "../../utils/errors";
@@ -235,7 +234,7 @@ export const applyJob = async (
   workerId: string,
   coverLetter: string,
   proposedRate: number,
-  duration: JobApplicationDuration
+  availability: string
 ) => {
   try {
     // Check if the worker profile exists
@@ -264,7 +263,7 @@ export const applyJob = async (
         workerProfileId: workerProfile.id,
         coverLetter,
         proposedRate,
-        duration,
+        availability,
       },
       include: {
         job: true,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SkillName, JobStatus, JobType, JobApplicationDuration } from "@prisma/client";
+import { SkillName, JobStatus, JobType } from "@prisma/client";
 
 type JobSchema = {
   jobType: JobType;
@@ -74,7 +74,7 @@ export const getJobDetailsSchema = z.string().uuid("Invalid job ID")
 export const applyJobSchema = z.object({
   coverLetter: z.string({ required_error: "Cover letter is required" }),
   proposedRate: z.number().min(0, "Proposed rate must be greater than 0"),
-  duration: z.nativeEnum(JobApplicationDuration),
+  availability: z.string({ required_error: "Availability is required" }),
 });
 
 
