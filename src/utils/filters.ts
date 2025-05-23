@@ -31,13 +31,11 @@ export function createWorkerFilterClause(filters?: WorkerFilters): Record<string
       {
         title: {
           contains: filters.search,
-          mode: 'insensitive'
         }
       },
       {
         description: {
           contains: filters.search,
-          mode: 'insensitive'
         }
       }
     ];
