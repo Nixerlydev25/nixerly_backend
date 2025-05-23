@@ -82,7 +82,7 @@ export const applyJobHandler = async (
   try {
     const { jobId } = request.params;
     const { userId } = request.user;
-    const { coverLetter, proposedRate, availability } = request.body;
+    const { coverLetter, proposedRate, availability: workerStartDateAvailability, jobDuration: duration } = request.body;
 
     const jobFound = await jobModel.getJobById(jobId);
 
@@ -95,7 +95,8 @@ export const applyJobHandler = async (
       userId,
       coverLetter,
       proposedRate,
-      availability
+      workerStartDateAvailability,
+      duration
     );
 
     response.status(ResponseStatus.Created).json({
