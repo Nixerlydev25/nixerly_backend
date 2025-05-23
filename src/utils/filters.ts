@@ -11,6 +11,7 @@ export interface WorkerFilters {
   maxTotalEarnings?: number;
   minAvgRating?: number;
   maxAvgRating?: number;
+  search?: string;
 }
 
 
@@ -24,6 +25,24 @@ export function createWorkerFilterClause(filters?: WorkerFilters): Record<string
   
   if (!filters) return whereClause;
   
+  // Search filter for title or description
+  if (filters.search) {
+    whereClause.OR = [
+      {
+        title: {
+          contains: filters.search,
+          mode: 'insensitive'
+        }
+      },
+      {
+        description: {
+          contains: filters.search,
+          mode: 'insensitive'
+        }
+      }
+    ];
+  }
+
   // Skills filter
   if (filters.skills && filters.skills.length > 0) {
     whereClause.skills = {
