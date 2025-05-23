@@ -91,7 +91,6 @@ export const createJob = async (
 export const getJobs = async (filters: {
   page: number;
   limit: number;
-  sortBy: "createdAt" | "budget" | "hourlyRateMin";
   sortOrder: "asc" | "desc";
   search?: string;
   minHourlyRate?: number;
@@ -104,7 +103,6 @@ export const getJobs = async (filters: {
     const {
       page,
       limit,
-      sortBy,
       sortOrder,
       search,
       minHourlyRate,
@@ -134,10 +132,15 @@ export const getJobs = async (filters: {
         ...(maxHourlyRate ? [{ hourlyRateMax: { lte: maxHourlyRate } }] : []),
         // Status filter
         ...(status ? [{ status }] : []),
+        // Budget filter for contract jobs
         ...(budget ? [{ budget: { gte: budget } }] : []),
+        // Skills filter
         ...(skills ? [{ skills: { some: { skillName: { in: skills } } } }] : []),
       ],
     };
+
+    console.log("wherea", JSON.stringify(where));
+    console.log("sortOrder", sortOrder);
 
     // Use Promise.all to fetch totalCount and jobs concurrently
     const [totalCount, jobs] = await Promise.all([
@@ -147,7 +150,7 @@ export const getJobs = async (filters: {
         skip,
         take: limit,
         orderBy: {
-          [sortBy]: sortOrder,
+          createdAt: sortOrder,
         },
         include: {
           businessProfile: {
@@ -172,7 +175,7 @@ export const getJobs = async (filters: {
         },
       }),
     ]);
-
+    
     // Transform the jobs to simplify skills array
     const transformedJobs = jobs.map((job) => ({
       ...job,

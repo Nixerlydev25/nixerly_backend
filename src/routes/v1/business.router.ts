@@ -15,14 +15,12 @@ businessRouter.patch(
   businessController.updateBusinessProfileHandler
 );
 
-
 businessRouter.get(
   ROUTES.BUSINESS_PROFILE.GET_BUSINESS_PROFILE_DETAILS,
   isAuthorized([Role.BUSINESS, Role.ADMIN, Role.SUPER_ADMIN , Role.WORKER]),
   ValidationMiddleware.paramValidation(getWorkerDetailsSchema, 'businessId'),
   businessController.getBusinessProfileDetailsHandler
 );
-
 
 businessRouter.get(
   ROUTES.BUSINESS_PROFILE.GET_ALL_BUSINESS_JOBS,

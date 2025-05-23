@@ -83,11 +83,7 @@ export const createJobSchema = z
 export const getJobsQuerySchema = z.object({
   page: z.string().transform(Number).default("1"),
   limit: z.string().transform(Number).default("10"),
-  sortBy: z
-    .enum(["createdAt", "budget", "hourlyRateMin"])
-    .default("createdAt")
-    .optional(),
-  sortOrder: z.enum(["asc", "desc"]).default("desc").optional(),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
   search: z.string().optional(),
   budget: z.string().optional().transform((val) => (val ? parseFloat(val) : undefined)),
   skills: z.array(z.nativeEnum(SkillName)).optional(),
