@@ -27,6 +27,7 @@ export function createWorkerFilterClause(filters?: WorkerFilters): Record<string
   
   // Search filter for title or description
   if (filters.search) {
+    const searchTerm = filters.search.toLowerCase();
     whereClause.OR = [
       {
         title: {
