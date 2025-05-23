@@ -290,7 +290,7 @@ model JobApplication {
   workerProfile     WorkerProfile @relation(fields: [workerProfileId], references: [id]) // Worker applies to jobs
   coverLetter       String    @db.Text
   proposedRate      Float 
-  duration          JobApplicationDuration @default(LESS_THAN_ONE_WEEK)
+  availability      String
   status            ApplicationStatus @default(PENDING)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
