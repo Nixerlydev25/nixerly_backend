@@ -2,10 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import * as WorkerModel from "../model/worker.model";
 import { ResponseMessages, ResponseStatus } from "../types/response.enums";
 import { SkillName } from "@prisma/client";
-import { WorkerFilters, SortOption } from "../utils/filters";
 import { v4 as uuidv4 } from 'uuid';
 import {S3Service} from "../services/s3.service";
-import { NotFoundError } from "../utils/errors";
 
 export const getAllWorkers = async (
   request: Request,
@@ -13,51 +11,27 @@ export const getAllWorkers = async (
   next: NextFunction
 ) => {
   try {
-    const { page, limit, skills, minHourlyRate, maxHourlyRate, minTotalEarnings, maxTotalEarnings, minAvgRating, maxAvgRating, sort } = request.query;
-    console.log(request.query)
-    const pageP = parseInt(page as string, 10) || 1;
-    const limitP = parseInt(limit as string, 10) || 10;
-    const skip = (pageP - 1) * limitP;
+    const filters = request.query;
 
-    // Parse and convert filter parameters
-    const filters: WorkerFilters = {
-      skills: skills ? (skills as string).split(',').map(skill => skill as SkillName) : undefined,
-      minHourlyRate: minHourlyRate ? parseFloat(minHourlyRate as string) : undefined,
-      maxHourlyRate: maxHourlyRate ? parseFloat(maxHourlyRate as string) : undefined,
-      minTotalEarnings: minTotalEarnings ? parseFloat(minTotalEarnings as string) : undefined,
-      maxTotalEarnings: maxTotalEarnings ? parseFloat(maxTotalEarnings as string) : undefined,
-      minAvgRating: minAvgRating ? parseFloat(minAvgRating as string) : undefined,
-      maxAvgRating: maxAvgRating ? parseFloat(maxAvgRating as string) : undefined,
-    };
+    console.log({ filters });
 
-    // Validate sort parameter if provided
-    let sortOption: string | undefined = sort as string;
-    if (sortOption && !Object.values(SortOption).includes(sortOption as SortOption)) {
-      sortOption = undefined; // Use default sorting if invalid sort option
-    }
-
-    const { workers, totalCount } = await WorkerModel.getAllWorkers(
-      skip,
-      limitP,
-      filters,
-      sortOption
+    const { workers, pagination: {totalCount, totalPages, currentPage, hasMore} } = await WorkerModel.getAllWorkers(
+      filters as any,
     );
-
-    const totalPages = Math.ceil(totalCount / limitP);
-    const hasMore = pageP < totalPages;
 
     response.status(ResponseStatus.OK).json({
       data: workers,
-      totalCount,
-      totalPages,
-      currentPage: pageP,
-      hasMore,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage,
+        hasMore,
+      },
       filters: {
         applied: Object.entries(filters)
           .filter(([_, value]) => value !== undefined)
           .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}),
       },
-      sort: sortOption,
     });
   } catch (error) {
     next(error);

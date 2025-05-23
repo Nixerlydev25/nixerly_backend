@@ -1,18 +1,24 @@
-import { OnboardingStepWorkerProfile } from "@prisma/client";
+import { OnboardingStepWorkerProfile, SkillName } from "@prisma/client";
 import { DatabaseError, NotFoundError } from "../utils/errors";
 import prisma from "../config/prisma.config";
 import {
-  WorkerFilters,
   createWorkerFilterClause,
   createWorkerSortClause,
 } from "../utils/filters";
 
-export const getAllWorkers = async (
-  skip: number,
-  limit: number,
-  filters?: WorkerFilters,
-  sortOption?: string
-) => {
+export const getAllWorkers = async (filters: {
+  skills?: SkillName[];
+  page: number;
+  limit: number;
+  sort?: string;
+  search?: string;
+  minHourlyRate?: number;
+  maxHourlyRate?: number;
+  minTotalEarnings?: number;
+  maxTotalEarnings?: number;
+  minAvgRating?: number;
+  maxAvgRating?: number;
+}) => {
   try {
     // Create base where clause with completed onboarding requirement
     const whereClause = {
@@ -21,16 +27,17 @@ export const getAllWorkers = async (
     };
 
     // Create orderBy clause based on sort option
-    console.log({ sortOption });
-    const orderByClause = createWorkerSortClause(sortOption);
+    const orderByClause = createWorkerSortClause(filters?.sort);
 
-    console.log({ orderByClause });
+    console.log({ orderByClause, whereClause });
 
+    const skip = (filters.page - 1) * filters.limit;
+    
     const [workers, totalCount] = await Promise.all([
       prisma.workerProfile.findMany({
         where: whereClause,
         skip,
-        take: limit,
+        take: filters.limit,
         include: {
           user: true,
           skills: {
@@ -55,7 +62,15 @@ export const getAllWorkers = async (
       skills: worker.skills.map((skill) => skill.skillName),
     }));
 
-    return { workers: transformedWorkers, totalCount };
+    return {
+      workers: transformedWorkers,
+      pagination: {
+        totalCount,
+        totalPages: Math.ceil(totalCount / filters.limit),
+        currentPage: filters.page,
+        hasMore: filters.page * filters.limit < totalCount,
+      },
+    };
   } catch (error) {
     console.log(error);
     throw new DatabaseError("Error fetching workers");

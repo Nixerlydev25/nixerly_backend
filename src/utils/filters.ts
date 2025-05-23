@@ -13,14 +13,6 @@ export interface WorkerFilters {
   maxAvgRating?: number;
 }
 
-/**
- * Enum for sorting options
- */
-export enum SortOption {
-  RATING = 'rating',
-  PRICE_LOW_TO_HIGH = 'price_low_to_high',
-  PRICE_HIGH_TO_LOW = 'price_high_to_low',
-}
 
 /**
  * Creates a Prisma-compatible where clause object based on provided filter parameters
@@ -79,11 +71,13 @@ export function createWorkerFilterClause(filters?: WorkerFilters): Record<string
   return whereClause;
 }
 
-/**
- * Creates a Prisma-compatible orderBy object based on the provided sort option
- * @param sortOption The sort option to apply
- * @returns A Prisma-compatible orderBy object
- */
+
+export enum SortOption {
+  RATING = 'rating',
+  PRICE_LOW_TO_HIGH = 'price_low_to_high',
+  PRICE_HIGH_TO_LOW = 'price_high_to_low',
+}
+
 export function createWorkerSortClause(sortOption?: string): Record<string, any> {
   if (!sortOption) {
     // Default sorting by creation date if no sort option provided
