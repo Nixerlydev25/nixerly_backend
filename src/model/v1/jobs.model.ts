@@ -217,10 +217,18 @@ export const getJobDetails = async (jobId: string, userId: string) => {
       },
     });
 
+    const workerProfile = await prisma.workerProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!workerProfile) {
+      throw new DatabaseError("Worker profile not found");
+    }
+
     const hasWorkerApplied = await prisma.jobApplication.findFirst({
       where: {
         jobId,
-        workerProfileId: userId,
+        workerProfileId: workerProfile.id,
       },
     });
 
