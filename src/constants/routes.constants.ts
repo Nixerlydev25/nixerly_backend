@@ -19,15 +19,21 @@ export const ROUTES = {
     ADMIN: {
         BUSINESS: {
             ROOT: '/business',
-            GET_ALL: '/get-all-businesses'
+            GET_ALL: '/get-all-businesses',
+            BLOCK: '/block/:businessId',
+            UNBLOCK: '/unblock/:businessId'
         },
         WORKER: {
             ROOT: '/worker',
-            GET_ALL: '/get-all-workers'
+            GET_ALL: '/get-all-workers',
+            BLOCK: '/block/:workerId',
+            UNBLOCK: '/unblock/:workerId'
         },
         JOB: {  
             ROOT: '/job',
-            GET_ALL: '/get-all-jobs'
+            GET_ALL: '/get-all-jobs',
+            BLOCK: '/block/:jobId',
+            UNBLOCK: '/unblock/:jobId'
         },
         REPORT: {
             ROOT: '/report',
