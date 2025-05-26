@@ -10,64 +10,65 @@ datasource db {
 
 // USERS --------------------------------------------
 model User {
-  id                String           @id @default(uuid())
-  email             String           @unique
-  password          String
-  firstName         String
-  lastName          String
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  isVerified        Boolean          @default(false)
-  isDeleted         Boolean          @default(false)
-  isSuspended       Boolean          @default(false)
-  role              Role             @default(WORKER)
-  provider          OAuthProvider    @default(EMAIL_PASSWORD)
-  defaultProfile    ProfileType      @default(WORKER)
-  otps              Otp[]
-  restrictions      UserRestriction[]
-  firstTimeLogin    Boolean          @default(true)
+  id              String            @id @default(uuid())
+  email           String            @unique
+  password        String
+  firstName       String
+  lastName        String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  isVerified      Boolean           @default(false)
+  isDeleted       Boolean           @default(false)
+  isSuspended     Boolean           @default(false)
+  role            Role              @default(WORKER)
+  provider        OAuthProvider     @default(EMAIL_PASSWORD)
+  defaultProfile  ProfileType       @default(WORKER)
+  otps            Otp[]
+  restrictions    UserRestriction[]
+  firstTimeLogin  Boolean           @default(true)
   // Profile Relations - user can have either worker or business profile, not both
-  workerProfile     WorkerProfile?   @relation("UserWorkerProfile")
-  businessProfile   BusinessProfile? @relation("UserBusinessProfile")
+  workerProfile   WorkerProfile?    @relation("UserWorkerProfile")
+  businessProfile BusinessProfile?  @relation("UserBusinessProfile")
 
   @@map("users")
 }
 
-
 // WORKER PROFILE --------------------------------------------
 model WorkerProfile {
-  id                  String        @id @default(uuid())
-  userId              String        @unique
-  user                User          @relation("UserWorkerProfile", fields: [userId], references: [id], onDelete: Cascade)
-  title               String?       // Professional Title
-  phoneNumber         String?
-  description         String?       @db.Text
-  city                String?
-  state               String?
-  country             String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  skills              WorkerSkill[] // Worker can have multiple skills
-  hourlyRate          Float?
-  experience          Experience[]
-  education           Education[]   // Education moved exclusively to worker profile
-  certificates        Certificate[]
-  portfolio           Project[]
-  languages           WorkerLanguage[]
-  availability        Boolean       @default(true)
-  totalEarnings       Float         @default(0)
-  completedJobs       Int           @default(0)
-  avgRating           Float         @default(0)
-  onboardingStep      OnboardingStepWorkerProfile @default(PERSONAL_INFO)
-  reviewsReceived     Review[]      @relation("WorkerReviews")
-  conversations       Conversation[] @relation("WorkerConversations")
-  jobApplications     JobApplication[] // Worker applies to jobs
-  contracts           Contract[]    @relation("ContractWorker") // Worker's contracts
-  reportsSubmitted    Report[]      @relation("WorkerReporter") // Reports submitted by worker
-  reportsReceived     Report[]      @relation("WorkerReported") // Reports received by worker
-  sentMessages        Message[]     @relation("WorkerSentMessages") // Messages sent by worker
-  receivedMessages    Message[]     @relation("WorkerReceivedMessages") // Messages received by worker
-  profilePicture      ProfilePicture? // One-to-one relation with profile picture
+  id               String                      @id @default(uuid())
+  userId           String                      @unique
+  user             User                        @relation("UserWorkerProfile", fields: [userId], references: [id], onDelete: Cascade)
+  title            String? // Professional Title
+  phoneNumber      String?
+  description      String?                     @db.Text
+  city             String?
+  state            String?
+  country          String?
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime                    @updatedAt
+  skills           WorkerSkill[] // Worker can have multiple skills
+  hourlyRate       Float?
+  experience       Experience[]
+  education        Education[] // Education moved exclusively to worker profile
+  certificates     Certificate[]
+  portfolio        Project[]
+  languages        WorkerLanguage[]
+  availability     Boolean                     @default(true)
+  totalEarnings    Float                       @default(0)
+  completedJobs    Int                         @default(0)
+  avgRating        Float                       @default(0)
+  onboardingStep   OnboardingStepWorkerProfile @default(PERSONAL_INFO)
+  reviewsReceived  Review[]                    @relation("WorkerReviews")
+  conversations    Conversation[]              @relation("WorkerConversations")
+  jobApplications  JobApplication[] // Worker applies to jobs
+  contracts        Contract[]                  @relation("ContractWorker") // Worker's contracts
+  reportsSubmitted Report[]                    @relation("WorkerReporter") // Reports submitted by worker
+  reportsReceived  Report[]                    @relation("WorkerReported") // Reports received by worker
+  sentMessages     Message[]                   @relation("WorkerSentMessages") // Messages sent by worker
+  receivedMessages Message[]                   @relation("WorkerReceivedMessages") // Messages received by worker
+  profilePicture   ProfilePicture? // One-to-one relation with profile picture
+  isBlocked        Boolean                     @default(false)
+
   @@map("worker_profiles")
 }
 
@@ -75,7 +76,7 @@ model ProfilePicture {
   id              String        @id @default(uuid())
   workerProfileId String        @unique
   workerProfile   WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
-  s3Key           String        // S3 key for the profile picture
+  s3Key           String // S3 key for the profile picture
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
@@ -84,31 +85,34 @@ model ProfilePicture {
 
 // BUSINESS PROFILE --------------------------------------------
 model BusinessProfile {
-  id                String        @id @default(uuid())
-  userId            String        @unique
-  user              User          @relation("UserBusinessProfile", fields: [userId], references: [id], onDelete: Cascade)
-  companyName       String?
-  description       String?       @db.Text
-  industry          String?
-  phoneNumber       String?
-  city              String?
-  state             String?
-  country           String?
-  website           String?
-  employeeCount     Int?
-  yearFounded       Int?
-  totalSpent        Float         @default(0)
-  postedJobs        Int           @default(0)
-  onboardingStep    OnboardingStepBusinessProfile @default(COMPANY_INFO)
-  reviewsReceived   Review[]      @relation("BusinessReviews")
-  conversations     Conversation[] @relation("BusinessConversations")
-  jobs              Job[]         // Business posts jobs
-  contracts         Contract[]    @relation("ContractBusiness") // Business's contracts
-  reportsSubmitted  Report[]      @relation("BusinessReporter") // Reports submitted by business
-  reportsReceived   Report[]      @relation("BusinessReported") // Reports received by business
-  sentMessages      Message[]     @relation("BusinessSentMessages") // Messages sent by business
-  receivedMessages  Message[]     @relation("BusinessReceivedMessages") // Messages received by business
-  
+  id               String                        @id @default(uuid())
+  userId           String                        @unique
+  user             User                          @relation("UserBusinessProfile", fields: [userId], references: [id], onDelete: Cascade)
+  companyName      String?
+  description      String?                       @db.Text
+  industry         String?
+  phoneNumber      String?
+  city             String?
+  state            String?
+  country          String?
+  website          String?
+  employeeCount    Int?
+  yearFounded      Int?
+  totalSpent       Float                         @default(0)
+  postedJobs       Int                           @default(0)
+  onboardingStep   OnboardingStepBusinessProfile @default(COMPANY_INFO)
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+  reviewsReceived  Review[]                      @relation("BusinessReviews")
+  conversations    Conversation[]                @relation("BusinessConversations")
+  jobs             Job[] // Business posts jobs
+  contracts        Contract[]                    @relation("ContractBusiness") // Business's contracts
+  reportsSubmitted Report[]                      @relation("BusinessReporter") // Reports submitted by business
+  reportsReceived  Report[]                      @relation("BusinessReported") // Reports received by business
+  sentMessages     Message[]                     @relation("BusinessSentMessages") // Messages sent by business
+  receivedMessages Message[]                     @relation("BusinessReceivedMessages")
+  isBlocked        Boolean                       @default(false)
+
   @@map("business_profiles")
 }
 
@@ -174,89 +178,91 @@ enum OnboardingStepBusinessProfile {
 
 // MESSAGING --------------------------------------------
 model Conversation {
-  id              String           @id @default(uuid())
-  workerProfileId String
-  workerProfile   WorkerProfile    @relation("WorkerConversations", fields: [workerProfileId], references: [id])
+  id                String          @id @default(uuid())
+  workerProfileId   String
+  workerProfile     WorkerProfile   @relation("WorkerConversations", fields: [workerProfileId], references: [id])
   businessProfileId String
-  businessProfile BusinessProfile  @relation("BusinessConversations", fields: [businessProfileId], references: [id])
-  messages        Message[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  businessProfile   BusinessProfile @relation("BusinessConversations", fields: [businessProfileId], references: [id])
+  messages          Message[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   @@unique([workerProfileId, businessProfileId])
   @@map("conversations")
 }
 
 model Message {
-  id              String           @id @default(uuid())
-  conversationId  String
-  conversation    Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderWorkerId  String?
-  senderWorker    WorkerProfile?   @relation("WorkerSentMessages", fields: [senderWorkerId], references: [id])
-  senderBusinessId String?
-  senderBusiness  BusinessProfile? @relation("BusinessSentMessages", fields: [senderBusinessId], references: [id])
-  receiverWorkerId String?
-  receiverWorker  WorkerProfile?   @relation("WorkerReceivedMessages", fields: [receiverWorkerId], references: [id])
+  id                 String           @id @default(uuid())
+  conversationId     String
+  conversation       Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderWorkerId     String?
+  senderWorker       WorkerProfile?   @relation("WorkerSentMessages", fields: [senderWorkerId], references: [id])
+  senderBusinessId   String?
+  senderBusiness     BusinessProfile? @relation("BusinessSentMessages", fields: [senderBusinessId], references: [id])
+  receiverWorkerId   String?
+  receiverWorker     WorkerProfile?   @relation("WorkerReceivedMessages", fields: [receiverWorkerId], references: [id])
   receiverBusinessId String?
-  receiverBusiness BusinessProfile? @relation("BusinessReceivedMessages", fields: [receiverBusinessId], references: [id])
-  content         String           @db.Text
-  isRead          Boolean          @default(false)
-  createdAt       DateTime         @default(now())
+  receiverBusiness   BusinessProfile? @relation("BusinessReceivedMessages", fields: [receiverBusinessId], references: [id])
+  content            String           @db.Text
+  isRead             Boolean          @default(false)
+  createdAt          DateTime         @default(now())
 
   @@map("messages")
 }
 
 // JOBS --------------------------------------------
 model Job {
-  id                String           @id @default(uuid())
-  title             String
-  description       String           @db.Text
-  requirements      String           @db.Text  // Job requirements/qualifications
-  employmentType    EmploymentType   @default(FULL_TIME) // Full-time, part-time, etc
-  location          JobLocation?     // Location details
-  numberOfPositions Int              @default(1) // Total applicants required
-  budget            Float?           // Used for CONTRACT type jobs
-  hourlyRateMin     Float?          // Used for HOURLY type jobs
-  hourlyRateMax     Float?          // Used for HOURLY type jobs
-  salary            Float?          // Used for SALARY type jobs
-  businessProfileId String           // Changed from posterId to businessProfileId
-  businessProfile   BusinessProfile  @relation(fields: [businessProfileId], references: [id]) // Business posts jobs
-  status            JobStatus        @default(OPEN)
-  jobType           JobType          @default(HOURLY)
-  startDate         DateTime?
+  id                      String           @id @default(uuid())
+  title                   String
+  description             String           @db.Text
+  requirements            String           @db.Text // Job requirements/qualifications
+  employmentType          EmploymentType   @default(FULL_TIME) // Full-time, part-time, etc
+  location                JobLocation? // Location details
+  numberOfPositions       Int              @default(1) // Total applicants required
+  budget                  Float? // Used for CONTRACT type jobs
+  hourlyRateMin           Float? // Used for HOURLY type jobs
+  hourlyRateMax           Float? // Used for HOURLY type jobs
+  salary                  Float? // Used for SALARY type jobs
+  businessProfileId       String // Changed from posterId to businessProfileId
+  businessProfile         BusinessProfile  @relation(fields: [businessProfileId], references: [id]) // Business posts jobs
+  status                  JobStatus        @default(OPEN)
+  jobType                 JobType          @default(HOURLY)
+  startDate               DateTime?
   numberOfWorkersRequired Int
-  applications      JobApplication[]
-  contracts         Contract[]
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  expiresAt         DateTime?
-  skills            JobSkill[]       // Job can have multiple skills
-  workAreaImages    JobImage[]       // Images of work facility/area
-  
+  applications            JobApplication[]
+  contracts               Contract[]
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  expiresAt               DateTime?
+  skills                  JobSkill[] // Job can have multiple skills
+  workAreaImages          JobImage[] // Images of work facility/area
+  isBlocked              Boolean          @default(false)
+  reportsReceived         Report[]         @relation("JobReported") // Reports received for this job
+
   @@map("jobs")
 }
 
 model JobLocation {
-  id              String    @id @default(uuid())
-  jobId           String    @unique
-  job             Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  street          String?
-  city            String?
-  state           String?
-  country         String?
-  postalCode      String?
-  isRemote        Boolean   @default(false)
-  
+  id         String  @id @default(uuid())
+  jobId      String  @unique
+  job        Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  street     String?
+  city       String?
+  state      String?
+  country    String?
+  postalCode String?
+  isRemote   Boolean @default(false)
+
   @@map("job_locations")
 }
 
 model JobImage {
-  id              String    @id @default(uuid())
-  jobId           String
-  job             Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  s3Key           String    // S3 key for the image
-  caption         String?
-  createdAt       DateTime  @default(now())
+  id        String   @id @default(uuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  s3Key     String // S3 key for the image
+  caption   String?
+  createdAt DateTime @default(now())
 
   @@map("job_images")
 }
@@ -283,18 +289,18 @@ enum JobType {
 
 // JOB APPLICATIONS --------------------------------------------
 model JobApplication {
-  id                String    @id @default(uuid())
-  jobId             String
-  job               Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  workerProfileId   String    // Changed from workerId
-  workerProfile     WorkerProfile @relation(fields: [workerProfileId], references: [id]) // Worker applies to jobs
-  coverLetter       String    @db.Text
-  proposedRate      Float 
-  workerStartDateAvailability      DateTime
-  status            ApplicationStatus @default(PENDING)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  duration          JobApplicationDuration @default(LESS_THAN_ONE_WEEK)
+  id                          String                 @id @default(uuid())
+  jobId                       String
+  job                         Job                    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  workerProfileId             String // Changed from workerId
+  workerProfile               WorkerProfile          @relation(fields: [workerProfileId], references: [id]) // Worker applies to jobs
+  coverLetter                 String                 @db.Text
+  proposedRate                Float
+  workerStartDateAvailability DateTime
+  status                      ApplicationStatus      @default(PENDING)
+  createdAt                   DateTime               @default(now())
+  updatedAt                   DateTime               @updatedAt
+  duration                    JobApplicationDuration @default(LESS_THAN_ONE_WEEK)
 
   @@map("job_applications")
 }
@@ -319,9 +325,9 @@ model Contract {
   id                String          @id @default(uuid())
   jobId             String
   job               Job             @relation(fields: [jobId], references: [id])
-  workerProfileId   String          // Changed from workerId
+  workerProfileId   String // Changed from workerId
   workerProfile     WorkerProfile   @relation("ContractWorker", fields: [workerProfileId], references: [id])
-  businessProfileId String          // Changed from businessId
+  businessProfileId String // Changed from businessId
   businessProfile   BusinessProfile @relation("ContractBusiness", fields: [businessProfileId], references: [id])
   status            ContractStatus  @default(ACTIVE)
   startDate         DateTime        @default(now())
@@ -344,16 +350,16 @@ enum ContractStatus {
 
 // MILESTONES --------------------------------------------
 model Milestone {
-  id              String    @id @default(uuid())
-  contractId      String
-  contract        Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  title           String
-  description     String    @db.Text
-  amount          Float
-  dueDate         DateTime
-  status          MilestoneStatus @default(PENDING)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id          String          @id @default(uuid())
+  contractId  String
+  contract    Contract        @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  title       String
+  description String          @db.Text
+  amount      Float
+  dueDate     DateTime
+  status      MilestoneStatus @default(PENDING)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@map("milestones")
 }
@@ -366,116 +372,124 @@ enum MilestoneStatus {
 
 // REVIEWS --------------------------------------------
 model Review {
-  id              String           @id @default(uuid())
-  rating          Float
-  comment         String           @db.Text
-  workerProfileId String?
-  workerProfile   WorkerProfile?   @relation("WorkerReviews", fields: [workerProfileId], references: [id])
+  id                String           @id @default(uuid())
+  rating            Float
+  comment           String           @db.Text
+  workerProfileId   String?
+  workerProfile     WorkerProfile?   @relation("WorkerReviews", fields: [workerProfileId], references: [id])
   businessProfileId String?
-  businessProfile BusinessProfile? @relation("BusinessReviews", fields: [businessProfileId], references: [id])
-  contractId      String
-  createdAt       DateTime         @default(now())
+  businessProfile   BusinessProfile? @relation("BusinessReviews", fields: [businessProfileId], references: [id])
+  contractId        String
+  createdAt         DateTime         @default(now())
 
   @@map("reviews")
 }
 
-// REPORTS --------------------------------------------
+enum ReportType {
+  HARASSMENT
+  SPAM
+  INAPPROPRIATE_CONTENT
+  FRAUD
+  FAKE_PROFILE
+  HATE_SPEECH
+  VIOLENCE
+  INTELLECTUAL_PROPERTY
+  IMPERSONATION
+  OTHER
+}
+
 model Report {
-  id                  String       @id @default(uuid())
-  reporterWorkerId    String?
-  reporterWorker      WorkerProfile? @relation("WorkerReporter", fields: [reporterWorkerId], references: [id])
-  reporterBusinessId  String?
-  reporterBusiness    BusinessProfile? @relation("BusinessReporter", fields: [reporterBusinessId], references: [id])
-  reportedWorkerId    String?
-  reportedWorker      WorkerProfile? @relation("WorkerReported", fields: [reportedWorkerId], references: [id])
-  reportedBusinessId  String?
-  reportedBusiness    BusinessProfile? @relation("BusinessReported", fields: [reportedBusinessId], references: [id])
-  reason              String       @db.Text
-  status              ReportStatus @default(PENDING)
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+  id                 String           @id @default(uuid())
+  reporterWorkerId   String?
+  reporterWorker     WorkerProfile?   @relation("WorkerReporter", fields: [reporterWorkerId], references: [id])
+  reporterBusinessId String?
+  reporterBusiness   BusinessProfile? @relation("BusinessReporter", fields: [reporterBusinessId], references: [id])
+  reportedWorkerId   String?
+  reportedWorker     WorkerProfile?   @relation("WorkerReported", fields: [reportedWorkerId], references: [id])
+  reportedBusinessId String?
+  reportedBusiness   BusinessProfile? @relation("BusinessReported", fields: [reportedBusinessId], references: [id])
+  reportedJobId      String?
+  reportedJob        Job?             @relation("JobReported", fields: [reportedJobId], references: [id])
+  
+  reason             String           @db.Text
+  reportType         ReportType       @default(OTHER)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   @@map("reports")
 }
 
-enum ReportStatus {
-  PENDING
-  UNDER_REVIEW
-  RESOLVED
-  REJECTED
-}
-
 // WORKER PORTFOLIO & EXPERIENCE --------------------------------------------
 model Project {
-  id              String        @id @default(uuid())
-  workerId        String
-  workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
-  title           String
-  description     String        @db.Text
-  completionDate  DateTime
-  projectUrl      String?
-  assets          Asset[]       // Relation to project images
-  createdAt       DateTime      @default(now())
+  id             String        @id @default(uuid())
+  workerId       String
+  workerProfile  WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  title          String
+  description    String        @db.Text
+  completionDate DateTime
+  projectUrl     String?
+  assets         Asset[] // Relation to project images
+  createdAt      DateTime      @default(now())
 
   @@map("projects")
 }
 
 model Experience {
-  id              String        @id @default(uuid())
-  workerId        String
-  workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
-  title           String
-  company         String
-  country         String?
-  city            String?
-  state           String?
-  startDate       DateTime
-  endDate         DateTime?
-  currentlyWorking Boolean @default(false)
-  description     String        @db.Text
+  id               String        @id @default(uuid())
+  workerId         String
+  workerProfile    WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  title            String
+  company          String
+  country          String?
+  city             String?
+  state            String?
+  startDate        DateTime
+  endDate          DateTime?
+  currentlyWorking Boolean       @default(false)
+  description      String        @db.Text
 
   @@map("experiences")
 }
 
 model Education {
-  id              String        @id @default(uuid())
-  workerId        String
-  workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
-  school          String
-  degree          String
-  fieldOfStudy    String
-  startDate       DateTime
-  currentlyStudying Boolean @default(false)
-  endDate         DateTime?
-  description     String?       @db.Text
+  id                String        @id @default(uuid())
+  workerId          String
+  workerProfile     WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  school            String
+  degree            String
+  fieldOfStudy      String
+  startDate         DateTime
+  currentlyStudying Boolean       @default(false)
+  endDate           DateTime?
+  description       String?       @db.Text
 
   @@map("education")
 }
 
 model Certificate {
-  id              String        @id @default(uuid())
-  workerId        String
-  workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
-  name            String
-  issuingOrg      String
-  issueDate       DateTime
-  expiryDate      DateTime?
-  credentialUrl   String?
-  assets          Asset[]       // Relation to certificate images
+  id            String        @id @default(uuid())
+  workerId      String
+  workerProfile WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  name          String
+  issuingOrg    String
+  issueDate     DateTime
+  expiryDate    DateTime?
+  credentialUrl String?
+  assets        Asset[] // Relation to certificate images
 
   @@map("certificates")
 }
 
 // ASSETS --------------------------------------------
 model Asset {
-  id              String        @id @default(uuid())
-  key             String        // S3 key for the image
-  mediaType       String        // Type of media (e.g., "image/jpeg", "image/png", "application/pdf")
-  projectId       String?       // Optional relation to Project
-  project         Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  certificateId   String?       // Optional relation to Certificate
-  certificate     Certificate?  @relation(fields: [certificateId], references: [id], onDelete: Cascade)
-  createdAt       DateTime      @default(now())
+  id            String       @id @default(uuid())
+  key           String // S3 key for the image
+  mediaType     String // Type of media (e.g., "image/jpeg", "image/png", "application/pdf")
+  projectId     String? // Optional relation to Project
+  project       Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  certificateId String? // Optional relation to Certificate
+  certificate   Certificate? @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
 
   @@map("assets")
 }
@@ -517,11 +531,11 @@ enum Language {
 }
 
 model WorkerLanguage {
-  id              String          @id @default(uuid())
-  workerId        String
-  workerProfile   WorkerProfile   @relation(fields: [workerId], references: [id], onDelete: Cascade)
-  language        Language
-  proficiency     Proficiency
+  id            String        @id @default(uuid())
+  workerId      String
+  workerProfile WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  language      Language
+  proficiency   Proficiency
 
   @@unique([workerId, language])
   @@map("worker_languages")
@@ -536,34 +550,34 @@ enum Proficiency {
 
 // OTP MODEL --------------------------------------------
 model Otp {
-  id         String   @id @default(uuid())
-  otp        Int
-  createdAt  DateTime @default(now())
-  isExpired  Boolean  @default(false)
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  otp       Int
+  createdAt DateTime @default(now())
+  isExpired Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("otps")
 }
 
 // SKILLS --------------------------------------------
 model WorkerSkill {
-  id              String          @id @default(uuid())
-  workerId        String
-  workerProfile   WorkerProfile   @relation(fields: [workerId], references: [id], onDelete: Cascade)
-  skillName       SkillName
-  createdAt       DateTime        @default(now())
+  id            String        @id @default(uuid())
+  workerId      String
+  workerProfile WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  skillName     SkillName
+  createdAt     DateTime      @default(now())
 
   @@unique([workerId, skillName])
   @@map("worker_skills")
 }
 
 model JobSkill {
-  id              String          @id @default(uuid())
-  jobId           String
-  job             Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  skillName       SkillName
-  createdAt       DateTime        @default(now())
+  id        String    @id @default(uuid())
+  jobId     String
+  job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skillName SkillName
+  createdAt DateTime  @default(now())
 
   @@unique([jobId, skillName])
   @@map("job_skills")
@@ -576,153 +590,153 @@ enum SkillName {
   FIXTURE_INSTALLATION
   WATER_HEATER_SERVICE
   LEAK_REPAIR
-  
+
   // Electrical
   WIRING_INSTALLATION
   LIGHTING_INSTALLATION
   ELECTRICAL_REPAIR
   PANEL_UPGRADES
   GENERATOR_INSTALLATION
-  
+
   // Carpentry
   CABINET_MAKING
   FRAMING
   FINISH_CARPENTRY
   DOOR_INSTALLATION
   WINDOW_INSTALLATION
-  
+
   // HVAC
   AC_INSTALLATION
   HEATING_REPAIR
   VENTILATION_WORK
   DUCT_CLEANING
   SYSTEM_MAINTENANCE
-  
+
   // Painting
   INTERIOR_PAINTING
   EXTERIOR_PAINTING
   WALLPAPER_INSTALLATION
   STAINING
   PAINT_REMOVAL
-  
+
   // Landscaping
   LAWN_MAINTENANCE
   TREE_TRIMMING
   GARDEN_DESIGN
   IRRIGATION_INSTALLATION
   HARDSCAPING
-  
+
   // Cleaning
   DEEP_CLEANING
   WINDOW_CLEANING
   CARPET_CLEANING
   PRESSURE_WASHING
   SANITIZATION
-  
+
   // Moving
   FURNITURE_MOVING
   PACKING_SERVICES
   HEAVY_LIFTING
   EQUIPMENT_TRANSPORTATION
   LOGISTICS_PLANNING
-  
+
   // Automotive
   ENGINE_REPAIR
   BRAKE_SERVICE
   TRANSMISSION_REPAIR
   AUTO_ELECTRICAL
   BODY_WORK
-  
+
   // Roofing
   ROOF_INSTALLATION
   SHINGLE_REPAIR
   LEAK_DETECTION
   GUTTER_INSTALLATION
   ROOF_INSPECTION
-  
+
   // Masonry
   BRICK_LAYING
   STONE_WORK
   CONCRETE_POURING
   FOUNDATION_REPAIR
   TUCKPOINTING
-  
+
   // Welding
   ARC_WELDING
   MIG_WELDING
   TIG_WELDING
   PIPE_WELDING
   STRUCTURAL_WELDING
-  
+
   // Flooring
   TILE_INSTALLATION
   HARDWOOD_FLOORING
   CARPET_INSTALLATION
   VINYL_FLOORING
   FLOOR_REFINISHING
-  
+
   // Pest Control
   INSECT_EXTERMINATION
   RODENT_CONTROL
   TERMITE_TREATMENT
   WILDLIFE_REMOVAL
   PREVENTATIVE_TREATMENTS
-  
+
   // Appliance Repair
   REFRIGERATOR_REPAIR
   WASHER_DRYER_SERVICE
   DISHWASHER_REPAIR
   OVEN_REPAIR
   MICROWAVE_SERVICE
-  
+
   // General Maintenance
   HANDYMAN_SERVICES
   PROPERTY_MAINTENANCE
   PREVENTATIVE_MAINTENANCE
   EQUIPMENT_SERVICING
   FACILITY_UPKEEP
-  
+
   // Management
   SUPERVISOR
   CONSTRUCTION_MANAGER
   PROJECT_MANAGEMENT
   TEAM_LEADERSHIP
   RESOURCE_PLANNING
-  
+
   // Inspection
   BUILDING_INSPECTION
   SAFETY_INSPECTION
   QUALITY_CONTROL
   CODE_COMPLIANCE
   STRUCTURAL_ASSESSMENT
-  
+
   // Technician
   INSTRUMENT_TECHNICIAN
   MAINTENANCE_TECHNICIAN
   ELECTRONICS_TECHNICIAN
   CALIBRATION_SPECIALIST
   EQUIPMENT_DIAGNOSTICS
-  
+
   // Fabrication
   PIPEFITTING
   METAL_FABRICATION
   WELDING_ASSEMBLY
   STRUCTURAL_FABRICATION
   CUSTOM_FABRICATION
-  
+
   // Maintenance
   EQUIPMENT_REPAIR
   MECHANICAL_OVERHAUL
   PLANT_MAINTENANCE
   PREVENTIVE_MAINTENANCE
-  
+
   // Groundworks
   EXCAVATION
   TRENCHING
   SITE_CLEARANCE
   LAND_GRADING
   DEWATERING
-  
+
   // Rigging
   CRANE_OPERATION
   SLINGING
