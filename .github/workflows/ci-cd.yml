@@ -92,7 +92,6 @@ jobs:
               -e STRIPE_SECRET_KEY=${{secrets.STRIPE_SECRET_KEY}} \
               -e STRIPE_WEBHOOK_SECRET=${{secrets.STRIPE_WEBHOOK_SECRET}} \
               -e STRIPE_PUBLISHABLE_KEY=${{secrets.STRIPE_PUBLISHABLE_KEY}} \
-              -e OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}} \
               -e AWS_REGION=us-east-1 \
               -e CLIENT_SERVER=https://stage.nixerly.com \
               -e COOKIE_CLIENT=.nixerly.com \
