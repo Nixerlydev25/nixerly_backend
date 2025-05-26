@@ -1,0 +1,100 @@
+name: nixerly Server CI/CD
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'server/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd server
+          npm ci
+
+      - name: Run database migrations
+        env:
+          NODE_ENV: production
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          cd server/src
+          npx prisma migrate deploy
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSHUB_PASS }}
+
+      - name: Build Docker image
+        run: |
+          docker build ./server -f ./server/Dockerfile \
+            -t ${{ secrets.ORG_NAME }}/nixerly-server:latest
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.ORG_NAME }}/nixerly-server:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH to EC2 and deploy
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.EC2_HOST_IP }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            # Login to Docker Hub
+            echo ${{ secrets.DOCKERHUB_PASSHUB_PASS }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+            
+            # Pull latest image
+            docker pull ${{ secrets.ORG_NAME }}/nixerly-server:latest
+            
+            # Stop and remove existing container
+            docker stop nixerly-server || true
+            docker rm nixerly-server || true
+            
+            # Clean up unused images
+            docker image prune -f
+            
+            # Run new container with environment variables
+            docker run -d \
+              -p 4000:4000 \
+              --name nixerly-server \
+              --restart unless-stopped \
+              -e NODE_ENV=production \
+              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
+              -e PORT=4000 \
+              -e STRIPE_BASIC_MONTHLY_PRICE_ID=${{secrets.STRIPE_BASIC_MONTHLY_PRICE_ID}} \
+              -e STRIPE_BASIC_YEARLY_PRICE_ID=${{secrets.STRIPE_BASIC_YEARLY_PRICE_ID}} \
+              -e STRIPE_PREMIUM_MONTHLY_PRICE_ID=${{secrets.STRIPE_PREMIUM_MONTHLY_PRICE_ID}} \
+              -e STRIPE_PREMIUM_YEARLY_PRICE_ID=${{secrets.STRIPE_PREMIUM_YEARLY_PRICE_ID}} \
+              -e STRIPE_SECRET_KEY=${{secrets.STRIPE_SECRET_KEY}} \
+              -e STRIPE_WEBHOOK_SECRET=${{secrets.STRIPE_WEBHOOK_SECRET}} \
+              -e STRIPE_PUBLISHABLE_KEY=${{secrets.STRIPE_PUBLISHABLE_KEY}} \
+              -e OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}} \
+              -e AWS_REGION=us-east-1 \
+              -e CLIENT_SERVER=https://stage.nixerly.com \
+              -e COOKIE_CLIENT=.nixerly.com \
+              -e SALT=${{ secrets.SALT }} \
+              ${{ secrets.ORG_NAME }}/nixerly-server:latest 
