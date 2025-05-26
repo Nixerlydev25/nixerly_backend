@@ -13,7 +13,26 @@ export const ROUTES = {
         EDUCATION:'/education',
         WORKER: '/worker',
         BUSINESS: '/business',
-        JOBS: '/jobs'
+        JOBS: '/jobs',
+        ADMIN: '/admin'
+    },
+    ADMIN: {
+        BUSINESS: {
+            ROOT: '/business',
+            GET_ALL: '/get-all-businesses'
+        },
+        WORKER: {
+            ROOT: '/worker',
+            GET_ALL: '/get-all-workers'
+        },
+        JOB: {  
+            ROOT: '/job',
+            GET_ALL: '/get-all-jobs'
+        },
+        REPORT: {
+            ROOT: '/report',
+            GET_ALL: '/get-all-reports'
+        }
     },
     AUTH: {
         SIGNUP: '/sign-up',

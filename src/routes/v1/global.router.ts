@@ -13,6 +13,7 @@ import experienceRouter from "./experience.router";
 import workerRouter from "./worker.router";
 import jobsRouter from "./jobs.router";
 import businessRouter from "./business.router";
+import adminRouter from "./admin/admin.router";
 
 // import subscriptionRouter from "./subscription.router";
 
@@ -57,6 +58,9 @@ Api2.use(ROUTES.API.USER, userRouter);
 // health route for server status
 //TODO : unit test.
 Api2.use(ROUTES.API.HEALTH, healthRouter);
+
+// admin routes
+Api2.use(ROUTES.API.ADMIN, adminRouter);
 
 // subscription routes
 // Api2.use(ROUTES.API.SUBSCRIPTION, subscriptionRouter);
