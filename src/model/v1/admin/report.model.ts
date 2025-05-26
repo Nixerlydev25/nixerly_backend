@@ -1,18 +1,29 @@
-import { BlockType } from '@prisma/client';
+import { ReportType } from '@prisma/client';
 import prisma from '../../../config/prisma.config';
 import { DatabaseError } from '../../../utils/errors';
 
 export const getAllReports = async (filters: any) => {
   try {
-    const { page, limit, search, status, country } = filters;
+    const { page, limit, search, reportType } = filters;
     const skip = (page - 1) * limit;
     const reports = await prisma.report.findMany({
-      where: filters,
+      where: {
+        ...(reportType && { reportType }),
+      },
+      include: {
+        reporterWorker: true,
+        reporterBusiness: true,
+        reportedWorker: true,
+        reportedBusiness: true,
+        reportedJob: true
+      },
       skip,
       take: limit,
     });
     const totalCount = await prisma.report.count({
-      where: filters,
+      where: {
+        ...(reportType && { reportType }),
+      },
     });
     const totalPages = Math.ceil(totalCount / filters.limit);
     const currentPage = parseInt(filters.page);
@@ -40,8 +51,7 @@ export const getReportById = async (id: string) => {
         reporterWorker: true,
         reportedBusiness: true,
         reportedWorker: true,
-        reportedJob: true,
-        blocks: true,
+        reportedJob: true
       },
     });
     return report;
@@ -50,13 +60,22 @@ export const getReportById = async (id: string) => {
   }
 };
 
-export const blockUserByReport = async (reportId: string, reason: string) => {
+export const blockUserByReport = async (reportId: string) => {
   try {
     const report = await prisma.report.findUnique({
       where: { id: reportId },
       include: {
-        reportedWorker: true,
-        reportedBusiness: true
+        reportedWorker: {
+          include: {
+            user: true
+          }
+        },
+        reportedBusiness: {
+          include: {
+            user: true
+          }
+        },
+        reportedJob: true
       }
     });
 
@@ -64,50 +83,138 @@ export const blockUserByReport = async (reportId: string, reason: string) => {
       throw new DatabaseError('Report not found');
     }
 
-    let blockType;
-    let userId;
-    let workerId;
-    let businessId;
-
     if (report.reportedWorker) {
-      blockType = BlockType.WORKER;
-      userId = report.reportedWorker.userId;
-      workerId = report.reportedWorkerId;
+      // Block worker profile
+      const updatedWorker = await prisma.workerProfile.update({
+        where: { id: report.reportedWorkerId! },
+        data: {
+          isBlocked: true
+        }
+      });
+
+      // Block associated user
+      await prisma.user.update({
+        where: { id: report.reportedWorker.userId },
+        data: {
+          isSuspended: true
+        }
+      });
+
+      return updatedWorker;
+
     } else if (report.reportedBusiness) {
-      blockType = BlockType.BUSINESS; 
-      userId = report.reportedBusiness.userId;
-      businessId = report.reportedBusinessId;
-    } else {
-      throw new DatabaseError('No valid user found to block');
+      // Block business profile
+      const updatedBusiness = await prisma.businessProfile.update({
+        where: { id: report.reportedBusinessId! },
+        data: {
+          isBlocked: true
+        }
+      });
+
+      // Block associated user
+      await prisma.user.update({
+        where: { id: report.reportedBusiness.userId },
+        data: {
+          isSuspended: true
+        }
+      });
+
+      return updatedBusiness;
+
+    } else if (report.reportedJob) {
+      // Block job
+      const updatedJob = await prisma.job.update({
+        where: { id: report.reportedJobId! },
+        data: {
+          isBlocked: true
+        }
+      });
+
+      return updatedJob;
     }
 
-    const block = await prisma.block.create({
-      data: {
-        reportId,
-        reason,
-        blockedBy: 'admin',
-        isActive: true,
-        blockType,
-        userId,
-        ...(workerId && { workerId }),
-        ...(businessId && { businessId })
-      },
+    throw new DatabaseError('No valid entity found to block');
+
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const unblockUserByReport = async (reportId: string) => {
+  try {
+    const report = await prisma.report.findUnique({
+      where: { id: reportId },
       include: {
-        report: true,
-        worker: {
+        reportedWorker: {
           include: {
             user: true
           }
         },
-        business: {
+        reportedBusiness: {
           include: {
             user: true
           }
-        }
-      },
+        },
+        reportedJob: true
+      }
     });
 
-    return block;
+    if (!report) {
+      throw new DatabaseError('Report not found');
+    }
+    
+    if (report.reportedWorker) {
+      // Unblock worker profile
+      const updatedWorker = await prisma.workerProfile.update({
+        where: { id: report.reportedWorkerId! },
+        data: {
+          isBlocked: false
+        }
+      });
+
+      // Unblock associated user
+      await prisma.user.update({
+        where: { id: report.reportedWorker.userId },
+        data: {
+          isSuspended: false
+        }
+      });
+
+      return updatedWorker;
+
+    } else if (report.reportedBusiness) {
+      // Unblock business profile
+      const updatedBusiness = await prisma.businessProfile.update({
+        where: { id: report.reportedBusinessId! },
+        data: {
+          isBlocked: false
+        }
+      });
+
+      // Unblock associated user
+      await prisma.user.update({
+        where: { id: report.reportedBusiness.userId },
+        data: {
+          isSuspended: false
+        }
+      });
+
+      return updatedBusiness;
+
+    } else if (report.reportedJob) {
+      // Unblock job
+      const updatedJob = await prisma.job.update({
+        where: { id: report.reportedJobId! },
+        data: {
+          isBlocked: false
+        }
+      });
+
+      return updatedJob;
+    }
+
+    throw new DatabaseError('No valid entity found to unblock');
+    
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

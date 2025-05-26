@@ -1,6 +1,6 @@
 import prisma from '../../../config/prisma.config';
 import { DatabaseError } from '../../../utils/errors';
-import { Prisma, BlockType, ReportType } from '@prisma/client';
+import { Prisma, ReportType } from '@prisma/client';
 
 export const getAllBusinesses = async (filters: {
   page: number;
@@ -15,20 +15,7 @@ export const getAllBusinesses = async (filters: {
     const skip = (page - 1) * limit;
 
     const where = {
-      blocks:
-        status === 'BLOCKED'
-          ? {
-              some: {
-                isActive: true,
-              },
-            }
-          : status === 'ACTIVE'
-          ? {
-              none: {
-                isActive: true,
-              },
-            }
-          : undefined,
+      isBlocked: status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
       ...(search && {
         OR: [
           { companyName: { contains: search, mode: 'insensitive' } },
@@ -53,21 +40,13 @@ export const getAllBusinesses = async (filters: {
     // Get count for businesses with status ACTIVE and BLOCKED
     const activeBusinessCount = await prisma.businessProfile.count({
       where: {
-        blocks: {
-          none: {
-            isActive: true,
-          },
-        },
+        isBlocked: false
       },
     });
 
     const blockedBusinessCount = await prisma.businessProfile.count({
       where: {
-        blocks: {
-          some: {
-            isActive: true,
-          },
-        },
+        isBlocked: true
       },
     });
 
@@ -93,6 +72,7 @@ export const getAllBusinesses = async (filters: {
         phoneNumber: true,
         createdAt: true,
         updatedAt: true,
+        isBlocked: true,
         user: {
           select: {
             id: true,
@@ -100,25 +80,6 @@ export const getAllBusinesses = async (filters: {
             lastName: true,
             email: true,
             defaultProfile: true,
-          },
-        },
-        blocks: {
-          where: {
-            isActive: true,
-          },
-          select: {
-            id: true,
-            reason: true,
-            blockedBy: true,
-            blockedAt: true,
-            isActive: true,
-            reportType: true,
-            report: {
-              select: {
-                reason: true,
-                reportType: true,
-              }
-            }
           },
         },
         _count: {
@@ -129,12 +90,10 @@ export const getAllBusinesses = async (filters: {
       },
     });
 
-    // Add total jobs count and format block status
+    // Add total jobs count
     const businessesWithDetails = businesses.map((business) => ({
       ...business,
       totalJobs: business._count.jobs,
-      isBlocked: business.blocks.length > 0,
-      blockDetails: business.blocks[0] || null, // Get the active block if exists
     }));
 
     const totalPages = Math.ceil(totalCount / limit);
@@ -165,58 +124,38 @@ export const blockBusiness = async (
   reportId?: string
 ) => {
   try {
-    // First check if business is already blocked
-    const existingBlock = await prisma.block.findFirst({
-      where: {
-        businessId,
-        isActive: true,
-        blockType: BlockType.BUSINESS,
-      },
-    });
-
-    if (existingBlock) {
-      throw new DatabaseError('Business is already blocked');
-    }
-
-    // Get the business profile to get the userId
+    // Get the business profile
     const business = await prisma.businessProfile.findUnique({
       where: { id: businessId },
-      select: { userId: true },
+      select: { isBlocked: true },
     });
 
     if (!business) {
       throw new DatabaseError('Business not found');
     }
 
-    // Create new block record
-    const block = await prisma.block.create({
+    if (business.isBlocked) {
+      throw new DatabaseError('Business is already blocked');
+    }
+
+    // Update business profile to blocked status
+    const updatedBusiness = await prisma.businessProfile.update({
+      where: { id: businessId },
       data: {
-        blockType: BlockType.BUSINESS,
-        userId: business.userId,
-        businessId,
-        reason,
-        reportType,
-        reportId,
-        blockedBy: 'admin',
-        isActive: true,
+        isBlocked: true
       },
       include: {
-        business: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
           },
         },
-        report: true
       },
     });
 
-    return block;
+    return updatedBusiness;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
@@ -224,48 +163,38 @@ export const blockBusiness = async (
 
 export const unblockBusiness = async (businessId: string) => {
   try {
-    // Find active block
-    const existingBlock = await prisma.block.findFirst({
-      where: {
-        businessId,
-        isActive: true,
-        blockType: BlockType.BUSINESS,
-      },
-      include: {
-        report: true
-      }
+    // Get the business profile
+    const business = await prisma.businessProfile.findUnique({
+      where: { id: businessId },
+      select: { isBlocked: true },
     });
 
-    if (!existingBlock) {
-      throw new DatabaseError('No active block found for this business');
+    if (!business) {
+      throw new DatabaseError('Business not found');
     }
 
-    // Update block record
-    const block = await prisma.block.update({
-      where: {
-        id: existingBlock.id,
-      },
+    if (!business.isBlocked) {
+      throw new DatabaseError('Business is not blocked');
+    }
+
+    // Update business profile to unblocked status
+    const updatedBusiness = await prisma.businessProfile.update({
+      where: { id: businessId },
       data: {
-        isActive: false,
-        unBlockedAt: new Date(),
+        isBlocked: false
       },
       include: {
-        business: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
           },
         },
-        report: true
       },
     });
 
-    return block;
+    return updatedBusiness;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

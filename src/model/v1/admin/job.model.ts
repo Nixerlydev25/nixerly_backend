@@ -1,6 +1,6 @@
 import prisma from '../../../config/prisma.config';
 import { DatabaseError } from '../../../utils/errors';
-import { BlockType, ReportType } from '@prisma/client';
+import { ReportType } from '@prisma/client';
 
 export const getAllJobs = async (filters: any) => {
   try {
@@ -8,7 +8,6 @@ export const getAllJobs = async (filters: any) => {
     const skip = (page - 1) * limit;
 
     const where = {
-      isActive: true,
       ...(search && {
         OR: [{ title: { contains: search, mode: 'insensitive' } }],
       }),
@@ -44,59 +43,52 @@ export const getAllJobs = async (filters: any) => {
 
 export const blockJob = async (jobId: string, reason: string, reportType?: ReportType, reportId?: string) => {
   try {
-    const existingBlock = await prisma.block.findFirst({
-      where: {
-        jobId,
-        isActive: true,
-        blockType: BlockType.JOB,
-      },
-    });
-
-    if (existingBlock) {
-      throw new DatabaseError('Job is already blocked');
-    }
-
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      select: { businessProfileId: true }
+      select: { 
+        businessProfileId: true,
+        isBlocked: true
+      }
     });
 
     if (!job) {
       throw new DatabaseError('Job not found');
     }
 
-    const block = await prisma.block.create({
+    if (job.isBlocked) {
+      throw new DatabaseError('Job is already blocked');
+    }
+
+    // Update job to blocked status
+    const blockedJob = await prisma.job.update({
+      where: { id: jobId },
       data: {
-        blockType: BlockType.JOB,
-        userId: job.businessProfileId,
-        jobId,
-        reason,
-        reportType,
-        reportId,
-        blockedBy: 'admin',
-        isActive: true,
+        isBlocked: true
       },
       include: {
-        job: {
+        businessProfile: {
           include: {
-            businessProfile: {
-              include: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                    email: true,
-                  },
-                },
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
               },
             },
           },
         },
-        report: true
       },
     });
 
-    return block;
+    // If there's a report, include it in response
+    if (reportId) {
+      const report = await prisma.report.findUnique({
+        where: { id: reportId }
+      });
+      return { ...blockedJob, report };
+    }
+
+    return blockedJob;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
@@ -104,50 +96,42 @@ export const blockJob = async (jobId: string, reason: string, reportType?: Repor
 
 export const unblockJob = async (jobId: string) => {
   try {
-    const existingBlock = await prisma.block.findFirst({
-      where: {
-        jobId,
-        isActive: true,
-        blockType: BlockType.JOB,
-      },
-      include: {
-        report: true
-      }
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      select: { isBlocked: true }
     });
 
-    if (!existingBlock) {
-      throw new DatabaseError('No active block found for this job');
+    if (!job) {
+      throw new DatabaseError('Job not found');
     }
 
-    const block = await prisma.block.update({
+    if (!job.isBlocked) {
+      throw new DatabaseError('Job is not blocked');
+    }
+
+    const unblockedJob = await prisma.job.update({
       where: {
-        id: existingBlock.id,
+        id: jobId,
       },
       data: {
-        isActive: false,
-        unBlockedAt: new Date(),
+        isBlocked: false
       },
       include: {
-        job: {
+        businessProfile: {
           include: {
-            businessProfile: {
-              include: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                    email: true,
-                  },
-                },
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
               },
             },
           },
         },
-        report: true
       },
     });
 
-    return block;
+    return unblockedJob;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

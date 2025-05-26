@@ -1,4 +1,4 @@
-import { BlockType, ReportType } from '@prisma/client';
+import { ReportType } from '@prisma/client';
 import prisma from '../../../config/prisma.config';
 import { DatabaseError } from '../../../utils/errors';
 
@@ -8,13 +8,14 @@ export const getAllWorkers = async (filters: any) => {
     const skip = (page - 1) * limit;
 
     const where = {
-      isActive: true,
       ...(search && {
-        OR: [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } },
-        ],
+        user: {
+          OR: [
+            { firstName: { contains: search, mode: 'insensitive' } },
+            { lastName: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+          ],
+        }
       }),
       ...(status && { status }),
       ...(country && { country }),
@@ -31,20 +32,10 @@ export const getAllWorkers = async (filters: any) => {
         user: {
           select: {
             firstName: true,
+            lastName: true,
+            email: true,
           },
-        },
-        blocks: {
-          where: {
-            isActive: true,
-          },
-          select: {
-            id: true,
-            reason: true,
-            blockedBy: true,
-            blockedAt: true,
-            isActive: true,
-          },
-        },
+        }
       },
     });
 
@@ -67,58 +58,38 @@ export const getAllWorkers = async (filters: any) => {
 
 export const blockWorker = async (workerId: string, reason: string, reportType?: ReportType, reportId?: string) => {
   try {
-    // Check if worker is already blocked
-    const existingBlock = await prisma.block.findFirst({
-      where: {
-        workerId,
-        isActive: true,
-        blockType: BlockType.WORKER,
-      },
-    });
-
-    if (existingBlock) {
-      throw new DatabaseError('Worker is already blocked');
-    }
-
-    // Get the worker profile to get the userId
+    // Get the worker profile
     const worker = await prisma.workerProfile.findUnique({
       where: { id: workerId },
-      select: { userId: true },
+      select: { isBlocked: true }
     });
 
     if (!worker) {
       throw new DatabaseError('Worker not found');
     }
 
-    // Create new block record
-    const block = await prisma.block.create({
+    if (worker.isBlocked) {
+      throw new DatabaseError('Worker is already blocked');
+    }
+
+    // Update worker profile to blocked status
+    const updatedWorker = await prisma.workerProfile.update({
+      where: { id: workerId },
       data: {
-        blockType: BlockType.WORKER,
-        userId: worker.userId,
-        workerId,
-        reason,
-        reportType,
-        reportId,
-        blockedBy: 'admin',
-        isActive: true,
+        isBlocked: true
       },
       include: {
-        worker: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
           },
-        },
-        report: true
+        }
       },
     });
 
-    return block;
+    return updatedWorker;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
@@ -126,48 +97,38 @@ export const blockWorker = async (workerId: string, reason: string, reportType?:
 
 export const unblockWorker = async (workerId: string) => {
   try {
-    // Find active block
-    const existingBlock = await prisma.block.findFirst({
-      where: {
-        workerId,
-        isActive: true,
-        blockType: BlockType.WORKER,
-      },
-      include: {
-        report: true
-      }
+    // Get the worker profile
+    const worker = await prisma.workerProfile.findUnique({
+      where: { id: workerId },
+      select: { isBlocked: true }
     });
 
-    if (!existingBlock) {
-      throw new DatabaseError('No active block found for this worker');
+    if (!worker) {
+      throw new DatabaseError('Worker not found');
     }
 
-    // Update block record
-    const block = await prisma.block.update({
-      where: {
-        id: existingBlock.id,
-      },
+    if (!worker.isBlocked) {
+      throw new DatabaseError('Worker is not blocked');
+    }
+
+    // Update worker profile to unblocked status
+    const updatedWorker = await prisma.workerProfile.update({
+      where: { id: workerId },
       data: {
-        isActive: false,
-        unBlockedAt: new Date(),
+        isBlocked: false
       },
       include: {
-        worker: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
           },
-        },
-        report: true
+        }
       },
     });
 
-    return block;
+    return updatedWorker;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

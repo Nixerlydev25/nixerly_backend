@@ -29,7 +29,6 @@ model User {
   // Profile Relations - user can have either worker or business profile, not both
   workerProfile   WorkerProfile?    @relation("UserWorkerProfile")
   businessProfile BusinessProfile?  @relation("UserBusinessProfile")
-  blocks          Block[]           @relation()
 
   @@map("users")
 }
@@ -68,7 +67,7 @@ model WorkerProfile {
   sentMessages     Message[]                   @relation("WorkerSentMessages") // Messages sent by worker
   receivedMessages Message[]                   @relation("WorkerReceivedMessages") // Messages received by worker
   profilePicture   ProfilePicture? // One-to-one relation with profile picture
-  blocks           Block[] // Blocks on this worker
+  isBlocked        Boolean                     @default(false)
 
   @@map("worker_profiles")
 }
@@ -112,7 +111,7 @@ model BusinessProfile {
   reportsReceived  Report[]                      @relation("BusinessReported") // Reports received by business
   sentMessages     Message[]                     @relation("BusinessSentMessages") // Messages sent by business
   receivedMessages Message[]                     @relation("BusinessReceivedMessages")
-  blocks           Block[] // Blocks on this business
+  isBlocked        Boolean                       @default(false)
 
   @@map("business_profiles")
 }
@@ -237,7 +236,7 @@ model Job {
   expiresAt               DateTime?
   skills                  JobSkill[] // Job can have multiple skills
   workAreaImages          JobImage[] // Images of work facility/area
-  blocks                  Block[] // Blocks on this job
+  isBlocked              Boolean          @default(false)
   reportsReceived         Report[]         @relation("JobReported") // Reports received for this job
 
   @@map("jobs")
@@ -386,13 +385,6 @@ model Review {
   @@map("reviews")
 }
 
-enum ReportStatus {
-  PENDING
-  UNDER_REVIEW
-  RESOLVED
-  REJECTED
-}
-
 enum ReportType {
   HARASSMENT
   SPAM
@@ -421,8 +413,6 @@ model Report {
   
   reason             String           @db.Text
   reportType         ReportType       @default(OTHER)
-  status             ReportStatus     @default(PENDING)
-  blocks             Block[] // Add relation to blocks
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 
@@ -753,38 +743,4 @@ enum SkillName {
   WINCHING
   HOISTING
   SCAFFOLD_RIGGING
-}
-
-model Block {
-  id          String           @id @default(uuid())
-  blockType   BlockType // BUSINESS, WORKER, or JOB
-  userId      String // User being blocked (derived from entity)
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  business    BusinessProfile? @relation(fields: [businessId], references: [id])
-  businessId  String?          @unique // Only set if blockType = BUSINESS
-  worker      WorkerProfile?   @relation(fields: [workerId], references: [id])
-  workerId    String?          @unique // Only set if blockType = WORKER
-  job         Job?             @relation(fields: [jobId], references: [id])
-  jobId       String?          @unique // Only set if blockType = JOB
-  reason      String?          @db.Text // Optional direct reason
-  reportType  ReportType? // Optional report type if block is created without a report
-  report      Report?          @relation(fields: [reportId], references: [id]) // Optional relation to a report
-  reportId    String? // Optional report ID
-  blockedBy   String // Admin/SuperAdmin ID
-  blockedAt   DateTime         @default(now())
-  unBlockedAt DateTime?
-  isActive    Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  // Ensure only one entity reference is set per block type
-  @@unique([businessId, blockType], map: "unique_business_block")
-  @@unique([workerId, blockType], map: "unique_worker_block")
-  @@unique([jobId, blockType], map: "unique_job_block")
-}
-
-enum BlockType {
-  BUSINESS
-  WORKER
-  JOB
 }
