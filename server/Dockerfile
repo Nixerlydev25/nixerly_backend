@@ -3,7 +3,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install OpenSSL 1.1
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl 
 
 # Add build argument for OPENAI_API_KEY
 # ARG OPENAI_API_KEY
