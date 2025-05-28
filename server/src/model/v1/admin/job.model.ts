@@ -4,26 +4,29 @@ import { ReportType } from '@prisma/client';
 
 export const getAllJobs = async (filters: any) => {
   try {
-    const { page, limit, search, status, country } = filters;
-    const skip = (page - 1) * limit;
+    const { page, limit, search, employmentType, jobType, status } = filters;
+    const skip = (page - 1) * Number(limit);
 
     const where = {
       ...(search && {
         OR: [{ title: { contains: search, mode: 'insensitive' } }],
       }),
+      ...(employmentType && { employmentType: { in: employmentType } }),
+      ...(jobType && { jobType: { in: jobType } }),
+      ...(status && { status: { in: status } }),
     };
 
     const jobs = await prisma.job.findMany({
       where,
       skip,
-      take: limit,
+      take: Number(limit),
     });
 
     const totalCount = await prisma.job.count({
       where,
     });
 
-    const totalPages = Math.ceil(totalCount / limit);
+    const totalPages = Math.ceil(totalCount / Number(limit));
     const currentPage = parseInt(page);
     const hasMore = currentPage < totalPages;
 
@@ -41,14 +44,43 @@ export const getAllJobs = async (filters: any) => {
   }
 };
 
-export const blockJob = async (jobId: string, reason: string, reportType?: ReportType, reportId?: string) => {
+export const getJobById = async (jobId: string) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      select: { 
+      include: {
+        applications: true,
+        businessProfile: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!job) {
+      throw new DatabaseError('Job not found');
+    }
+
+    return job;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const blockJob = async (
+  jobId: string,
+  reason: string,
+  reportType?: ReportType,
+  reportId?: string
+) => {
+  try {
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      select: {
         businessProfileId: true,
-        isBlocked: true
-      }
+        isBlocked: true,
+      },
     });
 
     if (!job) {
@@ -63,7 +95,7 @@ export const blockJob = async (jobId: string, reason: string, reportType?: Repor
     const blockedJob = await prisma.job.update({
       where: { id: jobId },
       data: {
-        isBlocked: true
+        isBlocked: true,
       },
       include: {
         businessProfile: {
@@ -83,7 +115,7 @@ export const blockJob = async (jobId: string, reason: string, reportType?: Repor
     // If there's a report, include it in response
     if (reportId) {
       const report = await prisma.report.findUnique({
-        where: { id: reportId }
+        where: { id: reportId },
       });
       return { ...blockedJob, report };
     }
@@ -98,7 +130,7 @@ export const unblockJob = async (jobId: string) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      select: { isBlocked: true }
+      select: { isBlocked: true },
     });
 
     if (!job) {
@@ -114,7 +146,7 @@ export const unblockJob = async (jobId: string) => {
         id: jobId,
       },
       data: {
-        isBlocked: false
+        isBlocked: false,
       },
       include: {
         businessProfile: {

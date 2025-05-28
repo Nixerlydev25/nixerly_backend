@@ -4,8 +4,8 @@ import { DatabaseError } from '../../../utils/errors';
 
 export const getAllWorkers = async (filters: any) => {
   try {
-    const { page, limit, search, status, country } = filters;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 10, search, status, country } = filters;
+    const skip = (Number(page) - 1) * Number(limit);
 
     const where = {
       ...(search && {
@@ -15,7 +15,7 @@ export const getAllWorkers = async (filters: any) => {
             { lastName: { contains: search, mode: 'insensitive' } },
             { email: { contains: search, mode: 'insensitive' } },
           ],
-        }
+        },
       }),
       ...(status && { status }),
       ...(country && { country }),
@@ -23,8 +23,8 @@ export const getAllWorkers = async (filters: any) => {
 
     const workers = await prisma.workerProfile.findMany({
       where,
-      skip,
-      take: limit,
+      skip: Number(skip),
+      take: Number(limit),
       orderBy: {
         createdAt: 'asc',
       },
@@ -35,7 +35,7 @@ export const getAllWorkers = async (filters: any) => {
             lastName: true,
             email: true,
           },
-        }
+        },
       },
     });
 
@@ -43,8 +43,8 @@ export const getAllWorkers = async (filters: any) => {
       where,
     });
 
-    const totalPages = Math.ceil(totalCount / limit);
-    const currentPage = page;
+    const totalPages = Math.ceil(totalCount / Number(limit));
+    const currentPage = Number(page);
     const hasMore = currentPage < totalPages;
 
     return {
@@ -56,12 +56,35 @@ export const getAllWorkers = async (filters: any) => {
   }
 };
 
-export const blockWorker = async (workerId: string, reason: string, reportType?: ReportType, reportId?: string) => {
+export const getWorkerById = async (workerId: string) => {
+  try {
+    const worker = await prisma.workerProfile.findUnique({
+      where: { id: workerId },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return worker;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const blockWorker = async (
+  workerId: string,
+) => {
   try {
     // Get the worker profile
     const worker = await prisma.workerProfile.findUnique({
       where: { id: workerId },
-      select: { isBlocked: true }
+      select: { isBlocked: true },
     });
 
     if (!worker) {
@@ -76,7 +99,7 @@ export const blockWorker = async (workerId: string, reason: string, reportType?:
     const updatedWorker = await prisma.workerProfile.update({
       where: { id: workerId },
       data: {
-        isBlocked: true
+        isBlocked: true,
       },
       include: {
         user: {
@@ -85,7 +108,7 @@ export const blockWorker = async (workerId: string, reason: string, reportType?:
             lastName: true,
             email: true,
           },
-        }
+        },
       },
     });
 
@@ -100,7 +123,7 @@ export const unblockWorker = async (workerId: string) => {
     // Get the worker profile
     const worker = await prisma.workerProfile.findUnique({
       where: { id: workerId },
-      select: { isBlocked: true }
+      select: { isBlocked: true },
     });
 
     if (!worker) {
@@ -115,7 +138,7 @@ export const unblockWorker = async (workerId: string) => {
     const updatedWorker = await prisma.workerProfile.update({
       where: { id: workerId },
       data: {
-        isBlocked: false
+        isBlocked: false,
       },
       include: {
         user: {
@@ -124,7 +147,7 @@ export const unblockWorker = async (workerId: string) => {
             lastName: true,
             email: true,
           },
-        }
+        },
       },
     });
 

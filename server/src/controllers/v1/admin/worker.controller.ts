@@ -30,6 +30,24 @@ export const getAllWorkers = async (
   }
 };
 
+export const getWorkerById = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { workerId } = request.params;
+    const worker = await workerModel.getWorkerById(workerId);
+
+    response.status(ResponseStatus.OK).json({
+      message: 'Worker fetched successfully',
+      data: worker,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
 export const blockWorker = async (
   request: Request,
   response: Response,
@@ -37,9 +55,7 @@ export const blockWorker = async (
 ) => {
   try {
     const { workerId } = request.params;
-    const { reason } = request.body;
-
-    await workerModel.blockWorker(workerId, reason);
+    await workerModel.blockWorker(workerId);
 
     response.status(ResponseStatus.OK).json({
       message: 'Worker blocked successfully',

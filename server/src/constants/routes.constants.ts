@@ -1,128 +1,151 @@
 export const ROUTES = {
-    API: {
-        AUTH: '/auth',
-        OTP: '/otp',
-        ROLES: '/roles', 
-        RESTRICTIONS: '/restrictions',
-        USER: '/user',
-        HEALTH: '/health',
-        LANGUAGE: '/language',
-        SKILLS: '/skills',
-        SUBSCRIPTION: '/subscription',
-        EXPERIENCE: '/experience',
-        EDUCATION:'/education',
-        WORKER: '/worker',
-        BUSINESS: '/business',
-        JOBS: '/jobs',
-        ADMIN: '/admin'
+  API: {
+    AUTH: '/auth',
+    OTP: '/otp',
+    ROLES: '/roles',
+    RESTRICTIONS: '/restrictions',
+    USER: '/user',
+    HEALTH: '/health',
+    LANGUAGE: '/language',
+    SKILLS: '/skills',
+    SUBSCRIPTION: '/subscription',
+    EXPERIENCE: '/experience',
+    EDUCATION: '/education',
+    WORKER: '/worker',
+    BUSINESS: '/business',
+    JOBS: '/jobs',
+    ADMIN: '/admin',
+  },
+  ADMIN: {
+    STATISTICS: {
+      ROOT: '/statistics',
+      GET_ALL: '/dashboard-statistics',
     },
-    ADMIN: {
-        BUSINESS: {
-            ROOT: '/business',
-            GET_ALL: '/get-all-businesses',
-            BLOCK: '/block/:businessId',
-            UNBLOCK: '/unblock/:businessId'
-        },
-        WORKER: {
-            ROOT: '/worker',
-            GET_ALL: '/get-all-workers',
-            BLOCK: '/block/:workerId',
-            UNBLOCK: '/unblock/:workerId'
-        },
-        JOB: {  
-            ROOT: '/job',
-            GET_ALL: '/get-all-jobs',
-            BLOCK: '/block/:jobId',
-            UNBLOCK: '/unblock/:jobId'
-        },
-        REPORT: {
-            ROOT: '/report',
-            GET_ALL: '/get-all-reports'
-        }
+    BUSINESS: {
+      ROOT: '/business',
+      GET_ALL: '/get-all-businesses',
+      GET_BY_ID: '/get-by-id/:businessId',
+      BLOCK: '/block/:businessId',
+      UNBLOCK: '/unblock/:businessId',
     },
-    AUTH: {
-        SIGNUP: '/sign-up',
-        SIGNIN: '/sign-in',
-        RESET_PASSWORD: '/reset-password',
-        DELETE_ACCOUNT: '/delete-account',
-        REFRESH: '/refresh',
-        PASSWORD_RECOVERY: '/password-recovery',
-        LOGOUT: '/logout',
-        IS_AUTHENTICATED: '/is-authenticated',
-        OAUTH: '/oauth'
+    WORKER: {
+      ROOT: '/worker',
+      GET_ALL: '/get-all-workers',
+      GET_BY_ID: '/get-by-id/:workerId',
+      BLOCK: '/block/:workerId',
+      UNBLOCK: '/unblock/:workerId',
     },
-    LANGUAGE: {
-        CREATE: '/create',
-        UPDATE: '/update',
-        DELETE: '/delete',
-        UPDATE_ALL: '/update-all'
+    JOB: {
+      ROOT: '/jobs',
+      GET_ALL: '/get-all-jobs',
+      GET_BY_ID: '/get-by-id/:jobId',
+      BLOCK: '/block/:jobId',
+      UNBLOCK: '/unblock/:jobId',
     },
-    OAUTH: {
-        GOOGLE: '/google',
-        GOOGLE_CALLBACK: '/google/callback'
+    REPORT: {
+      ROOT: '/report',
+      GET_ALL: '/get-all-reports',
+      GET_BUSINESS_REPORTS: '/get-business-reports',
+      GET_WORKER_REPORTS: '/get-worker-reports',
+      GET_JOB_REPORTS: '/get-job-reports',
+      BLOCK_WORKER_BY_REPORT: '/block-worker-by-report/:reportId',
+      UNBLOCK_WORKER_BY_REPORT: '/unblock-worker-by-report/:reportId',
+      BLOCK_JOB_BY_REPORT: '/block-job-by-report/:reportId',
+      UNBLOCK_JOB_BY_REPORT: '/unblock-job-by-report/:reportId',
+      BLOCK_BUSINESS_BY_REPORT: '/block-business-by-report/:reportId',
+      UNBLOCK_BUSINESS_BY_REPORT: '/unblock-business-by-report/:reportId',
     },
-    OTP: {
-        SEND_OTP: '/send-otp',
-        VERIFY_OTP: '/verify-otp'
-    },
-    USER: {
-        CURRENT_USER: '/current-user',
-        UPDATE_USER: '/update-user',
-        TOGGLE_FIRST_TIME_LOGIN: '/toggle-first-time-login',
-        DELETE_ACCOUNT: '/delete-account',
-        FORGOT_PASSWORD: '/forgot-password',
-        VERIFY_OTP: '/verify-otp',
-        RESET_PASSWORD: '/reset-password',
-        GET_WORKER_PROFILE_DETAILS: '/worker-profile-details',
-        GET_BUSINESS_PROFILE_DETAILS: '/business-profile-details',
-    },
-    ROLE: {
-        UPDATE_ROLE: '/:id'
-    },
-    RESTRICTION: {
-        ROOT: '/',
-        USER_RESTRICTIONS: '/:user-id'
-    },
-    BUSINESS_PROFILE: {
-        UPDATE_BUSINESS_PROFILE: '/update-business-profile',
-        GET_ALL_BUSINESS_PROFILES: '/get-all-business-profiles',
-        GET_BUSINESS_PROFILE_DETAILS: '/business-profile-details/:businessId',
-        GET_ALL_BUSINESS_JOBS : "/get-all-business-jobs",
-    },
-    WROKER_SKILLS: {
-        CREATE: '/',
-        GET_ALL: '/',
-        UPDATE: '/',
-        DELETE: '/'
-    },
-    WORKER_EXPERIENCE: {
-        CREATE: '/',
-        GET_ALL: '/',
-        UPDATE: '/',
-        DELETE: '/',
-        UPDATE_ALL: '/update-all'
-    },
-    WORKER_EDUCATIONS: {
-        CREATE: '/',
-        GET_ALL: '/',
-        UPDATE: '/',
-        DELETE: '/',
-        UPDATE_ALL: '/update-all'
-    },
-    WORKER_PROFILE: {
-        GET_ALL: '/get-all-workers-profiles',
-        GET_DETAILS: '/:workerId',
-        UPDATE_WORKER_PROFILE: '/update-worker-profile',
-        GET_PROFILE_PICTURE_UPLOAD_URL: '/profile-picture-upload-url',
-        SAVE_PROFILE_PICTURE: '/save-profile-picture',
-    },
-    JOBS: {
-        CREATE: '/create',
-        GET_ALL: '/get-all-jobs',
-        GET_DETAILS: '/:jobId',
-        UPDATE: '/update/:jobId',
-        DELETE: '/delete/:jobId',
-        APPLY: '/apply/:jobId',
-        GET_APPLICANTS_OF_JOB: '/get-applicants-of-job/:jobId'
-    }
+  },
+  AUTH: {
+    SIGNUP: '/sign-up',
+    SIGNIN: '/sign-in',
+    RESET_PASSWORD: '/reset-password',
+    DELETE_ACCOUNT: '/delete-account',
+    REFRESH: '/refresh',
+    PASSWORD_RECOVERY: '/password-recovery',
+    LOGOUT: '/logout',
+    IS_AUTHENTICATED: '/is-authenticated',
+    OAUTH: '/oauth',
+  },
+  LANGUAGE: {
+    CREATE: '/create',
+    UPDATE: '/update',
+    DELETE: '/delete',
+    UPDATE_ALL: '/update-all',
+  },
+  OAUTH: {
+    GOOGLE: '/google',
+    GOOGLE_CALLBACK: '/google/callback',
+  },
+  OTP: {
+    SEND_OTP: '/send-otp',
+    VERIFY_OTP: '/verify-otp',
+  },
+  USER: {
+    CURRENT_USER: '/current-user',
+    UPDATE_USER: '/update-user',
+    TOGGLE_FIRST_TIME_LOGIN: '/toggle-first-time-login',
+    DELETE_ACCOUNT: '/delete-account',
+    FORGOT_PASSWORD: '/forgot-password',
+    VERIFY_OTP: '/verify-otp',
+    RESET_PASSWORD: '/reset-password',
+    GET_WORKER_PROFILE_DETAILS: '/worker-profile-details',
+    GET_BUSINESS_PROFILE_DETAILS: '/business-profile-details',
+  },
+  ROLE: {
+    UPDATE_ROLE: '/:id',
+  },
+  RESTRICTION: {
+    ROOT: '/',
+    USER_RESTRICTIONS: '/:user-id',
+  },
+  BUSINESS_PROFILE: {
+    UPDATE_BUSINESS_PROFILE: '/update-business-profile',
+    GET_ALL_BUSINESS_PROFILES: '/get-all-business-profiles',
+    GET_BUSINESS_PROFILE_DETAILS: '/business-profile-details/:businessId',
+    GET_ALL_BUSINESS_JOBS: '/get-all-business-jobs',
+  },
+  WROKER_SKILLS: {
+    CREATE: '/',
+    GET_ALL: '/',
+    UPDATE: '/',
+    DELETE: '/',
+  },
+  WORKER_EXPERIENCE: {
+    CREATE: '/',
+    GET_ALL: '/',
+    UPDATE: '/',
+    DELETE: '/',
+    UPDATE_ALL: '/update-all',
+  },
+  WORKER_EDUCATIONS: {
+    CREATE: '/',
+    GET_ALL: '/',
+    UPDATE: '/',
+    DELETE: '/',
+    UPDATE_ALL: '/update-all',
+  },
+  WORKER_PROFILE: {
+    GET_ALL: '/get-all-workers-profiles',
+    GET_DETAILS: '/:workerId',
+    UPDATE_WORKER_PROFILE: '/update-worker-profile',
+    GET_PROFILE_PICTURE_UPLOAD_URL: '/profile-picture-upload-url',
+    SAVE_PROFILE_PICTURE: '/save-profile-picture',
+  },
+  JOBS: {
+    CREATE: '/create',
+    GET_ALL: '/get-all-jobs',
+    GET_DETAILS: '/:jobId',
+    UPDATE: '/update/:jobId',
+    DELETE: '/delete/:jobId',
+    APPLY: '/apply/:jobId',
+    GET_APPLICANTS_OF_JOB: '/get-applicants-of-job/:jobId',
+  },
+  REPORT: {
+    ROOT: '/report',
+    GET_ALL: '/get-all-reports',
+    GET_BUSINESS_REPORTS: '/get-business-reports',
+    GET_WORKER_REPORTS: '/get-worker-reports',
+    GET_JOB_REPORTS: '/get-job-reports',
+  },
 } as const;

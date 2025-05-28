@@ -28,6 +28,22 @@ export const getAllBusinessUsersAdmins = async (
   }
 };
 
+export const getBusinessById = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { businessId } = request.params;
+    const business = await businessModel.getBusinessById(businessId);
+    return response.status(ResponseStatus.OK).json({
+      message: 'Business fetched successfully',
+      data: business,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
 
 export const blockBusiness = async (
   request: Request,
@@ -36,9 +52,8 @@ export const blockBusiness = async (
 ) => {
   try {
     const { businessId } = request.params;
-    const { reason } = request.body;
 
-    await businessModel.blockBusiness(businessId, reason);
+    await businessModel.blockBusiness(businessId);
 
     response.status(ResponseStatus.OK).json({
       message: 'Business blocked successfully',

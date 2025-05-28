@@ -26,7 +26,7 @@ model User {
   otps            Otp[]
   restrictions    UserRestriction[]
   firstTimeLogin  Boolean           @default(true)
-  // Profile Relations - user can have either worker or business profile, not both
+  // Profile Relations - user will have either worker or business profile based on their type
   workerProfile   WorkerProfile?    @relation("UserWorkerProfile")
   businessProfile BusinessProfile?  @relation("UserBusinessProfile")
 
@@ -68,6 +68,7 @@ model WorkerProfile {
   receivedMessages Message[]                   @relation("WorkerReceivedMessages") // Messages received by worker
   profilePicture   ProfilePicture? // One-to-one relation with profile picture
   isBlocked        Boolean                     @default(false)
+  lastActive       DateTime                    @default(now())
 
   @@map("worker_profiles")
 }
@@ -112,6 +113,7 @@ model BusinessProfile {
   sentMessages     Message[]                     @relation("BusinessSentMessages") // Messages sent by business
   receivedMessages Message[]                     @relation("BusinessReceivedMessages")
   isBlocked        Boolean                       @default(false)
+  lastActive       DateTime                    @default(now())
 
   @@map("business_profiles")
 }
@@ -150,6 +152,7 @@ enum Role {
 enum ProfileType {
   WORKER
   BUSINESS
+  ADMIN
 }
 
 enum OAuthProvider {

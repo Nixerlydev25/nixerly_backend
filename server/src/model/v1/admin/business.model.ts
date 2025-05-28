@@ -15,7 +15,8 @@ export const getAllBusinesses = async (filters: {
     const skip = (page - 1) * limit;
 
     const where = {
-      isBlocked: status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
+      isBlocked:
+        status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
       ...(search && {
         OR: [
           { companyName: { contains: search, mode: 'insensitive' } },
@@ -40,13 +41,13 @@ export const getAllBusinesses = async (filters: {
     // Get count for businesses with status ACTIVE and BLOCKED
     const activeBusinessCount = await prisma.businessProfile.count({
       where: {
-        isBlocked: false
+        isBlocked: false,
       },
     });
 
     const blockedBusinessCount = await prisma.businessProfile.count({
       where: {
-        isBlocked: true
+        isBlocked: true,
       },
     });
 
@@ -54,7 +55,7 @@ export const getAllBusinesses = async (filters: {
     const businesses = await prisma.businessProfile.findMany({
       where,
       skip,
-      take: limit,
+      take: Number(limit),
       orderBy: {
         createdAt: 'asc',
       },
@@ -117,12 +118,28 @@ export const getAllBusinesses = async (filters: {
   }
 };
 
-export const blockBusiness = async (
-  businessId: string,
-  reason: string,
-  reportType?: ReportType,
-  reportId?: string
-) => {
+export const getBusinessById = async (businessId: string) => {
+  try {
+    const business = await prisma.businessProfile.findUnique({
+      where: { id: businessId },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return business;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const blockBusiness = async (businessId: string) => {
   try {
     // Get the business profile
     const business = await prisma.businessProfile.findUnique({
@@ -142,7 +159,7 @@ export const blockBusiness = async (
     const updatedBusiness = await prisma.businessProfile.update({
       where: { id: businessId },
       data: {
-        isBlocked: true
+        isBlocked: true,
       },
       include: {
         user: {
@@ -181,7 +198,7 @@ export const unblockBusiness = async (businessId: string) => {
     const updatedBusiness = await prisma.businessProfile.update({
       where: { id: businessId },
       data: {
-        isBlocked: false
+        isBlocked: false,
       },
       include: {
         user: {
