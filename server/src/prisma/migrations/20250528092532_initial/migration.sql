@@ -37,6 +37,7 @@ CREATE TABLE `worker_profiles` (
     `completedJobs` INTEGER NOT NULL DEFAULT 0,
     `avgRating` DOUBLE NOT NULL DEFAULT 0,
     `onboardingStep` ENUM('PERSONAL_INFO', 'SKILLS_HOURLY_RATE_INFO', 'EXPERIENCE_INFO', 'EDUCATION_INFO', 'LANGUAGE_INFO', 'AVAILABILITY_INFO', 'COMPLETED') NOT NULL DEFAULT 'PERSONAL_INFO',
+    `isBlocked` BOOLEAN NOT NULL DEFAULT false,
 
     UNIQUE INDEX `worker_profiles_userId_key`(`userId`),
     PRIMARY KEY (`id`)
@@ -71,6 +72,9 @@ CREATE TABLE `business_profiles` (
     `totalSpent` DOUBLE NOT NULL DEFAULT 0,
     `postedJobs` INTEGER NOT NULL DEFAULT 0,
     `onboardingStep` ENUM('COMPANY_INFO', 'COMPLETED') NOT NULL DEFAULT 'COMPANY_INFO',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `isBlocked` BOOLEAN NOT NULL DEFAULT false,
 
     UNIQUE INDEX `business_profiles_userId_key`(`userId`),
     PRIMARY KEY (`id`)
@@ -136,6 +140,7 @@ CREATE TABLE `jobs` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `expiresAt` DATETIME(3) NULL,
+    `isBlocked` BOOLEAN NOT NULL DEFAULT false,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -177,6 +182,7 @@ CREATE TABLE `job_applications` (
     `status` ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'WITHDRAWN') NOT NULL DEFAULT 'PENDING',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
+    `duration` ENUM('LESS_THAN_ONE_WEEK', 'ONE_2_TWO_WEEKS', 'TWO_2_FOUR_WEEKS', 'ONE_2_THREE_MONTHS', 'MORE_THAN_THREE_MONTHS') NOT NULL DEFAULT 'LESS_THAN_ONE_WEEK',
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -233,8 +239,9 @@ CREATE TABLE `reports` (
     `reporterBusinessId` VARCHAR(191) NULL,
     `reportedWorkerId` VARCHAR(191) NULL,
     `reportedBusinessId` VARCHAR(191) NULL,
+    `reportedJobId` VARCHAR(191) NULL,
     `reason` TEXT NOT NULL,
-    `status` ENUM('PENDING', 'UNDER_REVIEW', 'RESOLVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    `reportType` ENUM('HARASSMENT', 'SPAM', 'INAPPROPRIATE_CONTENT', 'FRAUD', 'FAKE_PROFILE', 'HATE_SPEECH', 'VIOLENCE', 'INTELLECTUAL_PROPERTY', 'IMPERSONATION', 'OTHER') NOT NULL DEFAULT 'OTHER',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -432,6 +439,9 @@ ALTER TABLE `reports` ADD CONSTRAINT `reports_reportedWorkerId_fkey` FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE `reports` ADD CONSTRAINT `reports_reportedBusinessId_fkey` FOREIGN KEY (`reportedBusinessId`) REFERENCES `business_profiles`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `reports` ADD CONSTRAINT `reports_reportedJobId_fkey` FOREIGN KEY (`reportedJobId`) REFERENCES `jobs`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `projects` ADD CONSTRAINT `projects_workerId_fkey` FOREIGN KEY (`workerId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
