@@ -3,22 +3,31 @@ import { DatabaseError, NotFoundError } from '../../../utils/errors';
 
 export const getAllWorkers = async (filters: any) => {
   try {
-    const { page = 1, limit = 10, search, status, country } = filters;
+    const { page = 1, limit = 10, search, status, country, skills } = filters;
     const skip = (Number(page) - 1) * Number(limit);
 
     const where = {
       ...(search && {
         user: {
           OR: [
-            { firstName: { contains: search, mode: 'insensitive' } },
-            { lastName: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } },
+            { firstName: { contains: search } },
+            { lastName: { contains: search } },
+            { email: { contains: search } },
           ],
         },
       }),
-      isBlocked:
-        status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
+      ...(status && {
+        isBlocked:
+          status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
+      }),
       ...(country && { country }),
+      ...(skills && {
+        skills: {
+          some: {
+            skillName: skills,
+          },
+        },
+      }),
     };
 
     const workers = await prisma.workerProfile.findMany({
@@ -34,6 +43,11 @@ export const getAllWorkers = async (filters: any) => {
             firstName: true,
             lastName: true,
             email: true,
+          },
+        },
+        skills: {
+          select: {
+            skillName: true,
           },
         },
       },

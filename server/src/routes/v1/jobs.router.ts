@@ -1,9 +1,9 @@
-import { Router } from "express";
-import { Role } from "@prisma/client";
-import { ROUTES } from "../../constants/routes.constants";
-import * as jobController from "../../controllers/v1/jobs.controller";
-import isAuthorized from "../../middleware/isAuthorized";
-import * as ValidationMiddleware from "../../middleware/validation";
+import { Router } from 'express';
+import { Role } from '@prisma/client';
+import { ROUTES } from '../../constants/routes.constants';
+import * as jobController from '../../controllers/v1/jobs.controller';
+import isAuthorized from '../../middleware/isAuthorized';
+import * as ValidationMiddleware from '../../middleware/validation';
 import {
   applyJobParamSchema,
   applyJobSchema,
@@ -11,7 +11,7 @@ import {
   getApplicantsOfJobQuerySchema,
   getJobDetailsSchema,
   getJobsQuerySchema,
-} from "../../schema/v1/jobs.validation";
+} from '../../schema/v1/jobs.validation';
 
 const jobsRouter = Router();
 
@@ -31,22 +31,22 @@ jobsRouter.get(
 
 jobsRouter.get(
   ROUTES.JOBS.GET_DETAILS,
-  ValidationMiddleware.paramValidation(getJobDetailsSchema, "jobId"),
+  ValidationMiddleware.paramValidation(getJobDetailsSchema, 'jobId'),
   jobController.getJobDetailsHandler
 );
 
 jobsRouter.post(
   ROUTES.JOBS.APPLY,
   isAuthorized([Role.WORKER]),
-  ValidationMiddleware.paramValidation(applyJobParamSchema, "jobId"),
+  ValidationMiddleware.paramValidation(applyJobParamSchema, 'jobId'),
   ValidationMiddleware.bodyValidation(applyJobSchema),
   jobController.applyJobHandler
 );
 
 jobsRouter.get(
   ROUTES.JOBS.GET_APPLICANTS_OF_JOB,
-  isAuthorized([Role.BUSINESS]),
-  ValidationMiddleware.paramValidation(getJobDetailsSchema, "jobId"),
+  isAuthorized([Role.BUSINESS, Role.ADMIN]),
+  ValidationMiddleware.paramValidation(getJobDetailsSchema, 'jobId'),
   ValidationMiddleware.queryValidation(getApplicantsOfJobQuerySchema),
   jobController.getApplicantsOfJobHandler
 );

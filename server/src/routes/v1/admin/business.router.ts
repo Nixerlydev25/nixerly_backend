@@ -12,14 +12,14 @@ const businessRouter = Router();
 
 businessRouter.get(
   ROUTES.ADMIN.BUSINESS.GET_ALL,
-  isAuthorized([Role.ADMIN]),
+  // isAuthorized([Role.ADMIN]),
   ValidationMiddleware.queryValidation(getAllBusinesses),
   businessController.getAllBusinessUsersAdmins
 );
 
 businessRouter.post(
   ROUTES.ADMIN.BUSINESS.TOGGLE_BLOCK,
-  isAuthorized([Role.ADMIN]),
+  // isAuthorized([Role.ADMIN]),
   ValidationMiddleware.paramValidation(toggleBusinessBlock, 'businessId'),
   businessController.toggleBusinessBlock
 );

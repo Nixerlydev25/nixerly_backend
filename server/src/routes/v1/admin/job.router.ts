@@ -13,14 +13,14 @@ const jobRouter = Router();
 
 jobRouter.get(
   ROUTES.ADMIN.JOB.GET_ALL,
-  isAuthorized([Role.ADMIN]),
+  // isAuthorized([Role.ADMIN]),
   ValidationMiddleware.queryValidation(getAllJobs),
   jobController.getAllJobs
 );
 
 jobRouter.post(
   ROUTES.ADMIN.JOB.TOGGLE_BLOCK,
-  isAuthorized([Role.ADMIN]),
+  // isAuthorized([Role.ADMIN]),
   ValidationMiddleware.paramValidation(toggleJobBlock, 'jobId'),
   jobController.toggleJobBlock
 );

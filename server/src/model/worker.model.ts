@@ -1,10 +1,10 @@
-import { OnboardingStepWorkerProfile, SkillName } from "@prisma/client";
-import { DatabaseError, NotFoundError } from "../utils/errors";
-import prisma from "../config/prisma.config";
+import { OnboardingStepWorkerProfile, SkillName } from '@prisma/client';
+import { DatabaseError, NotFoundError } from '../utils/errors';
+import prisma from '../config/prisma.config';
 import {
   createWorkerFilterClause,
   createWorkerSortClause,
-} from "../utils/filters";
+} from '../utils/filters';
 
 export const getAllWorkers = async (filters: {
   skills?: SkillName[];
@@ -32,7 +32,7 @@ export const getAllWorkers = async (filters: {
     console.log({ orderByClause, whereClause });
 
     const skip = (filters.page - 1) * filters.limit;
-    
+
     const [workers, totalCount] = await Promise.all([
       prisma.workerProfile.findMany({
         where: whereClause,
@@ -73,7 +73,7 @@ export const getAllWorkers = async (filters: {
     };
   } catch (error) {
     console.log(error);
-    throw new DatabaseError("Error fetching workers");
+    throw new DatabaseError('Error fetching workers');
   }
 };
 
@@ -95,6 +95,7 @@ export const getWorkerById = async (workerId: string) => {
             firstName: true,
             lastName: true,
             defaultProfile: true,
+            email: true,
           },
         },
         skills: true,
@@ -117,7 +118,7 @@ export const getWorkerById = async (workerId: string) => {
     };
   } catch (error) {
     console.log(error);
-    throw new DatabaseError("Error fetching worker details");
+    throw new DatabaseError('Error fetching worker details');
   }
 };
 
@@ -170,7 +171,7 @@ export const saveProfilePicture = async (userId: string, s3Key: string) => {
     });
 
     if (!workerProfile) {
-      throw new NotFoundError("Worker profile not found");
+      throw new NotFoundError('Worker profile not found');
     }
 
     // Check if profile picture already exists
