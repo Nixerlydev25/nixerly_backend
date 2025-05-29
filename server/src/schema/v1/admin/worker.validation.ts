@@ -9,13 +9,7 @@ export const getAllWorkers = z.object({
   skills: z.nativeEnum(SkillName).optional(),
   country: z.string().optional(),
   status: z
-    .string()
-    .transform((val) => {
-      if (!val) return undefined;
-      if (val === UserStatus.ACTIVE || val === UserStatus.BLOCKED)
-        return val as UserStatus;
-      throw new Error('Invalid status. Must be ACTIVE or BLOCKED');
-    })
+    .nativeEnum(UserStatus)
     .optional(),
 });
 

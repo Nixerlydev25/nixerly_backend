@@ -139,6 +139,7 @@ enum RestrictionType {
   VIEW_PROFILES
   SUBMIT_REVIEWS
   SUBMIT_REPORTS
+  BLOCKED
 }
 
 enum Role {

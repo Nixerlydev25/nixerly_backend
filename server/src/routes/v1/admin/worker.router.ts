@@ -12,14 +12,14 @@ const workerRouter = Router();
 
 workerRouter.get(
   ROUTES.ADMIN.WORKER.GET_ALL,
-  // isAuthorized([Role.ADMIN]),
+  isAuthorized([Role.ADMIN]),
   ValidationMiddleware.queryValidation(getAllWorkers),
   workerController.getAllWorkers
 );
 
 workerRouter.post(
   ROUTES.ADMIN.WORKER.TOGGLE_BLOCK,
-  // isAuthorized([Role.ADMIN]),
+  isAuthorized([Role.ADMIN]),
   ValidationMiddleware.paramValidation(toggleWorkerBlock, 'workerId'),
   workerController.toggleWorkerBlock
 );

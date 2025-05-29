@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `users` MODIFY `defaultProfile` ENUM('WORKER', 'BUSINESS', 'ADMIN') NOT NULL DEFAULT 'WORKER';

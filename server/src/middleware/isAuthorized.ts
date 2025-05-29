@@ -5,7 +5,7 @@ import { RestrictionType, Role, UserRestriction } from "@prisma/client";
 
 const isAuthorized = (
   requiredRoles?: Role[],
-  restrictedTo?: RestrictionType[]
+  restrictedTo: RestrictionType[] = [RestrictionType.BLOCKED]
 ) => {
   return async (request: Request, response: Response, next: NextFunction) => {
     if (!request.user || !request.user.email) {

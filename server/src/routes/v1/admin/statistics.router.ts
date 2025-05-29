@@ -7,7 +7,7 @@ const statisticsRouter = Router();
 
 statisticsRouter.get(
   ROUTES.ADMIN.STATISTICS.GET_ALL,
-//   isAuthorized([Role.ADMIN]),
+  isAuthorized([Role.ADMIN]),
   statisticsController.getAllStatistics
 );
 
