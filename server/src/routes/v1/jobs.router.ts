@@ -45,7 +45,7 @@ jobsRouter.post(
 
 jobsRouter.get(
   ROUTES.JOBS.GET_APPLICANTS_OF_JOB,
-  // isAuthorized([Role.BUSINESS, Role.ADMIN]),
+  isAuthorized([Role.BUSINESS, Role.ADMIN]),
   ValidationMiddleware.paramValidation(getJobDetailsSchema, 'jobId'),
   ValidationMiddleware.queryValidation(getApplicantsOfJobQuerySchema),
   jobController.getApplicantsOfJobHandler
