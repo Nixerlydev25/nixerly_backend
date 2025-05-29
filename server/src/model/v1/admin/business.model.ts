@@ -1,12 +1,12 @@
-import prisma from '../../../config/prisma.config';
-import { DatabaseError } from '../../../utils/errors';
-import { Prisma, ReportType } from '@prisma/client';
+import prisma from "../../../config/prisma.config";
+import { UserStatus } from "../../../types/global";
+import { DatabaseError, NotFoundError } from "../../../utils/errors";
 
 export const getAllBusinesses = async (filters: {
   page: number;
   limit: number;
   search?: string;
-  status?: 'ACTIVE' | 'BLOCKED';
+  status?: UserStatus;
   industry?: string;
   country?: string;
 }) => {
@@ -15,16 +15,23 @@ export const getAllBusinesses = async (filters: {
     const skip = (page - 1) * limit;
 
     const where = {
-      isBlocked: status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
+      ...(status && {
+        isBlocked:
+          status === UserStatus.BLOCKED
+            ? true
+            : status === UserStatus.ACTIVE
+            ? false
+            : undefined,
+      }),
       ...(search && {
         OR: [
-          { companyName: { contains: search, mode: 'insensitive' } },
+          { companyName: { contains: search } },
           {
             user: {
               OR: [
-                { firstName: { contains: search, mode: 'insensitive' } },
-                { lastName: { contains: search, mode: 'insensitive' } },
-                { email: { contains: search, mode: 'insensitive' } },
+                { firstName: { contains: search } },
+                { lastName: { contains: search } },
+                { email: { contains: search } },
               ],
             },
           },
@@ -34,29 +41,21 @@ export const getAllBusinesses = async (filters: {
       ...(country && { country }),
     };
 
-    // Get total count for pagination
-    const totalCount = await prisma.businessProfile.count({ where });
+    // Execute count queries in parallel
+    const [totalCount, activeBusinessCount, blockedBusinessCount] =
+      await Promise.all([
+        prisma.businessProfile.count({ where }),
+        prisma.businessProfile.count({ where: { isBlocked: false } }),
+        prisma.businessProfile.count({ where: { isBlocked: true } }),
+      ]);
 
-    // Get count for businesses with status ACTIVE and BLOCKED
-    const activeBusinessCount = await prisma.businessProfile.count({
-      where: {
-        isBlocked: false
-      },
-    });
-
-    const blockedBusinessCount = await prisma.businessProfile.count({
-      where: {
-        isBlocked: true
-      },
-    });
-
-    // Get businesses with pagination and filters
+    // Execute the main query separately
     const businesses = await prisma.businessProfile.findMany({
       where,
       skip,
-      take: limit,
+      take: Number(limit),
       orderBy: {
-        createdAt: 'asc',
+        createdAt: "asc",
       },
       select: {
         id: true,
@@ -90,7 +89,6 @@ export const getAllBusinesses = async (filters: {
       },
     });
 
-    // Add total jobs count
     const businessesWithDetails = businesses.map((business) => ({
       ...business,
       totalJobs: business._count.jobs,
@@ -117,84 +115,24 @@ export const getAllBusinesses = async (filters: {
   }
 };
 
-export const blockBusiness = async (
-  businessId: string,
-  reason: string,
-  reportType?: ReportType,
-  reportId?: string
-) => {
+export const toggleBusinessBlock = async (businessId: string) => {
   try {
-    // Get the business profile
     const business = await prisma.businessProfile.findUnique({
       where: { id: businessId },
-      select: { isBlocked: true },
     });
 
     if (!business) {
-      throw new DatabaseError('Business not found');
+      throw new NotFoundError("Business not found");
     }
 
-    if (business.isBlocked) {
-      throw new DatabaseError('Business is already blocked');
-    }
-
-    // Update business profile to blocked status
-    const updatedBusiness = await prisma.businessProfile.update({
+    await prisma.businessProfile.update({
       where: { id: businessId },
-      data: {
-        isBlocked: true
-      },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
+      data: { isBlocked: !business.isBlocked },
     });
 
-    return updatedBusiness;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const unblockBusiness = async (businessId: string) => {
-  try {
-    // Get the business profile
-    const business = await prisma.businessProfile.findUnique({
-      where: { id: businessId },
-      select: { isBlocked: true },
-    });
-
-    if (!business) {
-      throw new DatabaseError('Business not found');
-    }
-
-    if (!business.isBlocked) {
-      throw new DatabaseError('Business is not blocked');
-    }
-
-    // Update business profile to unblocked status
-    const updatedBusiness = await prisma.businessProfile.update({
-      where: { id: businessId },
-      data: {
-        isBlocked: false
-      },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    return updatedBusiness;
+    return {
+      message: "Business blocked successfully",
+    };
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

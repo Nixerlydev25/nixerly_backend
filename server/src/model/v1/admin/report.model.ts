@@ -219,3 +219,119 @@ export const unblockUserByReport = async (reportId: string) => {
     throw new DatabaseError(error.message);
   }
 };
+
+export const getBusinessReports = async (filters: any) => {
+  try {
+    const { page, limit } = filters;
+    const skip = (page - 1) * limit;
+    const reports = await prisma.report.findMany({
+      where: {
+        reportedBusinessId: { not: null }
+      },
+      include: {
+        reporterWorker: true,
+        reporterBusiness: true,
+        reportedBusiness: true,
+      },
+      skip,
+      take: limit,
+    });
+    const totalCount = await prisma.report.count({
+      where: {
+        reportedBusinessId: { not: null }
+      },
+    });
+    const totalPages = Math.ceil(totalCount / filters.limit);
+    const currentPage = parseInt(filters.page);
+    const hasMore = currentPage < totalPages;
+    return {
+      reports,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage,
+        hasMore,
+      },
+    };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const getWorkerReports = async (filters: any) => {
+  try {
+    const { page, limit } = filters;
+    const skip = (page - 1) * limit;
+    const reports = await prisma.report.findMany({
+      where: {
+        reportedWorkerId: { not: null }
+      },
+      include: {
+        reporterWorker: true,
+        reporterBusiness: true,
+        reportedWorker: true,
+      },
+      skip,
+      take: limit,
+    });
+    const totalCount = await prisma.report.count({
+      where: {
+        reportedWorkerId: { not: null }
+      },
+    });
+    const totalPages = Math.ceil(totalCount / filters.limit);
+    const currentPage = parseInt(filters.page);
+    const hasMore = currentPage < totalPages;
+    return {
+      reports,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage,
+        hasMore,
+      },
+    };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const getJobReports = async (filters: any) => {
+  try {
+    const { page, limit } = filters;
+    const skip = (page - 1) * limit;
+    const reports = await prisma.report.findMany({
+      where: {
+        reportedJobId: { not: null }
+      },
+      include: {
+        reporterWorker: true,
+        reporterBusiness: true,
+        reportedJob: true,
+      },
+      skip,
+      take: limit,
+    });
+    const totalCount = await prisma.report.count({
+      where: {
+        reportedJobId: { not: null }
+      },
+    });
+    const totalPages = Math.ceil(totalCount / filters.limit);
+    const currentPage = parseInt(filters.page);
+    const hasMore = currentPage < totalPages;
+    return {
+      reports,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage,
+        hasMore,
+      },
+    };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+

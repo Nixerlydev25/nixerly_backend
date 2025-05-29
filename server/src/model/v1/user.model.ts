@@ -98,9 +98,39 @@ export const getCurrentUserDetails = async (
         ? { businessProfile: true }
         : {};
 
+
+        // only return thisid
+  //       : '9bf6dc77-083a-401a-b8e0-fa9351efee5c',
+  // email: 'dev.naveedrehmani@gmail.com',
+  // firstName: 'admin',
+  // lastName: 'admin',
+  // createdAt: '2025-05-29T20:14:59.511Z',
+  // updatedAt: '2025-05-29T20:14:59.511Z',
+  // isVerified: true,
+  // isDeleted: false,
+  // isSuspended: false,
+  // role: 'ADMIN',
+  // provider: 'EMAIL_PASSWORD',
+  // defaultProfile: 'WORKER',
+  // firstTimeLogin: true,
+  // workerProfile: null
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        defaultProfile: true,
+        isVerified: true,
+        isDeleted: true,
+        isSuspended: true,
+        provider: true,
+        firstTimeLogin: true,
+        createdAt: true,
+        updatedAt: true,
         ...includeProfile,
       },
     });

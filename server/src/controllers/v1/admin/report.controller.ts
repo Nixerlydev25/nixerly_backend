@@ -21,3 +21,63 @@ export const getAllReports = async (
     next(error);
   }
 };
+
+export const getBusinessReports = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const filters = request.query;
+    const { reports, pagination } = await reportModel.getBusinessReports(
+      filters as any
+    );
+    response.status(ResponseStatus.OK).json({
+      message: 'Business reports fetched successfully',
+      reports,
+      pagination,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
+export const getWorkerReports = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const filters = request.query;
+    const { reports, pagination } = await reportModel.getWorkerReports(
+      filters as any
+    );
+    response.status(ResponseStatus.OK).json({
+      message: 'Worker reports fetched successfully',
+      reports,
+      pagination,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
+export const getJobReports = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const filters = request.query;
+    const { reports, pagination } = await reportModel.getJobReports(
+      filters as any
+    );
+    response.status(ResponseStatus.OK).json({
+      message: 'Job reports fetched successfully',
+      reports,
+      pagination,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};

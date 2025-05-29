@@ -1,7 +1,7 @@
-import { OAuthProvider, Role, ProfileType } from "@prisma/client";
-import prisma from "../../config/prisma.config";
-import { generateUserName, hashPassword } from "../../utils";
-import { DatabaseError, ValidationError } from "../../utils/errors";
+import { OAuthProvider, Role, ProfileType } from '@prisma/client';
+import prisma from '../../config/prisma.config';
+import { generateUserName, hashPassword } from '../../utils';
+import { DatabaseError, ValidationError } from '../../utils/errors';
 
 interface LoginUser {
   email: string;
@@ -23,12 +23,12 @@ export const findUserByEmail = async (email: string) => {
         email,
       },
       include: {
-      restrictions:{
+        restrictions: {
           select: {
             restrictionType: true,
-        }
-      }
-      }
+          },
+        },
+      },
     });
     return user;
   } catch (err: any) {
@@ -38,7 +38,13 @@ export const findUserByEmail = async (email: string) => {
 
 export const createUser = async (data: CreateUser) => {
   try {
-    const { firstName, lastName, email, password } = data;
+    const { firstName, lastName, email, password, profileType } = data;
+
+    // Create profile data based on user type
+    const profileData =
+      profileType === ProfileType.WORKER
+        ? { workerProfile: { create: {} } }
+        : { businessProfile: { create: {} } };
 
     const newUser = await prisma.user.create({
       data: {
@@ -48,17 +54,14 @@ export const createUser = async (data: CreateUser) => {
         password: hashPassword(password),
         provider: OAuthProvider.EMAIL_PASSWORD,
         isSuspended: false,
-        role : data.profileType,
-        defaultProfile: data.profileType,
-        workerProfile : {
-          create: {}
-        },
-        businessProfile : {
-          create: {}
-        }
+        role: profileType,
+        defaultProfile: profileType,
+        ...profileData,
       },
       include: {
         restrictions: true,
+        workerProfile: profileType === ProfileType.WORKER,
+        businessProfile: profileType === ProfileType.BUSINESS,
       },
     });
 
@@ -104,11 +107,11 @@ export const fetchUserVerifiedStatus = async (userId: string) => {
 export const deleteUser = async (userId: string) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: userId,isDeleted:false },
+      where: { id: userId, isDeleted: false },
     });
 
     if (!user) {
-      throw new ValidationError("User Does Not Exist");
+      throw new ValidationError('User Does Not Exist');
     }
 
     const updatedUser = await prisma.user.update({
@@ -117,7 +120,7 @@ export const deleteUser = async (userId: string) => {
     });
 
     if (!updatedUser) {
-      throw new DatabaseError("Failed to delete account!");
+      throw new DatabaseError('Failed to delete account!');
     }
 
     return updatedUser;

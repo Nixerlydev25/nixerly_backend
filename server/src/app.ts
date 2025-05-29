@@ -33,6 +33,8 @@ if (IS_DEVELOPMENT) {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 }
 
+console.log(process.env.CLIENT_SERVER_2)
+
 // api versioning.
 app.use("/v1", Api1);
 app.use("/static", express.static(path.join(__dirname, "public")));

@@ -1,30 +1,39 @@
-import { ReportType } from '@prisma/client';
 import prisma from '../../../config/prisma.config';
-import { DatabaseError } from '../../../utils/errors';
+import { DatabaseError, NotFoundError } from '../../../utils/errors';
 
 export const getAllWorkers = async (filters: any) => {
   try {
-    const { page, limit, search, status, country } = filters;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 10, search, status, country, skills } = filters;
+    const skip = (Number(page) - 1) * Number(limit);
 
     const where = {
       ...(search && {
         user: {
           OR: [
-            { firstName: { contains: search, mode: 'insensitive' } },
-            { lastName: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } },
+            { firstName: { contains: search } },
+            { lastName: { contains: search } },
+            { email: { contains: search } },
           ],
-        }
+        },
       }),
-      ...(status && { status }),
+      ...(status && {
+        isBlocked:
+          status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
+      }),
       ...(country && { country }),
+      ...(skills && {
+        skills: {
+          some: {
+            skillName: skills,
+          },
+        },
+      }),
     };
 
     const workers = await prisma.workerProfile.findMany({
       where,
-      skip,
-      take: limit,
+      skip: Number(skip),
+      take: Number(limit),
       orderBy: {
         createdAt: 'asc',
       },
@@ -35,7 +44,12 @@ export const getAllWorkers = async (filters: any) => {
             lastName: true,
             email: true,
           },
-        }
+        },
+        skills: {
+          select: {
+            skillName: true,
+          },
+        },
       },
     });
 
@@ -43,40 +57,36 @@ export const getAllWorkers = async (filters: any) => {
       where,
     });
 
-    const totalPages = Math.ceil(totalCount / limit);
-    const currentPage = page;
+    const totalPages = Math.ceil(totalCount / Number(limit));
+    const currentPage = Number(page);
     const hasMore = currentPage < totalPages;
 
     return {
       pagination: { totalCount, totalPages, currentPage, hasMore },
       workers: workers,
     };
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
+  } catch (error) {
+    throw new DatabaseError('Error fetching workers');
   }
 };
 
-export const blockWorker = async (workerId: string, reason: string, reportType?: ReportType, reportId?: string) => {
+export const toggleWorkerBlock = async (workerId: string) => {
   try {
     // Get the worker profile
     const worker = await prisma.workerProfile.findUnique({
       where: { id: workerId },
-      select: { isBlocked: true }
+      select: { isBlocked: true },
     });
 
     if (!worker) {
-      throw new DatabaseError('Worker not found');
+      throw new NotFoundError('Worker not found');
     }
 
-    if (worker.isBlocked) {
-      throw new DatabaseError('Worker is already blocked');
-    }
-
-    // Update worker profile to blocked status
+    // Toggle the blocked status
     const updatedWorker = await prisma.workerProfile.update({
       where: { id: workerId },
       data: {
-        isBlocked: true
+        isBlocked: !worker.isBlocked,
       },
       include: {
         user: {
@@ -85,51 +95,15 @@ export const blockWorker = async (workerId: string, reason: string, reportType?:
             lastName: true,
             email: true,
           },
-        }
+        },
       },
     });
 
     return updatedWorker;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const unblockWorker = async (workerId: string) => {
-  try {
-    // Get the worker profile
-    const worker = await prisma.workerProfile.findUnique({
-      where: { id: workerId },
-      select: { isBlocked: true }
-    });
-
-    if (!worker) {
-      throw new DatabaseError('Worker not found');
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
     }
-
-    if (!worker.isBlocked) {
-      throw new DatabaseError('Worker is not blocked');
-    }
-
-    // Update worker profile to unblocked status
-    const updatedWorker = await prisma.workerProfile.update({
-      where: { id: workerId },
-      data: {
-        isBlocked: false
-      },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        }
-      },
-    });
-
-    return updatedWorker;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
+    throw new DatabaseError('Error toggling worker block status');
   }
 };

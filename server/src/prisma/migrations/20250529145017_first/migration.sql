@@ -12,7 +12,7 @@ CREATE TABLE `users` (
     `isSuspended` BOOLEAN NOT NULL DEFAULT false,
     `role` ENUM('WORKER', 'BUSINESS', 'ADMIN', 'SUPER_ADMIN', 'DEVELOPER') NOT NULL DEFAULT 'WORKER',
     `provider` ENUM('GOOGLE', 'OUTLOOK', 'FACEBOOK', 'GITHUB', 'EMAIL_PASSWORD') NOT NULL DEFAULT 'EMAIL_PASSWORD',
-    `defaultProfile` ENUM('WORKER', 'BUSINESS') NOT NULL DEFAULT 'WORKER',
+    `defaultProfile` ENUM('WORKER', 'BUSINESS', 'ADMIN') NOT NULL DEFAULT 'WORKER',
     `firstTimeLogin` BOOLEAN NOT NULL DEFAULT true,
 
     UNIQUE INDEX `users_email_key`(`email`),
@@ -38,6 +38,7 @@ CREATE TABLE `worker_profiles` (
     `avgRating` DOUBLE NOT NULL DEFAULT 0,
     `onboardingStep` ENUM('PERSONAL_INFO', 'SKILLS_HOURLY_RATE_INFO', 'EXPERIENCE_INFO', 'EDUCATION_INFO', 'LANGUAGE_INFO', 'AVAILABILITY_INFO', 'COMPLETED') NOT NULL DEFAULT 'PERSONAL_INFO',
     `isBlocked` BOOLEAN NOT NULL DEFAULT false,
+    `lastActive` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `worker_profiles_userId_key`(`userId`),
     PRIMARY KEY (`id`)
@@ -75,6 +76,7 @@ CREATE TABLE `business_profiles` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `isBlocked` BOOLEAN NOT NULL DEFAULT false,
+    `lastActive` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `business_profiles_userId_key`(`userId`),
     PRIMARY KEY (`id`)
