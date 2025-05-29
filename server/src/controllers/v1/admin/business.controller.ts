@@ -28,54 +28,18 @@ export const getAllBusinessUsersAdmins = async (
   }
 };
 
-export const getBusinessById = async (
+export const toggleBusinessBlock = async (
   request: Request,
   response: Response,
   next: NextFunction
 ) => {
-  try {
+  try { 
     const { businessId } = request.params;
-    const business = await businessModel.getBusinessById(businessId);
-    return response.status(ResponseStatus.OK).json({
-      message: 'Business fetched successfully',
-      data: business,
-    });
-  } catch (error: any) {
-    next(error);
-  }
-};
-
-export const blockBusiness = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    const { businessId } = request.params;
-
-    await businessModel.blockBusiness(businessId);
-
+    await businessModel.toggleBusinessBlock(businessId);
     response.status(ResponseStatus.OK).json({
       message: 'Business blocked successfully',
     });
-  } catch (error: any) {
-    next(error);
-  }
-};
-
-export const unblockBusiness = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    const { businessId } = request.params;
-    await businessModel.unblockBusiness(businessId);
-
-    response.status(ResponseStatus.OK).json({
-      message: 'Business unblocked successfully',
-    });
-  } catch (error: any) {
+  } catch (error) {
     next(error);
   }
 };

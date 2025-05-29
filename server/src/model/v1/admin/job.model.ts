@@ -1,6 +1,5 @@
 import prisma from '../../../config/prisma.config';
-import { DatabaseError } from '../../../utils/errors';
-import { ReportType } from '@prisma/client';
+import { DatabaseError, NotFoundError } from '../../../utils/errors';
 
 export const getAllJobs = async (filters: any) => {
   try {
@@ -44,89 +43,7 @@ export const getAllJobs = async (filters: any) => {
   }
 };
 
-export const getJobById = async (jobId: string) => {
-  try {
-    const job = await prisma.job.findUnique({
-      where: { id: jobId },
-      include: {
-        applications: true,
-        businessProfile: {
-          include: {
-            user: true,
-          },
-        },
-      },
-    });
-
-    if (!job) {
-      throw new DatabaseError('Job not found');
-    }
-
-    return job;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const blockJob = async (
-  jobId: string,
-  reason: string,
-  reportType?: ReportType,
-  reportId?: string
-) => {
-  try {
-    const job = await prisma.job.findUnique({
-      where: { id: jobId },
-      select: {
-        businessProfileId: true,
-        isBlocked: true,
-      },
-    });
-
-    if (!job) {
-      throw new DatabaseError('Job not found');
-    }
-
-    if (job.isBlocked) {
-      throw new DatabaseError('Job is already blocked');
-    }
-
-    // Update job to blocked status
-    const blockedJob = await prisma.job.update({
-      where: { id: jobId },
-      data: {
-        isBlocked: true,
-      },
-      include: {
-        businessProfile: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    // If there's a report, include it in response
-    if (reportId) {
-      const report = await prisma.report.findUnique({
-        where: { id: reportId },
-      });
-      return { ...blockedJob, report };
-    }
-
-    return blockedJob;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const unblockJob = async (jobId: string) => {
+export const toggleJobBlock = async (jobId: string) => {
   try {
     const job = await prisma.job.findUnique({
       where: { id: jobId },
@@ -134,36 +51,15 @@ export const unblockJob = async (jobId: string) => {
     });
 
     if (!job) {
-      throw new DatabaseError('Job not found');
+      throw new NotFoundError('Job not found');
     }
 
-    if (!job.isBlocked) {
-      throw new DatabaseError('Job is not blocked');
-    }
-
-    const unblockedJob = await prisma.job.update({
-      where: {
-        id: jobId,
-      },
-      data: {
-        isBlocked: false,
-      },
-      include: {
-        businessProfile: {
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
+    const updatedJob = await prisma.job.update({
+      where: { id: jobId },
+      data: { isBlocked: !job.isBlocked },
     });
 
-    return unblockedJob;
+    return updatedJob;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
