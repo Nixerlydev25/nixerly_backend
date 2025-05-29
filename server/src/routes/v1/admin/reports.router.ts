@@ -14,28 +14,28 @@ const reportsRouter = Router();
 
 reportsRouter.get(
   ROUTES.ADMIN.REPORT.GET_ALL,
-  isAuthorized([Role.ADMIN]),
+  // isAuthorized([Role.ADMIN]),
   ValidationMiddleware.queryValidation(getAllReports),
   reportController.getAllReports
 );
 
 reportsRouter.get(
   ROUTES.ADMIN.REPORT.GET_BUSINESS_REPORTS,
-  isAuthorized([Role.ADMIN]),
+  // isAuthorized([Role.ADMIN]),
   ValidationMiddleware.queryValidation(getBusinessReports),
   reportController.getBusinessReports
 );
 
 reportsRouter.get(
   ROUTES.ADMIN.REPORT.GET_WORKER_REPORTS,
-  isAuthorized([Role.ADMIN]),
+  // isAuthorized([Role.ADMIN]),
   ValidationMiddleware.queryValidation(getWorkerReports),
   reportController.getWorkerReports
 );
 
 reportsRouter.get(
   ROUTES.ADMIN.REPORT.GET_JOB_REPORTS,
-  isAuthorized([Role.ADMIN]),
+  // isAuthorized([Role.ADMIN]),
   ValidationMiddleware.queryValidation(getJobReports),
   reportController.getJobReports
 );

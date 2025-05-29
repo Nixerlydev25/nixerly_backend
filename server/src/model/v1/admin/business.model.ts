@@ -14,17 +14,19 @@ export const getAllBusinesses = async (filters: {
     const skip = (page - 1) * limit;
 
     const where = {
-      isBlocked:
-        status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
+      ...(status && {
+        isBlocked:
+          status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
+      }),
       ...(search && {
         OR: [
-          { companyName: { contains: search, mode: 'insensitive' } },
+          { companyName: { contains: search } },
           {
             user: {
               OR: [
-                { firstName: { contains: search, mode: 'insensitive' } },
-                { lastName: { contains: search, mode: 'insensitive' } },
-                { email: { contains: search, mode: 'insensitive' } },
+                { firstName: { contains: search } },
+                { lastName: { contains: search } },
+                { email: { contains: search } },
               ],
             },
           },
@@ -90,7 +92,6 @@ export const getAllBusinesses = async (filters: {
       },
     });
 
-    // Add total jobs count
     const businessesWithDetails = businesses.map((business) => ({
       ...business,
       totalJobs: business._count.jobs,

@@ -8,7 +8,7 @@ export const getAllJobs = async (filters: any) => {
 
     const where = {
       ...(search && {
-        OR: [{ title: { contains: search, mode: 'insensitive' } }],
+        OR: [{ title: { contains: search } }],
       }),
       ...(employmentType && { employmentType: { in: employmentType } }),
       ...(jobType && { jobType: { in: jobType } }),

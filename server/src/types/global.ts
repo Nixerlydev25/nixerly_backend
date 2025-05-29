@@ -1,4 +1,4 @@
-export type User = {  
+export type User = {
   id: number;
   email: string;
   password: string;
@@ -8,21 +8,21 @@ export type User = {
 };
 
 export enum environment {
-  PRODUCTION = "production",
-  DEVELOPMENT = "development",
+  PRODUCTION = 'production',
+  DEVELOPMENT = 'development',
 }
 
 export enum PERMISSIONS {
-  CREATE_POST = "create_post",
-  EDIT_POST = "edit_post",
-  DELETE_POST = "delete_post",
-  VIEW_POST = "view_post",
-  CREATE_COMMENT = "create_comment",
-  VIEW_COMMENT = "view_comment",
-  ANALYTICS = "analytics",
-  REPORT = "report",
-  ACCOUNT = "account",
-  CONTENT = "content"
+  CREATE_POST = 'create_post',
+  EDIT_POST = 'edit_post',
+  DELETE_POST = 'delete_post',
+  VIEW_POST = 'view_post',
+  CREATE_COMMENT = 'create_comment',
+  VIEW_COMMENT = 'view_comment',
+  ANALYTICS = 'analytics',
+  REPORT = 'report',
+  ACCOUNT = 'account',
+  CONTENT = 'content',
 }
 
 export interface JWTPayload {
@@ -36,6 +36,11 @@ export interface JWTPayload {
 
 export const mockUser = {
   id: 1,
-  email: "admin@example.com",
-  role: "SUPER_ADMIN",
+  email: 'admin@example.com',
+  role: 'SUPER_ADMIN',
 };
+
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  BLOCKED = 'BLOCKED',
+}
