@@ -24,23 +24,17 @@ export const ROUTES = {
     BUSINESS: {
       ROOT: '/business',
       GET_ALL: '/get-all-businesses',
-      GET_BY_ID: '/get-by-id/:businessId',
-      BLOCK: '/block/:businessId',
-      UNBLOCK: '/unblock/:businessId',
+      TOGGLE_BLOCK: '/toggle-block/:businessId',
     },
     WORKER: {
       ROOT: '/worker',
       GET_ALL: '/get-all-workers',
-      GET_BY_ID: '/get-by-id/:workerId',
-      BLOCK: '/block/:workerId',
-      UNBLOCK: '/unblock/:workerId',
+      TOGGLE_BLOCK: '/toggle-block/:workerId',
     },
     JOB: {
       ROOT: '/jobs',
       GET_ALL: '/get-all-jobs',
-      GET_BY_ID: '/get-by-id/:jobId',
-      BLOCK: '/block/:jobId',
-      UNBLOCK: '/unblock/:jobId',
+      TOGGLE_BLOCK: '/toggle-block/:jobId',
     },
     REPORT: {
       ROOT: '/report',

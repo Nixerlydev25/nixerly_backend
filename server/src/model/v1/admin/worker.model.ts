@@ -1,6 +1,5 @@
-import { ReportType } from '@prisma/client';
 import prisma from '../../../config/prisma.config';
-import { DatabaseError } from '../../../utils/errors';
+import { DatabaseError, NotFoundError } from '../../../utils/errors';
 
 export const getAllWorkers = async (filters: any) => {
   try {
@@ -17,7 +16,8 @@ export const getAllWorkers = async (filters: any) => {
           ],
         },
       }),
-      ...(status && { status }),
+      isBlocked:
+        status === 'BLOCKED' ? true : status === 'ACTIVE' ? false : undefined,
       ...(country && { country }),
     };
 
@@ -51,35 +51,12 @@ export const getAllWorkers = async (filters: any) => {
       pagination: { totalCount, totalPages, currentPage, hasMore },
       workers: workers,
     };
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
+  } catch (error) {
+    throw new DatabaseError('Error fetching workers');
   }
 };
 
-export const getWorkerById = async (workerId: string) => {
-  try {
-    const worker = await prisma.workerProfile.findUnique({
-      where: { id: workerId },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    return worker;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const blockWorker = async (
-  workerId: string,
-) => {
+export const toggleWorkerBlock = async (workerId: string) => {
   try {
     // Get the worker profile
     const worker = await prisma.workerProfile.findUnique({
@@ -88,18 +65,14 @@ export const blockWorker = async (
     });
 
     if (!worker) {
-      throw new DatabaseError('Worker not found');
+      throw new NotFoundError('Worker not found');
     }
 
-    if (worker.isBlocked) {
-      throw new DatabaseError('Worker is already blocked');
-    }
-
-    // Update worker profile to blocked status
+    // Toggle the blocked status
     const updatedWorker = await prisma.workerProfile.update({
       where: { id: workerId },
       data: {
-        isBlocked: true,
+        isBlocked: !worker.isBlocked,
       },
       include: {
         user: {
@@ -113,46 +86,10 @@ export const blockWorker = async (
     });
 
     return updatedWorker;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const unblockWorker = async (workerId: string) => {
-  try {
-    // Get the worker profile
-    const worker = await prisma.workerProfile.findUnique({
-      where: { id: workerId },
-      select: { isBlocked: true },
-    });
-
-    if (!worker) {
-      throw new DatabaseError('Worker not found');
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
     }
-
-    if (!worker.isBlocked) {
-      throw new DatabaseError('Worker is not blocked');
-    }
-
-    // Update worker profile to unblocked status
-    const updatedWorker = await prisma.workerProfile.update({
-      where: { id: workerId },
-      data: {
-        isBlocked: false,
-      },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    return updatedWorker;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
+    throw new DatabaseError('Error toggling worker block status');
   }
 };

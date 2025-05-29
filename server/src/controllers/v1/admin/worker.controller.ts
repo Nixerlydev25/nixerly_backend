@@ -30,52 +30,18 @@ export const getAllWorkers = async (
   }
 };
 
-export const getWorkerById = async (
+
+export const toggleWorkerBlock = async (
   request: Request,
   response: Response,
   next: NextFunction
 ) => {
   try {
     const { workerId } = request.params;
-    const worker = await workerModel.getWorkerById(workerId);
+    const worker = await workerModel.toggleWorkerBlock(workerId);
 
     response.status(ResponseStatus.OK).json({
-      message: 'Worker fetched successfully',
-      data: worker,
-    });
-  } catch (error: any) {
-    next(error);
-  }
-};
-
-export const blockWorker = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    const { workerId } = request.params;
-    await workerModel.blockWorker(workerId);
-
-    response.status(ResponseStatus.OK).json({
-      message: 'Worker blocked successfully',
-    });
-  } catch (error: any) {
-    next(error);
-  }
-};
-
-export const unblockWorker = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    const { workerId } = request.params;
-    await workerModel.unblockWorker(workerId);
-
-    response.status(ResponseStatus.OK).json({
-      message: 'Worker unblocked successfully',
+      message: `Worker ${worker.isBlocked ? 'blocked' : 'unblocked'} successfully`,
     });
   } catch (error: any) {
     next(error);

@@ -3,31 +3,25 @@ import { Router } from 'express';
 import isAuthorized from '../../../middleware/isAuthorized';
 import { ROUTES } from '../../../constants/routes.constants';
 import * as workerController from '../../../controllers/v1/admin/worker.controller';
-
+import {
+  getAllWorkers,
+  toggleWorkerBlock,
+} from '../../../schema/v1/admin/worker.validation';
+import * as ValidationMiddleware from '../../../middleware/validation';
 const workerRouter = Router();
 
 workerRouter.get(
   ROUTES.ADMIN.WORKER.GET_ALL,
-  // isAuthorized([Role.ADMIN]),
+  isAuthorized([Role.ADMIN]),
+  ValidationMiddleware.queryValidation(getAllWorkers),
   workerController.getAllWorkers
 );
 
-workerRouter.get(
-  ROUTES.ADMIN.WORKER.GET_BY_ID,
-  // isAuthorized([Role.ADMIN]),
-  workerController.getWorkerById
-);
-
 workerRouter.post(
-  ROUTES.ADMIN.WORKER.BLOCK,
-  // isAuthorized([Role.ADMIN]),
-  workerController.blockWorker
-);
-
-workerRouter.post(
-  ROUTES.ADMIN.WORKER.UNBLOCK,
-  // isAuthorized([Role.ADMIN]),
-  workerController.unblockWorker
+  ROUTES.ADMIN.WORKER.TOGGLE_BLOCK,
+  isAuthorized([Role.ADMIN]),
+  ValidationMiddleware.paramValidation(toggleWorkerBlock, 'workerId'),
+  workerController.toggleWorkerBlock
 );
 
 export default workerRouter;

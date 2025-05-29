@@ -1,6 +1,5 @@
 import prisma from '../../../config/prisma.config';
-import { DatabaseError } from '../../../utils/errors';
-import { Prisma, ReportType } from '@prisma/client';
+import { DatabaseError, NotFoundError } from '../../../utils/errors';
 
 export const getAllBusinesses = async (filters: {
   page: number;
@@ -118,100 +117,24 @@ export const getAllBusinesses = async (filters: {
   }
 };
 
-export const getBusinessById = async (businessId: string) => {
+export const toggleBusinessBlock = async (businessId: string) => {
   try {
     const business = await prisma.businessProfile.findUnique({
       where: { id: businessId },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    return business;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const blockBusiness = async (businessId: string) => {
-  try {
-    // Get the business profile
-    const business = await prisma.businessProfile.findUnique({
-      where: { id: businessId },
-      select: { isBlocked: true },
     });
 
     if (!business) {
-      throw new DatabaseError('Business not found');
+      throw new NotFoundError('Business not found');
     }
 
-    if (business.isBlocked) {
-      throw new DatabaseError('Business is already blocked');
-    }
-
-    // Update business profile to blocked status
-    const updatedBusiness = await prisma.businessProfile.update({
+    await prisma.businessProfile.update({
       where: { id: businessId },
-      data: {
-        isBlocked: true,
-      },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
+      data: { isBlocked: !business.isBlocked },
     });
 
-    return updatedBusiness;
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const unblockBusiness = async (businessId: string) => {
-  try {
-    // Get the business profile
-    const business = await prisma.businessProfile.findUnique({
-      where: { id: businessId },
-      select: { isBlocked: true },
-    });
-
-    if (!business) {
-      throw new DatabaseError('Business not found');
-    }
-
-    if (!business.isBlocked) {
-      throw new DatabaseError('Business is not blocked');
-    }
-
-    // Update business profile to unblocked status
-    const updatedBusiness = await prisma.businessProfile.update({
-      where: { id: businessId },
-      data: {
-        isBlocked: false,
-      },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-      },
-    });
-
-    return updatedBusiness;
+    return {
+      message: 'Business blocked successfully',
+    };
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
