@@ -94,7 +94,7 @@ jobs:
               -e STRIPE_PUBLISHABLE_KEY=${{secrets.STRIPE_PUBLISHABLE_KEY}} \
               -e AWS_REGION=eu-north-1 \
               -e CLIENT_SERVER=https://stage.nixerly.com \
-              -e CLIENT_SERVER_2=https://api.nixerly.com \
+              -e CLIENT_SERVER_2=https://admin.nixerly.com \
               -e COOKIE_CLIENT=.nixerly.com \
               -e SALT=${{ secrets.SALT }} \
               ${{ secrets.ORG_NAME }}/nixerly-server:latest 
