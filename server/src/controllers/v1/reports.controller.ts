@@ -42,3 +42,23 @@ export const createReportBusinessHandler = async (
     });
   }
 };
+
+export const createReportJobHandler = async (
+  request: Request,
+  response: Response
+) => {
+  try {
+    const { reason, category, targetJobId } = request.body;
+
+    await reportModel.createReportJob(reason, category, targetJobId);
+
+    return response.status(ResponseStatus.OK).json({
+      message: 'Reported to job successfully',
+    });
+  } catch (error) {
+    return response.status(ResponseStatus.BadRequest).json({
+      message: 'Invalid request body',
+      error: (error as Error).message,
+    });
+  }
+};
