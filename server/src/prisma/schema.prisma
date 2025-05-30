@@ -62,8 +62,10 @@ model WorkerProfile {
   conversations    Conversation[]              @relation("WorkerConversations")
   jobApplications  JobApplication[] // Worker applies to jobs
   contracts        Contract[]                  @relation("ContractWorker") // Worker's contracts
-  reportsSubmitted Report[]                    @relation("WorkerReporter") // Reports submitted by worker
-  reportsReceived  Report[]                    @relation("WorkerReported") // Reports received by worker
+  reportsSubmitted        WorkerReport[]    @relation("WorkerReportSubmitter")
+  reportsReceived         WorkerReport[]    @relation("WorkerReportTarget")
+  jobReportsSubmitted     JobReport[]       @relation("JobReportSubmitter")
+  businessReportsSubmitted BusinessReport[] @relation("BusinessReportSubmitter")
   sentMessages     Message[]                   @relation("WorkerSentMessages") // Messages sent by worker
   receivedMessages Message[]                   @relation("WorkerReceivedMessages") // Messages received by worker
   profilePicture   ProfilePicture? // One-to-one relation with profile picture
@@ -108,8 +110,10 @@ model BusinessProfile {
   conversations    Conversation[]                @relation("BusinessConversations")
   jobs             Job[] // Business posts jobs
   contracts        Contract[]                    @relation("ContractBusiness") // Business's contracts
-  reportsSubmitted Report[]                      @relation("BusinessReporter") // Reports submitted by business
-  reportsReceived  Report[]                      @relation("BusinessReported") // Reports received by business
+  reportsSubmitted       BusinessReport[] @relation("BusinessReportSubmitter")
+  reportsReceived        BusinessReport[] @relation("BusinessReportTarget")
+  jobReportsSubmitted    JobReport[]      @relation("JobReportBusinessSubmitter")
+  workerReportsSubmitted  WorkerReport[]   @relation("WorkerReportBusinessSubmitter")
   sentMessages     Message[]                     @relation("BusinessSentMessages") // Messages sent by business
   receivedMessages Message[]                     @relation("BusinessReceivedMessages")
   isBlocked        Boolean                       @default(false)
@@ -240,8 +244,8 @@ model Job {
   expiresAt               DateTime?
   skills                  JobSkill[] // Job can have multiple skills
   workAreaImages          JobImage[] // Images of work facility/area
-  isBlocked              Boolean          @default(false)
-  reportsReceived         Report[]         @relation("JobReported") // Reports received for this job
+  isBlocked               Boolean          @default(false)
+  reports                 JobReport[] // Reports received for this job
 
   @@map("jobs")
 }
@@ -389,7 +393,58 @@ model Review {
   @@map("reviews")
 }
 
-enum ReportType {
+model JobReport {
+  id                 String           @id @default(uuid())
+  jobId             String
+  job               Job              @relation(fields: [jobId], references: [id])
+  reporterWorkerId   String?
+  reporterWorker     WorkerProfile?   @relation("JobReportSubmitter", fields: [reporterWorkerId], references: [id])
+  reporterBusinessId String?
+  reporterBusiness   BusinessProfile? @relation("JobReportBusinessSubmitter", fields: [reporterBusinessId], references: [id])
+  reason            String           @db.Text
+  category          ReportCategory   @default(OTHER)
+  status            ReportStatus     @default(PENDING)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@map("job_reports")
+}
+
+model WorkerReport {
+  id                 String           @id @default(uuid())
+  targetWorkerId     String
+  targetWorker       WorkerProfile    @relation("WorkerReportTarget", fields: [targetWorkerId], references: [id])
+  reporterWorkerId   String?
+  reporterWorker     WorkerProfile?   @relation("WorkerReportSubmitter", fields: [reporterWorkerId], references: [id])
+  reporterBusinessId String?
+  reporterBusiness   BusinessProfile? @relation("WorkerReportBusinessSubmitter", fields: [reporterBusinessId], references: [id])
+  reason            String           @db.Text
+  category          ReportCategory   @default(OTHER)
+  status            ReportStatus     @default(PENDING)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@map("worker_reports")
+}
+
+model BusinessReport {
+  id                 String           @id @default(uuid())
+  targetBusinessId   String
+  targetBusiness     BusinessProfile  @relation("BusinessReportTarget", fields: [targetBusinessId], references: [id])
+  reporterWorkerId   String?
+  reporterWorker     WorkerProfile?   @relation("BusinessReportSubmitter", fields: [reporterWorkerId], references: [id])
+  reporterBusinessId String?
+  reporterBusiness   BusinessProfile? @relation("BusinessReportSubmitter", fields: [reporterBusinessId], references: [id])
+  reason            String           @db.Text
+  category          ReportCategory   @default(OTHER)
+  status            ReportStatus     @default(PENDING)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@map("business_reports")
+}
+
+enum ReportCategory {
   HARASSMENT
   SPAM
   INAPPROPRIATE_CONTENT
@@ -402,25 +457,11 @@ enum ReportType {
   OTHER
 }
 
-model Report {
-  id                 String           @id @default(uuid())
-  reporterWorkerId   String?
-  reporterWorker     WorkerProfile?   @relation("WorkerReporter", fields: [reporterWorkerId], references: [id])
-  reporterBusinessId String?
-  reporterBusiness   BusinessProfile? @relation("BusinessReporter", fields: [reporterBusinessId], references: [id])
-  reportedWorkerId   String?
-  reportedWorker     WorkerProfile?   @relation("WorkerReported", fields: [reportedWorkerId], references: [id])
-  reportedBusinessId String?
-  reportedBusiness   BusinessProfile? @relation("BusinessReported", fields: [reportedBusinessId], references: [id])
-  reportedJobId      String?
-  reportedJob        Job?             @relation("JobReported", fields: [reportedJobId], references: [id])
-  
-  reason             String           @db.Text
-  reportType         ReportType       @default(OTHER)
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-
-  @@map("reports")
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  REJECTED
+  UNDER_REVIEW
 }
 
 // WORKER PORTFOLIO & EXPERIENCE --------------------------------------------
