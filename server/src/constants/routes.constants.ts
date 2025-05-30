@@ -15,6 +15,7 @@ export const ROUTES = {
     BUSINESS: '/business',
     JOBS: '/jobs',
     ADMIN: '/admin',
+    REPORTS: '/reports',
   },
   ADMIN: {
     STATISTICS: {
@@ -35,6 +36,7 @@ export const ROUTES = {
       ROOT: '/jobs',
       GET_ALL: '/get-all-jobs',
       TOGGLE_BLOCK: '/toggle-block/:jobId',
+      GET_By_ID: '/get-by-id/:jobId',
     },
     REPORT: {
       ROOT: '/report',
@@ -48,6 +50,10 @@ export const ROUTES = {
       UNBLOCK_JOB_BY_REPORT: '/unblock-job-by-report/:reportId',
       BLOCK_BUSINESS_BY_REPORT: '/block-business-by-report/:reportId',
       UNBLOCK_BUSINESS_BY_REPORT: '/unblock-business-by-report/:reportId',
+      TOGGLE_BLOCK_WORKER_BY_REPORT: '/toggle-block-worker-by-report/:reportId',
+      TOGGLE_BLOCK_BUSINESS_BY_REPORT:
+        '/toggle-block-business-by-report/:reportId',
+      TOGGLE_BLOCK_JOB_BY_REPORT: '/toggle-block-job-by-report/:reportId',
     },
   },
   AUTH: {
@@ -141,5 +147,8 @@ export const ROUTES = {
     GET_BUSINESS_REPORTS: '/get-business-reports',
     GET_WORKER_REPORTS: '/get-worker-reports',
     GET_JOB_REPORTS: '/get-job-reports',
+    REPORT_WORKER: '/report-worker/:workerId',
+    REPORT_BUSINESS: '/report-business/:businessId',
+    REPORT_JOB: '/report-job/:jobId',
   },
 } as const;

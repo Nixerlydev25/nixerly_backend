@@ -1,20 +1,20 @@
-import { Router } from "express";
-import authRouter from "./auth.router";
-import otpRouter from "./opt.router";
-import roleRouter from "./role.router";
-import restrictionsRouter from "./restrictions.router";
-import userRouter from "./user.router";
-import healthRouter from "./health.router";
-import { ROUTES } from "../../constants/routes.constants";
-import languageRouter from "./language.router";
-import skillsRouter from "./skills.router";
-import educationRouter from "./educations.router";
-import experienceRouter from "./experience.router";
-import workerRouter from "./worker.router";
-import jobsRouter from "./jobs.router";
-import businessRouter from "./business.router";
-import adminRouter from "./admin/admin.router";
-
+import { Router } from 'express';
+import authRouter from './auth.router';
+import otpRouter from './opt.router';
+import roleRouter from './role.router';
+import restrictionsRouter from './restrictions.router';
+import userRouter from './user.router';
+import healthRouter from './health.router';
+import { ROUTES } from '../../constants/routes.constants';
+import languageRouter from './language.router';
+import skillsRouter from './skills.router';
+import educationRouter from './educations.router';
+import experienceRouter from './experience.router';
+import workerRouter from './worker.router';
+import jobsRouter from './jobs.router';
+import businessRouter from './business.router';
+import adminRouter from './admin/admin.router';
+import reportsRouter from './admin/reports.router';
 // import subscriptionRouter from "./subscription.router";
 
 const Api2 = Router();
@@ -61,6 +61,8 @@ Api2.use(ROUTES.API.HEALTH, healthRouter);
 
 // admin routes
 Api2.use(ROUTES.API.ADMIN, adminRouter);
+
+Api2.use(ROUTES.API.REPORTS, reportsRouter);
 
 // subscription routes
 // Api2.use(ROUTES.API.SUBSCRIPTION, subscriptionRouter);
