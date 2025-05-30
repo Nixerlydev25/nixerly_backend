@@ -43,6 +43,90 @@ export const getAllJobs = async (filters: any) => {
   }
 };
 
+export const getJobById = async (jobId: string) => {
+  try {
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        requirements: true,
+        employmentType: true,
+        numberOfPositions: true,
+        budget: true,
+        hourlyRateMin: true,
+        hourlyRateMax: true,
+        salary: true,
+        businessProfileId: true,
+        status: true,
+        jobType: true,
+        startDate: true,
+        numberOfWorkersRequired: true,
+        createdAt: true,
+        updatedAt: true,
+        expiresAt: true,
+        isBlocked: true,
+        businessProfile: {
+          select: {
+            id: true,
+            userId: true,
+            companyName: true,
+            description: true,
+            industry: true,
+            phoneNumber: true,
+            city: true,
+            state: true,
+            country: true,
+            website: true,
+            employeeCount: true,
+            yearFounded: true,
+            totalSpent: true,
+            postedJobs: true,
+            onboardingStep: true,
+            createdAt: true,
+            updatedAt: true,
+            isBlocked: true,
+            lastActive: true,
+          },
+        },
+        skills: true,
+        workAreaImages: true,
+        applications: {
+          select: {
+            id: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+            workerStartDateAvailability: true,
+            duration: true,
+            workerProfile: {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundError('Job not found');
+    }
+
+    return job;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
 export const toggleJobBlock = async (jobId: string) => {
   try {
     const job = await prisma.job.findUnique({

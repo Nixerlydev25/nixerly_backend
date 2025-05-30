@@ -20,6 +20,23 @@ export const getAllJobs = async (
   }
 };
 
+export const getJobById = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { jobId } = request.params;
+    const job = await jobModel.getJobById(jobId);
+    response.status(ResponseStatus.OK).json({
+      message: 'Job fetched successfully',
+      job,
+    });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
 export const toggleJobBlock = async (
   request: Request,
   response: Response,
@@ -27,7 +44,7 @@ export const toggleJobBlock = async (
 ) => {
   try {
     const { jobId } = request.params;
-    
+
     await jobModel.toggleJobBlock(jobId);
     response.status(ResponseStatus.OK).json({
       message: 'Job blocked successfully',

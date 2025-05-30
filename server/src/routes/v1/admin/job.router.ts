@@ -6,6 +6,7 @@ import * as jobController from '../../../controllers/v1/admin/job.controller';
 import * as ValidationMiddleware from '../../../middleware/validation';
 import {
   getAllJobs,
+  getJobById,
   toggleJobBlock,
 } from '../../../schema/v1/admin/job.validation';
 
@@ -16,6 +17,13 @@ jobRouter.get(
   isAuthorized([Role.ADMIN]),
   ValidationMiddleware.queryValidation(getAllJobs),
   jobController.getAllJobs
+);
+
+jobRouter.get(
+  ROUTES.ADMIN.JOB.GET_By_ID,
+  isAuthorized([Role.ADMIN]),
+  ValidationMiddleware.paramValidation(getJobById, 'jobId'),
+  jobController.getJobById
 );
 
 jobRouter.post(

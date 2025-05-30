@@ -68,6 +68,7 @@ export const getJobDetailsHandler = async (
 ) => {
   try {
     const { jobId } = request.params;
+    console.log(jobId);
     const { userId } = request.user;
     const jobFound = await jobModel.getJobById(jobId);
     if (!jobFound) {

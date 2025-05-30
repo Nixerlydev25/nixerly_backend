@@ -1,28 +1,26 @@
-import { ReportType } from '@prisma/client';
+import { ReportCategory } from '@prisma/client';
 import prisma from '../../../config/prisma.config';
 import { DatabaseError } from '../../../utils/errors';
 
-export const getAllReports = async (filters: any) => {
+export const getAllWorkerReports = async (filters: any) => {
   try {
-    const { page, limit, search, reportType } = filters;
+    const { page, limit, search, reportCategory } = filters;
     const skip = (page - 1) * limit;
-    const reports = await prisma.report.findMany({
+    const reports = await prisma.workerReport.findMany({
       where: {
-        ...(reportType && { reportType }),
+        ...(reportCategory && { reportCategory }),
       },
       include: {
         reporterWorker: true,
         reporterBusiness: true,
-        reportedWorker: true,
-        reportedBusiness: true,
-        reportedJob: true
+        targetWorker: true,
       },
       skip,
       take: limit,
     });
-    const totalCount = await prisma.report.count({
+    const totalCount = await prisma.workerReport.count({
       where: {
-        ...(reportType && { reportType }),
+        ...(reportCategory && { reportCategory }),
       },
     });
     const totalPages = Math.ceil(totalCount / filters.limit);
@@ -42,16 +40,14 @@ export const getAllReports = async (filters: any) => {
   }
 };
 
-export const getReportById = async (id: string) => {
+export const getWorkerReportById = async (id: string) => {
   try {
-    const report = await prisma.report.findUnique({
+    const report = await prisma.workerReport.findUnique({
       where: { id },
       include: {
         reporterBusiness: true,
         reporterWorker: true,
-        reportedBusiness: true,
-        reportedWorker: true,
-        reportedJob: true
+        targetWorker: true,
       },
     });
     return report;
@@ -60,278 +56,215 @@ export const getReportById = async (id: string) => {
   }
 };
 
-export const blockUserByReport = async (reportId: string) => {
+export const getAllBusinessReports = async (filters: any) => {
   try {
-    const report = await prisma.report.findUnique({
+    const { page, limit, search, reportCategory } = filters;
+    const skip = (page - 1) * limit;
+    const reports = await prisma.businessReport.findMany({
+      where: {
+        ...(reportCategory && { reportCategory }),
+      },
+      include: {
+        reporterWorker: true,
+        reporterBusiness: true,
+        targetBusiness: true,
+      },
+      skip,
+      take: limit,
+    });
+    const totalCount = await prisma.businessReport.count({
+      where: {
+        ...(reportCategory && { reportCategory }),
+      },
+    });
+    const totalPages = Math.ceil(totalCount / filters.limit);
+    const currentPage = parseInt(filters.page);
+    const hasMore = currentPage < totalPages;
+    return {
+      reports,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage,
+        hasMore,
+      },
+    };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const getBusinessReportById = async (id: string) => {
+  try {
+    const report = await prisma.businessReport.findUnique({
+      where: { id },
+      include: {
+        reporterWorker: true,
+        reporterBusiness: true,
+        targetBusiness: true,
+      },
+    });
+    return report;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const getAllJobReports = async (filters: any) => {
+  try {
+    const { page, limit, search, reportCategory } = filters;
+    const skip = (page - 1) * limit;
+    const reports = await prisma.jobReport.findMany({
+      where: {
+        ...(reportCategory && { reportCategory }),
+      },
+      include: {
+        reporterWorker: true,
+        reporterBusiness: true,
+        job: true,
+      },
+      skip,
+      take: limit,
+    });
+    const totalCount = await prisma.jobReport.count({
+      where: {
+        ...(reportCategory && { reportCategory }),
+      },
+    });
+    const totalPages = Math.ceil(totalCount / filters.limit);
+    const currentPage = parseInt(filters.page);
+    const hasMore = currentPage < totalPages;
+    return {
+      reports,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage,
+        hasMore,
+      },
+    };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const getJobReportById = async (id: string) => {
+  try {
+    const report = await prisma.jobReport.findUnique({
+      where: { id },
+      include: {
+        reporterWorker: true,
+        reporterBusiness: true,
+        job: true,
+      },
+    });
+    return report;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const toggleBlockWorkerByReport = async (reportId: string) => {
+  try {
+    const report = await prisma.workerReport.findUnique({
       where: { id: reportId },
       include: {
-        reportedWorker: {
+        targetWorker: {
           include: {
-            user: true
-          }
+            user: true,
+          },
         },
-        reportedBusiness: {
-          include: {
-            user: true
-          }
-        },
-        reportedJob: true
-      }
+      },
     });
 
     if (!report) {
       throw new DatabaseError('Report not found');
     }
 
-    if (report.reportedWorker) {
-      // Block worker profile
-      const updatedWorker = await prisma.workerProfile.update({
-        where: { id: report.reportedWorkerId! },
-        data: {
-          isBlocked: true
-        }
-      });
+    // Block worker profile
+    const updatedWorker = await prisma.workerProfile.update({
+      where: { id: report.targetWorkerId },
+      data: {
+        isBlocked: !report.targetWorker.isBlocked,
+      },
+    });
 
-      // Block associated user
-      await prisma.user.update({
-        where: { id: report.reportedWorker.userId },
-        data: {
-          isSuspended: true
-        }
-      });
+    // Block associated user
+    await prisma.user.update({
+      where: { id: report.targetWorker.user.id },
+      data: {
+        isSuspended: true,
+      },
+    });
 
-      return updatedWorker;
-
-    } else if (report.reportedBusiness) {
-      // Block business profile
-      const updatedBusiness = await prisma.businessProfile.update({
-        where: { id: report.reportedBusinessId! },
-        data: {
-          isBlocked: true
-        }
-      });
-
-      // Block associated user
-      await prisma.user.update({
-        where: { id: report.reportedBusiness.userId },
-        data: {
-          isSuspended: true
-        }
-      });
-
-      return updatedBusiness;
-
-    } else if (report.reportedJob) {
-      // Block job
-      const updatedJob = await prisma.job.update({
-        where: { id: report.reportedJobId! },
-        data: {
-          isBlocked: true
-        }
-      });
-
-      return updatedJob;
-    }
-
-    throw new DatabaseError('No valid entity found to block');
-
+    return updatedWorker;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
 };
 
-export const unblockUserByReport = async (reportId: string) => {
+export const toggleBlockBusinessByReport = async (reportId: string) => {
   try {
-    const report = await prisma.report.findUnique({
+    const report = await prisma.businessReport.findUnique({
       where: { id: reportId },
       include: {
-        reportedWorker: {
+        targetBusiness: {
           include: {
-            user: true
-          }
+            user: true,
+          },
         },
-        reportedBusiness: {
-          include: {
-            user: true
-          }
-        },
-        reportedJob: true
-      }
+      },
     });
 
     if (!report) {
       throw new DatabaseError('Report not found');
     }
-    
-    if (report.reportedWorker) {
-      // Unblock worker profile
-      const updatedWorker = await prisma.workerProfile.update({
-        where: { id: report.reportedWorkerId! },
-        data: {
-          isBlocked: false
-        }
-      });
 
-      // Unblock associated user
-      await prisma.user.update({
-        where: { id: report.reportedWorker.userId },
-        data: {
-          isSuspended: false
-        }
-      });
+    // Block business profile
+    const updatedBusiness = await prisma.businessProfile.update({
+      where: { id: report.targetBusinessId },
+      data: {
+        isBlocked: !report.targetBusiness.isBlocked,
+      },
+    });
 
-      return updatedWorker;
+    // Block associated user
+    await prisma.user.update({
+      where: { id: report.targetBusiness.user.id },
+      data: {
+        isSuspended: true,
+      },
+    });
 
-    } else if (report.reportedBusiness) {
-      // Unblock business profile
-      const updatedBusiness = await prisma.businessProfile.update({
-        where: { id: report.reportedBusinessId! },
-        data: {
-          isBlocked: false
-        }
-      });
+    return updatedBusiness;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
 
-      // Unblock associated user
-      await prisma.user.update({
-        where: { id: report.reportedBusiness.userId },
-        data: {
-          isSuspended: false
-        }
-      });
+export const toggleBlockJobByReport = async (reportId: string) => {
+  try {
+    const report = await prisma.jobReport.findUnique({
+      where: { id: reportId },
+      include: {
+        job: true,
+      },
+    });
 
-      return updatedBusiness;
-
-    } else if (report.reportedJob) {
-      // Unblock job
-      const updatedJob = await prisma.job.update({
-        where: { id: report.reportedJobId! },
-        data: {
-          isBlocked: false
-        }
-      });
-
-      return updatedJob;
+    if (!report) {
+      throw new DatabaseError('Report not found');
     }
 
-    throw new DatabaseError('No valid entity found to unblock');
-    
+    // Block job
+    const updatedJob = await prisma.job.update({
+      where: { id: report.jobId },
+      data: {
+        isBlocked: !report.job.isBlocked,
+      },
+    });
+
+    return updatedJob;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
 };
-
-export const getBusinessReports = async (filters: any) => {
-  try {
-    const { page, limit } = filters;
-    const skip = (page - 1) * limit;
-    const reports = await prisma.report.findMany({
-      where: {
-        reportedBusinessId: { not: null }
-      },
-      include: {
-        reporterWorker: true,
-        reporterBusiness: true,
-        reportedBusiness: true,
-      },
-      skip,
-      take: limit,
-    });
-    const totalCount = await prisma.report.count({
-      where: {
-        reportedBusinessId: { not: null }
-      },
-    });
-    const totalPages = Math.ceil(totalCount / filters.limit);
-    const currentPage = parseInt(filters.page);
-    const hasMore = currentPage < totalPages;
-    return {
-      reports,
-      pagination: {
-        totalCount,
-        totalPages,
-        currentPage,
-        hasMore,
-      },
-    };
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const getWorkerReports = async (filters: any) => {
-  try {
-    const { page, limit } = filters;
-    const skip = (page - 1) * limit;
-    const reports = await prisma.report.findMany({
-      where: {
-        reportedWorkerId: { not: null }
-      },
-      include: {
-        reporterWorker: true,
-        reporterBusiness: true,
-        reportedWorker: true,
-      },
-      skip,
-      take: limit,
-    });
-    const totalCount = await prisma.report.count({
-      where: {
-        reportedWorkerId: { not: null }
-      },
-    });
-    const totalPages = Math.ceil(totalCount / filters.limit);
-    const currentPage = parseInt(filters.page);
-    const hasMore = currentPage < totalPages;
-    return {
-      reports,
-      pagination: {
-        totalCount,
-        totalPages,
-        currentPage,
-        hasMore,
-      },
-    };
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-export const getJobReports = async (filters: any) => {
-  try {
-    const { page, limit } = filters;
-    const skip = (page - 1) * limit;
-    const reports = await prisma.report.findMany({
-      where: {
-        reportedJobId: { not: null }
-      },
-      include: {
-        reporterWorker: true,
-        reporterBusiness: true,
-        reportedJob: true,
-      },
-      skip,
-      take: limit,
-    });
-    const totalCount = await prisma.report.count({
-      where: {
-        reportedJobId: { not: null }
-      },
-    });
-    const totalPages = Math.ceil(totalCount / filters.limit);
-    const currentPage = parseInt(filters.page);
-    const hasMore = currentPage < totalPages;
-    return {
-      reports,
-      pagination: {
-        totalCount,
-        totalPages,
-        currentPage,
-        hasMore,
-      },
-    };
-  } catch (error: any) {
-    throw new DatabaseError(error.message);
-  }
-};
-
-
