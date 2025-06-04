@@ -11,9 +11,21 @@ export const getAllWorkerReports = async (filters: any) => {
         ...(reportCategory && { reportCategory }),
       },
       include: {
-        reporterWorker: true,
-        reporterBusiness: true,
-        targetWorker: true,
+        reporterWorker: {
+          include: {
+            user: true,
+          },
+        },
+        reporterBusiness: {
+          include: {
+            user: true,
+          },
+        },
+        targetWorker: {
+          include: {
+            user: true,
+          },
+        },
       },
       skip,
       take: limit,
@@ -45,9 +57,21 @@ export const getWorkerReportById = async (id: string) => {
     const report = await prisma.workerReport.findUnique({
       where: { id },
       include: {
-        reporterBusiness: true,
-        reporterWorker: true,
-        targetWorker: true,
+        reporterBusiness: {
+          include: {
+            user: true,
+          },
+        },
+        reporterWorker: {
+          include: {
+            user: true,
+          },
+        },
+        targetWorker: {
+          include: {
+            user: true
+          }
+        },
       },
     });
     return report;
@@ -65,12 +89,23 @@ export const getAllBusinessReports = async (filters: any) => {
         ...(reportCategory && { reportCategory }),
       },
       include: {
-        reporterWorker: true,
-        reporterBusiness: true,
-        targetBusiness: true,
+        reporterWorker: {
+          include: {
+            user: true,
+          },
+        },
+        reporterBusiness: {
+          include: {
+            user: true,
+          },
+        },
+        targetBusiness: {
+          include: {
+            user: true,
+          },
+        },
       },
       skip,
-      take: limit,
     });
     const totalCount = await prisma.businessReport.count({
       where: {
@@ -99,9 +134,21 @@ export const getBusinessReportById = async (id: string) => {
     const report = await prisma.businessReport.findUnique({
       where: { id },
       include: {
-        reporterWorker: true,
-        reporterBusiness: true,
-        targetBusiness: true,
+        reporterWorker: {
+          include: {
+            user: true,
+          },
+        },
+        reporterBusiness: {
+          include: {
+            user: true,
+          },
+        },
+        targetBusiness: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
     return report;
@@ -119,8 +166,16 @@ export const getAllJobReports = async (filters: any) => {
         ...(reportCategory && { reportCategory }),
       },
       include: {
-        reporterWorker: true,
-        reporterBusiness: true,
+        reporterWorker: {
+          include: {
+            user: true,
+          },
+        },
+        reporterBusiness: {
+          include: {
+            user: true,
+          },
+        },
         job: true,
       },
       skip,
@@ -153,8 +208,16 @@ export const getJobReportById = async (id: string) => {
     const report = await prisma.jobReport.findUnique({
       where: { id },
       include: {
-        reporterWorker: true,
-        reporterBusiness: true,
+        reporterWorker: {
+          include: {
+            user: true,
+          },
+        },
+        reporterBusiness: {
+          include: {
+            user: true,
+          },
+        },
         job: true,
       },
     });
@@ -257,7 +320,7 @@ export const toggleBlockJobByReport = async (reportId: string) => {
 
     // Block job
     const updatedJob = await prisma.job.update({
-      where: { id: report.jobId },
+      where: { id: report.targetJobId },
       data: {
         isBlocked: !report.job.isBlocked,
       },

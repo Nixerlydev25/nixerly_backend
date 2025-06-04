@@ -14,7 +14,7 @@ import workerRouter from './worker.router';
 import jobsRouter from './jobs.router';
 import businessRouter from './business.router';
 import adminRouter from './admin/admin.router';
-import reportsRouter from './admin/reports.router';
+import reportsRouter from './reports.router';
 // import subscriptionRouter from "./subscription.router";
 
 const Api2 = Router();

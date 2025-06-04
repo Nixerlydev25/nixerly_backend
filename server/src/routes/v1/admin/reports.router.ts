@@ -28,10 +28,38 @@ reportsRouter.get(
 );
 
 reportsRouter.get(
+  ROUTES.ADMIN.REPORT.GET_SINGLE_WORKER_REPORT,
+  isAuthorized([Role.ADMIN]),
+  ValidationMiddleware.paramValidation(reportIdSchema, 'reportId'),
+  reportController.getWorkerReportById
+);
+
+reportsRouter.get(
+  ROUTES.ADMIN.REPORT.GET_BUSINESS_REPORTS,
+  isAuthorized([Role.ADMIN]),
+  ValidationMiddleware.queryValidation(getBusinessReports),
+  reportController.getBusinessReports
+);
+
+reportsRouter.get(
+  ROUTES.ADMIN.REPORT.GET_SINGLE_BUSINESS_REPORT,
+  isAuthorized([Role.ADMIN]),
+  ValidationMiddleware.paramValidation(reportIdSchema, 'reportId'),
+  reportController.getBusinessReportById
+);
+
+reportsRouter.get(
   ROUTES.ADMIN.REPORT.GET_JOB_REPORTS,
   isAuthorized([Role.ADMIN]),
   ValidationMiddleware.queryValidation(getJobReports),
   reportController.getJobReports
+);
+
+reportsRouter.get(
+  ROUTES.ADMIN.REPORT.GET_SINGLE_JOB_REPORT,
+  isAuthorized([Role.ADMIN]),
+  ValidationMiddleware.paramValidation(reportIdSchema, 'reportId'),
+  reportController.getJobReportById
 );
 
 reportsRouter.post(
