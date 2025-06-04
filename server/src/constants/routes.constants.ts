@@ -103,6 +103,7 @@ export const ROUTES = {
     GET_ALL_BUSINESS_PROFILES: "/get-all-business-profiles",
     GET_BUSINESS_PROFILE_DETAILS: "/business-profile-details/:businessId",
     GET_ALL_BUSINESS_JOBS: "/get-all-business-jobs",
+    GET_JOB_DETAILS: "/job-details/:jobId",
   },
   WROKER_SKILLS: {
     CREATE: "/",

@@ -1,6 +1,6 @@
 import { OnboardingStepBusinessProfile } from "@prisma/client";
 import prisma from "../../config/prisma.config";
-import { DatabaseError } from "../../utils/errors";
+import { DatabaseError, NotFoundError } from "../../utils/errors";
 
 export const updateBusinessProfile = async (
   userId: string,
@@ -134,7 +134,7 @@ export const getAllBusinessJobs = async (
       skip,
       take: limit,
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
       },
       select: {
         id: true,
@@ -159,17 +159,17 @@ export const getAllBusinessJobs = async (
         },
         businessProfile: {
           select: {
-            companyName: true
-          }
-        }
+            companyName: true,
+          },
+        },
       },
     });
 
     // Add total applications count to each job post
-    const allJobsPostsWithApplications = allJobsPosts.map(job => ({
+    const allJobsPostsWithApplications = allJobsPosts.map((job) => ({
       ...job,
       totalApplications: job._count.applications,
-      companyName: job.businessProfile.companyName
+      companyName: job.businessProfile.companyName,
     }));
 
     const totalPages = Math.ceil(totalCount / limit);
@@ -187,6 +187,62 @@ export const getAllBusinessJobs = async (
         open: openJobsCount,
         closed: closedJobsCount,
       },
+    };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const getJobById = async (jobId: string, businessId: string) => {
+  try {
+    const job = await prisma.job.findFirst({
+      where: {
+        id: jobId,
+        businessProfileId: businessId,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        employmentType: true,
+        numberOfPositions: true,
+        budget: true,
+        hourlyRateMin: true,
+        hourlyRateMax: true,
+        status: true,
+        jobType: true,
+        startDate: true,
+        numberOfWorkersRequired: true,
+        expiresAt: true,
+        location: true,
+        requirements: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            applications: true,
+          },
+        },
+        businessProfile: {
+          select: {
+            companyName: true,
+            industry: true,
+            city: true,
+            state: true,
+            country: true,
+          },
+        },
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundError("Job not found");
+    }
+
+    return {
+      ...job,
+      totalApplications: job._count.applications,
+      company: job.businessProfile,
     };
   } catch (error: any) {
     throw new DatabaseError(error.message);

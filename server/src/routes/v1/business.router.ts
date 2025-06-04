@@ -5,7 +5,12 @@ import isAuthorized from "../../middleware/isAuthorized";
 import { updateBusinessProfileSchema } from "../../schema/v1/auth.validation";
 import * as ValidationMiddleware from "../../middleware/validation";
 import * as businessController from "../../controllers/v1/business.controller";
-import { getJobsByBusiness, getWorkerDetailsSchema } from "../../schema/v1/worker.validation";
+import {
+  getJobsByBusiness,
+  getWorkerDetailsSchema,
+} from "../../schema/v1/worker.validation";
+import { getJobDetailsSchema } from "../../schema/v1/jobs.validation";
+
 const businessRouter = Router();
 
 businessRouter.patch(
@@ -17,8 +22,8 @@ businessRouter.patch(
 
 businessRouter.get(
   ROUTES.BUSINESS_PROFILE.GET_BUSINESS_PROFILE_DETAILS,
-  isAuthorized([Role.BUSINESS, Role.ADMIN, Role.SUPER_ADMIN , Role.WORKER]),
-  ValidationMiddleware.paramValidation(getWorkerDetailsSchema, 'businessId'),
+  isAuthorized([Role.BUSINESS, Role.ADMIN, Role.SUPER_ADMIN, Role.WORKER]),
+  ValidationMiddleware.paramValidation(getWorkerDetailsSchema, "businessId"),
   businessController.getBusinessProfileDetailsHandler
 );
 
@@ -27,6 +32,13 @@ businessRouter.get(
   isAuthorized([Role.BUSINESS]),
   ValidationMiddleware.queryValidation(getJobsByBusiness),
   businessController.getMyBusinessJobsHandler
+);
+
+businessRouter.get(
+  ROUTES.BUSINESS_PROFILE.GET_JOB_DETAILS,
+  isAuthorized([Role.BUSINESS]),
+  ValidationMiddleware.paramValidation(getJobDetailsSchema, "jobId"),
+  businessController.getJobDetailsHandler
 );
 
 export default businessRouter;

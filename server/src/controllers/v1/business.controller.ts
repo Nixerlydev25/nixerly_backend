@@ -70,3 +70,24 @@ export const getMyBusinessJobsHandler = async (
     next(error);
   }
 };
+
+export const getJobDetailsHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { jobId } = request.params;
+    const { userId } = request.user;
+
+    const job = await businessModel.getJobById(jobId, userId);
+
+    return response.status(ResponseStatus.OK).json({
+      success: true,
+      message: "Job details fetched successfully",
+      job,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
