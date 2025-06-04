@@ -8,6 +8,9 @@ import {
   toggleWorkerBlock,
 } from '../../../schema/v1/admin/worker.validation';
 import * as ValidationMiddleware from '../../../middleware/validation';
+import * as adminController from '../../../controllers/v1/admin/admin.controller';
+import { workerIdParamSchema } from '../../../schema/v1/admin/admin.validation';
+
 const workerRouter = Router();
 
 workerRouter.get(
@@ -17,11 +20,12 @@ workerRouter.get(
   workerController.getAllWorkers
 );
 
-workerRouter.post(
+// Toggle block status for worker
+workerRouter.patch(
   ROUTES.ADMIN.WORKER.TOGGLE_BLOCK,
   isAuthorized([Role.ADMIN]),
-  ValidationMiddleware.paramValidation(toggleWorkerBlock, 'workerId'),
-  workerController.toggleWorkerBlock
+  ValidationMiddleware.paramValidation(workerIdParamSchema, 'workerId'),
+  adminController.toggleWorkerBlockStatus
 );
 
 export default workerRouter;

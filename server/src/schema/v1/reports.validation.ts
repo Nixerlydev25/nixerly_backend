@@ -1,26 +1,47 @@
-import { z } from 'zod';
-import { ReportCategory, ReportJobsCategory } from '@prisma/client';
+import { z } from "zod";
+import {
+  WorkerReportReason,
+  BusinessReportReason,
+  JobReportReason,
+} from "@prisma/client";
 
-export const createReportWorkerSchema = z.object({
-  reason: z.string().min(1),
-  category: z.nativeEnum(ReportCategory),
-  targetWorkerId: z.string().min(1),
+// Body schemas
+export const reportWorkerBodySchema = z.object({
+  reason: z.nativeEnum(WorkerReportReason, {
+    required_error: "Report reason is required",
+  }),
+  description: z
+    .string({ required_error: "Description is required" })
+    .min(10, "Description must be at least 10 characters long"),
 });
 
-export const reportWorkerIdSchema = z.string().uuid('Invalid worker ID');
-
-export const reportBusinessSchema = z.object({
-  reason: z.string().min(1),
-  category: z.nativeEnum(ReportCategory),
-  targetBusinessId: z.string().min(1),
+export const reportBusinessBodySchema = z.object({
+  reason: z.nativeEnum(BusinessReportReason, {
+    required_error: "Report reason is required",
+  }),
+  description: z
+    .string({ required_error: "Description is required" })
+    .min(10, "Description must be at least 10 characters long"),
 });
 
-export const reportBusinessIdSchema = z.string().uuid('Invalid business ID');
-
-export const reportJobSchema = z.object({
-  reason: z.string().min(1),
-  category: z.nativeEnum(ReportJobsCategory),
-  targetJobId: z.string().min(1),
+export const reportJobBodySchema = z.object({
+  reason: z.nativeEnum(JobReportReason, {
+    required_error: "Report reason is required",
+  }),
+  description: z
+    .string({ required_error: "Description is required" })
+    .min(10, "Description must be at least 10 characters long"),
 });
 
-export const reportJobIdSchema = z.string().uuid('Invalid job ID');
+// Param schemas
+export const reportWorkerParamSchema = z.string({
+  required_error: "Reported worker ID is required",
+});
+
+export const reportBusinessParamSchema = z.string({
+  required_error: "Reported business ID is required",
+});
+
+export const reportJobParamSchema = z.string({
+  required_error: "Reported job ID is required",
+});

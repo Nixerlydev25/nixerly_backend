@@ -9,6 +9,8 @@ import {
   getJobById,
   toggleJobBlock,
 } from '../../../schema/v1/admin/job.validation';
+import * as adminController from '../../../controllers/v1/admin/admin.controller';
+import { jobIdParamSchema } from '../../../schema/v1/admin/admin.validation';
 
 const jobRouter = Router();
 
@@ -26,11 +28,12 @@ jobRouter.get(
   jobController.getJobById
 );
 
-jobRouter.post(
+// Toggle block status for job
+jobRouter.patch(
   ROUTES.ADMIN.JOB.TOGGLE_BLOCK,
   isAuthorized([Role.ADMIN]),
-  ValidationMiddleware.paramValidation(toggleJobBlock, 'jobId'),
-  jobController.toggleJobBlock
+  ValidationMiddleware.paramValidation(jobIdParamSchema, 'jobId'),
+  adminController.toggleJobBlockStatus
 );
 
 export default jobRouter;

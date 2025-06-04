@@ -10,7 +10,6 @@ export const createRestrictionSchema = z.object({
     RestrictionType.HIRE_WORKERS,
     RestrictionType.VIEW_PROFILES,
     RestrictionType.SUBMIT_REVIEWS,
-    RestrictionType.SUBMIT_REPORTS,
   ]),
 });
 
@@ -27,6 +26,5 @@ export const removeRestrictionSchema = z.object({
     RestrictionType.HIRE_WORKERS,
     RestrictionType.VIEW_PROFILES,
     RestrictionType.SUBMIT_REVIEWS,
-    RestrictionType.SUBMIT_REPORTS,
   ]),
 });

@@ -67,10 +67,6 @@ model WorkerProfile {
   profilePicture           ProfilePicture? // One-to-one relation with profile picture
   isBlocked                Boolean                     @default(false)
   lastActive               DateTime                    @default(now())
-  // Reports
-  reportsReceived          WorkerReport[]              @relation("WorkerReportsReceived")
-  businessReportsSent      BusinessReport[]            @relation("BusinessReportsByWorker")
-  jobReportsSent           JobReport[]                 @relation("JobReportsByWorker")
 
   @@map("worker_profiles")
 }
@@ -105,7 +101,7 @@ model BusinessProfile {
   postedJobs             Int                           @default(0)
   onboardingStep         OnboardingStepBusinessProfile @default(COMPANY_INFO)
   createdAt              DateTime                      @default(now())
-  updatedAt              DateTime                      @default(now()) @updatedAt
+  updatedAt              DateTime                      @updatedAt
   reviewsReceived        Review[]                      @relation("BusinessReviews")
   conversations          Conversation[]                @relation("BusinessConversations")
   jobs                   Job[] // Business posts jobs
@@ -114,9 +110,6 @@ model BusinessProfile {
   receivedMessages       Message[]                     @relation("BusinessReceivedMessages")
   isBlocked              Boolean                       @default(false)
   lastActive             DateTime                      @default(now())
-  // Reports
-  reportsReceived        BusinessReport[]              @relation("BusinessReportsReceived")
-  workerReportsSent      WorkerReport[]                @relation("WorkerReportsByBusiness")
 
   @@map("business_profiles")
 }
@@ -141,6 +134,7 @@ enum RestrictionType {
   HIRE_WORKERS
   VIEW_PROFILES
   SUBMIT_REVIEWS
+  SUBMIT_REPORTS
   BLOCKED
 }
 
@@ -243,8 +237,6 @@ model Job {
   skills                  JobSkill[] // Job can have multiple skills
   workAreaImages          JobImage[] // Images of work facility/area
   isBlocked               Boolean          @default(false)
-  // Reports
-  reportsReceived         JobReport[]      @relation("JobReportsReceived")
 
   @@map("jobs")
 }
@@ -366,7 +358,7 @@ model Milestone {
   dueDate     DateTime
   status      MilestoneStatus @default(PENDING)
   createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @default(now()) @updatedAt
+  updatedAt   DateTime        @updatedAt
 
   @@map("milestones")
 }
@@ -390,6 +382,94 @@ model Review {
   createdAt         DateTime         @default(now())
 
   @@map("reviews")
+}
+
+// REPORTING SYSTEM --------------------------------------------
+model JobReport {
+  id                 String             @id @default(uuid())
+  targetJobId        String
+  job                Job                @relation(fields: [targetJobId], references: [id])
+  reporterWorkerId   String?
+  reporterWorker     WorkerProfile?     @relation("JobReportSubmitter", fields: [reporterWorkerId], references: [id])
+  reason             String             @db.Text
+  category           ReportJobCategory  @default(OTHER)
+  status             ReportStatus       @default(PENDING)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@map("job_reports")
+}
+
+model WorkerReport {
+  id                 String           @id @default(uuid())
+  targetWorkerId     String
+  targetWorker       WorkerProfile    @relation("WorkerReportTarget", fields: [targetWorkerId], references: [id])
+  reporterBusinessId String
+  reporterBusiness   BusinessProfile  @relation("WorkerReportBusinessSubmitter", fields: [reporterBusinessId], references: [id])
+  reason             String           @db.Text
+  category           ReportWorkerCategory @default(OTHER)
+  status             ReportStatus     @default(PENDING)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@map("worker_reports")
+}
+
+model BusinessReport {
+  id                 String           @id @default(uuid())
+  targetBusinessId   String
+  targetBusiness     BusinessProfile  @relation("BusinessReportTarget", fields: [targetBusinessId], references: [id])
+  reporterWorkerId   String
+  reporterWorker     WorkerProfile    @relation("BusinessReportSubmitter", fields: [reporterWorkerId], references: [id])
+  reason             String           @db.Text
+  category           ReportBusinessCategory @default(OTHER)
+  status             ReportStatus     @default(PENDING)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@map("business_reports")
+}
+
+enum ReportWorkerCategory {
+  HARASSMENT
+  FAKE_PROFILE
+  UNPROFESSIONAL_BEHAVIOR
+  QUALIFICATION_MISREPRESENTATION
+  POOR_QUALITY_WORK
+  NO_SHOW
+  IDENTITY_THEFT
+  ABUSIVE_LANGUAGE
+  OTHER
+}
+
+enum ReportBusinessCategory {
+  FRAUD
+  FAKE_COMPANY
+  PAYMENT_ISSUES
+  HARASSMENT
+  UNPROFESSIONAL_BEHAVIOR
+  UNREASONABLE_DEMANDS
+  UNSAFE_WORKING_CONDITIONS
+  ABUSIVE_LANGUAGE
+  OTHER
+}
+
+enum ReportJobCategory {
+  SCAM_OR_FRAUD
+  MISLEADING_DESCRIPTION
+  UNREASONABLE_REQUIREMENTS
+  UNREALISTIC_COMPENSATION
+  ILLEGAL_ACTIVITY
+  DISCRIMINATORY_POSTING
+  DUPLICATE_POSTING
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  REJECTED
+  UNDER_REVIEW
 }
 
 // WORKER PORTFOLIO & EXPERIENCE --------------------------------------------
@@ -716,98 +796,4 @@ enum SkillName {
   WINCHING
   HOISTING
   SCAFFOLD_RIGGING
-}
-
-// REPORTS --------------------------------------------
-model WorkerReport {
-  id                 String          @id @default(uuid())
-  reportedWorkerId   String
-  reportedWorker     WorkerProfile   @relation("WorkerReportsReceived", fields: [reportedWorkerId], references: [id], onDelete: Cascade)
-  reporterBusinessId String
-  reporterBusiness   BusinessProfile @relation("WorkerReportsByBusiness", fields: [reporterBusinessId], references: [id], onDelete: Cascade)
-  reason             WorkerReportReason
-  description        String          @db.Text
-  status             ReportStatus    @default(PENDING)
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-
-  @@map("worker_reports")
-}
-
-model BusinessReport {
-  id                  String          @id @default(uuid())
-  reportedBusinessId  String
-  reportedBusiness    BusinessProfile @relation("BusinessReportsReceived", fields: [reportedBusinessId], references: [id], onDelete: Cascade)
-  reporterWorkerId    String
-  reporterWorker      WorkerProfile   @relation("BusinessReportsByWorker", fields: [reporterWorkerId], references: [id], onDelete: Cascade)
-  reason              BusinessReportReason
-  description         String          @db.Text
-  status              ReportStatus    @default(PENDING)
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @default(now()) @updatedAt
-
-  @@map("business_reports")
-}
-
-model JobReport {
-  id               String         @id @default(uuid())
-  reportedJobId    String
-  reportedJob      Job            @relation("JobReportsReceived", fields: [reportedJobId], references: [id], onDelete: Cascade)
-  reporterWorkerId String
-  reporterWorker   WorkerProfile  @relation("JobReportsByWorker", fields: [reporterWorkerId], references: [id], onDelete: Cascade)
-  reason           JobReportReason
-  description      String         @db.Text
-  status           ReportStatus   @default(PENDING)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @default(now()) @updatedAt
-
-  @@map("job_reports")
-}
-
-// Report Reason Enums
-enum WorkerReportReason {
-  INAPPROPRIATE_BEHAVIOR
-  MISREPRESENTATION_OF_SKILLS
-  UNPROFESSIONAL_CONDUCT
-  HARASSMENT
-  DISCRIMINATION
-  POOR_COMMUNICATION
-  NO_SHOW
-  FRAUDULENT_ACTIVITY
-  VIOLATION_OF_TERMS
-  OTHER
-}
-
-enum BusinessReportReason {
-  PAYMENT_ISSUES
-  HARASSMENT
-  DISCRIMINATION
-  FRAUDULENT_ACTIVITY
-  UNPROFESSIONAL_CONDUCT
-  MISLEADING_JOB_DESCRIPTION
-  VIOLATION_OF_TERMS
-  POOR_COMMUNICATION
-  SCAM
-  OTHER
-}
-
-enum JobReportReason {
-  MISLEADING_DESCRIPTION
-  INAPPROPRIATE_REQUIREMENTS
-  DISCRIMINATORY_CONTENT
-  UNREALISTIC_EXPECTATIONS
-  ILLEGAL_ACTIVITY
-  FRAUDULENT_JOB_POSTING
-  PAYMENT_ISSUES
-  VIOLATION_OF_TERMS
-  SCAM
-  OTHER
-}
-
-enum ReportStatus {
-  PENDING
-  UNDER_REVIEW
-  RESOLVED
-  DISMISSED
-  ACTION_TAKEN
 }

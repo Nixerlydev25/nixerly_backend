@@ -8,6 +8,9 @@ import {
   getAllBusinesses,
   toggleBusinessBlock,
 } from '../../../schema/v1/admin/business.validation';
+import * as adminController from '../../../controllers/v1/admin/admin.controller';
+import { businessIdParamSchema } from '../../../schema/v1/admin/admin.validation';
+
 const businessRouter = Router();
 
 businessRouter.get(
@@ -17,11 +20,12 @@ businessRouter.get(
   businessController.getAllBusinessUsersAdmins
 );
 
-businessRouter.post(
+// Toggle block status for business
+businessRouter.patch(
   ROUTES.ADMIN.BUSINESS.TOGGLE_BLOCK,
   isAuthorized([Role.ADMIN]),
-  ValidationMiddleware.paramValidation(toggleBusinessBlock, 'businessId'),
-  businessController.toggleBusinessBlock
+  ValidationMiddleware.paramValidation(businessIdParamSchema, 'businessId'),
+  adminController.toggleBusinessBlockStatus
 );
 
 export default businessRouter;

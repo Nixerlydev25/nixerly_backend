@@ -14,7 +14,8 @@ import workerRouter from './worker.router';
 import jobsRouter from './jobs.router';
 import businessRouter from './business.router';
 import adminRouter from './admin/admin.router';
-import reportsRouter from './reports.router';
+import reportRouter from './reports.router';
+import adminReportsRouter from './admin/admin-reports.router';
 // import subscriptionRouter from "./subscription.router";
 
 const Api2 = Router();
@@ -53,6 +54,9 @@ Api2.use(ROUTES.API.BUSINESS, businessRouter);
 // jobs routes
 Api2.use(ROUTES.API.JOBS, jobsRouter);
 
+// reports routes
+Api2.use(ROUTES.API.REPORTS, reportRouter);
+
 Api2.use(ROUTES.API.USER, userRouter);
 
 // health route for server status
@@ -62,7 +66,7 @@ Api2.use(ROUTES.API.HEALTH, healthRouter);
 // admin routes
 Api2.use(ROUTES.API.ADMIN, adminRouter);
 
-Api2.use(ROUTES.API.REPORTS, reportsRouter);
+Api2.use(ROUTES.API.REPORTS, reportRouter);
 
 // subscription routes
 // Api2.use(ROUTES.API.SUBSCRIPTION, subscriptionRouter);

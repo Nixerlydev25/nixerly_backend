@@ -74,7 +74,7 @@ CREATE TABLE `business_profiles` (
     `postedJobs` INTEGER NOT NULL DEFAULT 0,
     `onboardingStep` ENUM('COMPANY_INFO', 'COMPLETED') NOT NULL DEFAULT 'COMPANY_INFO',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `isBlocked` BOOLEAN NOT NULL DEFAULT false,
     `lastActive` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
@@ -86,7 +86,7 @@ CREATE TABLE `business_profiles` (
 CREATE TABLE `user_restrictions` (
     `id` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
-    `restrictionType` ENUM('APPLY_TO_JOBS', 'SEND_MESSAGES', 'POST_JOBS', 'HIRE_WORKERS', 'VIEW_PROFILES', 'SUBMIT_REVIEWS', 'SUBMIT_REPORTS') NOT NULL,
+    `restrictionType` ENUM('APPLY_TO_JOBS', 'SEND_MESSAGES', 'POST_JOBS', 'HIRE_WORKERS', 'VIEW_PROFILES', 'SUBMIT_REVIEWS', 'BLOCKED') NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `expiresAt` DATETIME(3) NULL,
     `reason` TEXT NULL,
@@ -216,7 +216,7 @@ CREATE TABLE `milestones` (
     `dueDate` DATETIME(3) NOT NULL,
     `status` ENUM('PENDING', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -230,22 +230,6 @@ CREATE TABLE `reviews` (
     `businessProfileId` VARCHAR(191) NULL,
     `contractId` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `reports` (
-    `id` VARCHAR(191) NOT NULL,
-    `reporterWorkerId` VARCHAR(191) NULL,
-    `reporterBusinessId` VARCHAR(191) NULL,
-    `reportedWorkerId` VARCHAR(191) NULL,
-    `reportedBusinessId` VARCHAR(191) NULL,
-    `reportedJobId` VARCHAR(191) NULL,
-    `reason` TEXT NOT NULL,
-    `reportType` ENUM('HARASSMENT', 'SPAM', 'INAPPROPRIATE_CONTENT', 'FRAUD', 'FAKE_PROFILE', 'HATE_SPEECH', 'VIOLENCE', 'INTELLECTUAL_PROPERTY', 'IMPERSONATION', 'OTHER') NOT NULL DEFAULT 'OTHER',
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -364,6 +348,48 @@ CREATE TABLE `job_skills` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `worker_reports` (
+    `id` VARCHAR(191) NOT NULL,
+    `reportedWorkerId` VARCHAR(191) NOT NULL,
+    `reporterBusinessId` VARCHAR(191) NOT NULL,
+    `reason` ENUM('INAPPROPRIATE_BEHAVIOR', 'MISREPRESENTATION_OF_SKILLS', 'UNPROFESSIONAL_CONDUCT', 'HARASSMENT', 'DISCRIMINATION', 'POOR_COMMUNICATION', 'NO_SHOW', 'FRAUDULENT_ACTIVITY', 'VIOLATION_OF_TERMS', 'OTHER') NOT NULL,
+    `description` TEXT NOT NULL,
+    `status` ENUM('PENDING', 'UNDER_REVIEW', 'RESOLVED', 'DISMISSED', 'ACTION_TAKEN') NOT NULL DEFAULT 'PENDING',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `business_reports` (
+    `id` VARCHAR(191) NOT NULL,
+    `reportedBusinessId` VARCHAR(191) NOT NULL,
+    `reporterWorkerId` VARCHAR(191) NOT NULL,
+    `reason` ENUM('PAYMENT_ISSUES', 'HARASSMENT', 'DISCRIMINATION', 'FRAUDULENT_ACTIVITY', 'UNPROFESSIONAL_CONDUCT', 'MISLEADING_JOB_DESCRIPTION', 'VIOLATION_OF_TERMS', 'POOR_COMMUNICATION', 'SCAM', 'OTHER') NOT NULL,
+    `description` TEXT NOT NULL,
+    `status` ENUM('PENDING', 'UNDER_REVIEW', 'RESOLVED', 'DISMISSED', 'ACTION_TAKEN') NOT NULL DEFAULT 'PENDING',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `job_reports` (
+    `id` VARCHAR(191) NOT NULL,
+    `reportedJobId` VARCHAR(191) NOT NULL,
+    `reporterWorkerId` VARCHAR(191) NOT NULL,
+    `reason` ENUM('MISLEADING_DESCRIPTION', 'INAPPROPRIATE_REQUIREMENTS', 'DISCRIMINATORY_CONTENT', 'UNREALISTIC_EXPECTATIONS', 'ILLEGAL_ACTIVITY', 'FRAUDULENT_JOB_POSTING', 'PAYMENT_ISSUES', 'VIOLATION_OF_TERMS', 'SCAM', 'OTHER') NOT NULL,
+    `description` TEXT NOT NULL,
+    `status` ENUM('PENDING', 'UNDER_REVIEW', 'RESOLVED', 'DISMISSED', 'ACTION_TAKEN') NOT NULL DEFAULT 'PENDING',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `worker_profiles` ADD CONSTRAINT `worker_profiles_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -431,21 +457,6 @@ ALTER TABLE `reviews` ADD CONSTRAINT `reviews_workerProfileId_fkey` FOREIGN KEY 
 ALTER TABLE `reviews` ADD CONSTRAINT `reviews_businessProfileId_fkey` FOREIGN KEY (`businessProfileId`) REFERENCES `business_profiles`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `reports` ADD CONSTRAINT `reports_reporterWorkerId_fkey` FOREIGN KEY (`reporterWorkerId`) REFERENCES `worker_profiles`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `reports` ADD CONSTRAINT `reports_reporterBusinessId_fkey` FOREIGN KEY (`reporterBusinessId`) REFERENCES `business_profiles`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `reports` ADD CONSTRAINT `reports_reportedWorkerId_fkey` FOREIGN KEY (`reportedWorkerId`) REFERENCES `worker_profiles`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `reports` ADD CONSTRAINT `reports_reportedBusinessId_fkey` FOREIGN KEY (`reportedBusinessId`) REFERENCES `business_profiles`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `reports` ADD CONSTRAINT `reports_reportedJobId_fkey` FOREIGN KEY (`reportedJobId`) REFERENCES `jobs`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `projects` ADD CONSTRAINT `projects_workerId_fkey` FOREIGN KEY (`workerId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -474,3 +485,21 @@ ALTER TABLE `worker_skills` ADD CONSTRAINT `worker_skills_workerId_fkey` FOREIGN
 
 -- AddForeignKey
 ALTER TABLE `job_skills` ADD CONSTRAINT `job_skills_jobId_fkey` FOREIGN KEY (`jobId`) REFERENCES `jobs`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `worker_reports` ADD CONSTRAINT `worker_reports_reportedWorkerId_fkey` FOREIGN KEY (`reportedWorkerId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `worker_reports` ADD CONSTRAINT `worker_reports_reporterBusinessId_fkey` FOREIGN KEY (`reporterBusinessId`) REFERENCES `business_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `business_reports` ADD CONSTRAINT `business_reports_reportedBusinessId_fkey` FOREIGN KEY (`reportedBusinessId`) REFERENCES `business_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `business_reports` ADD CONSTRAINT `business_reports_reporterWorkerId_fkey` FOREIGN KEY (`reporterWorkerId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `job_reports` ADD CONSTRAINT `job_reports_reportedJobId_fkey` FOREIGN KEY (`reportedJobId`) REFERENCES `jobs`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `job_reports` ADD CONSTRAINT `job_reports_reporterWorkerId_fkey` FOREIGN KEY (`reporterWorkerId`) REFERENCES `worker_profiles`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
