@@ -18,6 +18,58 @@ export const getWorkerReports = async (
   }
 };
 
+export const getWorkerReportById = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { reportId } = request.params;
+    const report = await reportModel.getWorkerReportById(reportId);
+    return response.status(ResponseStatus.OK).json({
+      message: 'Worker report fetched successfully',
+      data: report,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getBusinessReportById = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { reportId } = request.params;
+    const report = await reportModel.getBusinessReportById(reportId);
+    return response.status(ResponseStatus.OK).json({
+      message: 'Business report fetched successfully',
+      data: report,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getJobReportById = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { reportId } = request.params;
+    const report = await reportModel.getJobReportById(reportId);
+    return response.status(ResponseStatus.OK).json({
+      message: 'Job report fetched successfully',
+      data: report,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 export const getBusinessReports = async (
   request: Request,
   response: Response,
@@ -93,6 +145,7 @@ export const toggleBlockJobByReport = async (
 ) => {
   try {
     const { reportId } = request.params;
+    console.log(reportId);
     const updatedJob = await reportModel.toggleBlockJobByReport(reportId);
     return response.status(ResponseStatus.OK).json({
       message: 'Job report toggled successfully',

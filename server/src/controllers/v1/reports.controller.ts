@@ -1,7 +1,7 @@
-import { request, Request, Response } from 'express';
-import { createReportWorkerSchema } from '../../schema/v1/reports.validation';
+import { Request, Response } from 'express';
 import { ResponseStatus } from '../../types/response.enums';
 import * as reportModel from '../../models/v1/report.model';
+import { ProfileType } from '@prisma/client';
 
 export const createReportWorkerHandler = async (
   request: Request,
@@ -9,11 +9,18 @@ export const createReportWorkerHandler = async (
 ) => {
   try {
     const { reason, category, targetWorkerId } = request.body;
+    const { userId, defaultProfile } = request.user;
 
-    await reportModel.createReportWorker(reason, category, targetWorkerId);
+    await reportModel.reportWorker(
+      reason,
+      category,
+      targetWorkerId,
+      userId,
+      defaultProfile
+    );
 
     return response.status(ResponseStatus.OK).json({
-      message: 'Reported to user successfully',
+      message: 'Reported worker successfully',
     });
   } catch (error) {
     return response.status(ResponseStatus.BadRequest).json({
@@ -29,11 +36,18 @@ export const createReportBusinessHandler = async (
 ) => {
   try {
     const { reason, category, targetBusinessId } = request.body;
+    const { userId, defaultProfile } = request.user;
 
-    await reportModel.createReportBusiness(reason, category, targetBusinessId);
+    await reportModel.reportBusiness(
+      reason,
+      category,
+      targetBusinessId,
+      userId,
+      defaultProfile
+    );
 
     return response.status(ResponseStatus.OK).json({
-      message: 'Reported to business successfully',
+      message: 'Reported business successfully',
     });
   } catch (error) {
     return response.status(ResponseStatus.BadRequest).json({
@@ -49,11 +63,18 @@ export const createReportJobHandler = async (
 ) => {
   try {
     const { reason, category, targetJobId } = request.body;
+    const { userId, defaultProfile } = request.user;
 
-    await reportModel.createReportJob(reason, category, targetJobId);
+    await reportModel.reportJob(
+      reason,
+      category,
+      targetJobId,
+      userId,
+      defaultProfile
+    );
 
     return response.status(ResponseStatus.OK).json({
-      message: 'Reported to job successfully',
+      message: 'Reported job successfully',
     });
   } catch (error) {
     return response.status(ResponseStatus.BadRequest).json({

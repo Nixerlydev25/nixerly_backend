@@ -35,42 +35,42 @@ model User {
 
 // WORKER PROFILE --------------------------------------------
 model WorkerProfile {
-  id               String                      @id @default(uuid())
-  userId           String                      @unique
-  user             User                        @relation("UserWorkerProfile", fields: [userId], references: [id], onDelete: Cascade)
-  title            String? // Professional Title
-  phoneNumber      String?
-  description      String?                     @db.Text
-  city             String?
-  state            String?
-  country          String?
-  createdAt        DateTime                    @default(now())
-  updatedAt        DateTime                    @updatedAt
-  skills           WorkerSkill[] // Worker can have multiple skills
-  hourlyRate       Float?
-  experience       Experience[]
-  education        Education[] // Education moved exclusively to worker profile
-  certificates     Certificate[]
-  portfolio        Project[]
-  languages        WorkerLanguage[]
-  availability     Boolean                     @default(true)
-  totalEarnings    Float                       @default(0)
-  completedJobs    Int                         @default(0)
-  avgRating        Float                       @default(0)
-  onboardingStep   OnboardingStepWorkerProfile @default(PERSONAL_INFO)
-  reviewsReceived  Review[]                    @relation("WorkerReviews")
-  conversations    Conversation[]              @relation("WorkerConversations")
-  jobApplications  JobApplication[] // Worker applies to jobs
-  contracts        Contract[]                  @relation("ContractWorker") // Worker's contracts
-  reportsSubmitted        WorkerReport[]    @relation("WorkerReportSubmitter")
-  reportsReceived         WorkerReport[]    @relation("WorkerReportTarget")
-  jobReportsSubmitted     JobReport[]       @relation("JobReportSubmitter")
-  businessReportsSubmitted BusinessReport[] @relation("BusinessReportSubmitter")
-  sentMessages     Message[]                   @relation("WorkerSentMessages") // Messages sent by worker
-  receivedMessages Message[]                   @relation("WorkerReceivedMessages") // Messages received by worker
-  profilePicture   ProfilePicture? // One-to-one relation with profile picture
-  isBlocked        Boolean                     @default(false)
-  lastActive       DateTime                    @default(now())
+  id                       String                      @id @default(uuid())
+  userId                   String                      @unique
+  user                     User                        @relation("UserWorkerProfile", fields: [userId], references: [id], onDelete: Cascade)
+  title                    String? // Professional Title
+  phoneNumber              String?
+  description              String?                     @db.Text
+  city                     String?
+  state                    String?
+  country                  String?
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
+  skills                   WorkerSkill[] // Worker can have multiple skills
+  hourlyRate               Float?
+  experience               Experience[]
+  education                Education[] // Education moved exclusively to worker profile
+  certificates             Certificate[]
+  portfolio                Project[]
+  languages                WorkerLanguage[]
+  availability             Boolean                     @default(true)
+  totalEarnings            Float                       @default(0)
+  completedJobs            Int                         @default(0)
+  avgRating                Float                       @default(0)
+  onboardingStep           OnboardingStepWorkerProfile @default(PERSONAL_INFO)
+  reviewsReceived          Review[]                    @relation("WorkerReviews")
+  conversations            Conversation[]              @relation("WorkerConversations")
+  jobApplications          JobApplication[] // Worker applies to jobs
+  contracts                Contract[]                  @relation("ContractWorker") // Worker's contracts
+  reportsSubmitted         WorkerReport[]              @relation("WorkerReportSubmitter")
+  reportsReceived          WorkerReport[]              @relation("WorkerReportTarget")
+  jobReportsSubmitted      JobReport[]                 @relation("JobReportSubmitter")
+  businessReportsSubmitted BusinessReport[]            @relation("BusinessReportSubmitter")
+  sentMessages             Message[]                   @relation("WorkerSentMessages") // Messages sent by worker
+  receivedMessages         Message[]                   @relation("WorkerReceivedMessages") // Messages received by worker
+  profilePicture           ProfilePicture? // One-to-one relation with profile picture
+  isBlocked                Boolean                     @default(false)
+  lastActive               DateTime                    @default(now())
 
   @@map("worker_profiles")
 }
@@ -88,36 +88,36 @@ model ProfilePicture {
 
 // BUSINESS PROFILE --------------------------------------------
 model BusinessProfile {
-  id               String                        @id @default(uuid())
-  userId           String                        @unique
-  user             User                          @relation("UserBusinessProfile", fields: [userId], references: [id], onDelete: Cascade)
-  companyName      String?
-  description      String?                       @db.Text
-  industry         String?
-  phoneNumber      String?
-  city             String?
-  state            String?
-  country          String?
-  website          String?
-  employeeCount    Int?
-  yearFounded      Int?
-  totalSpent       Float                         @default(0)
-  postedJobs       Int                           @default(0)
-  onboardingStep   OnboardingStepBusinessProfile @default(COMPANY_INFO)
-  createdAt        DateTime                      @default(now())
-  updatedAt        DateTime                      @updatedAt
-  reviewsReceived  Review[]                      @relation("BusinessReviews")
-  conversations    Conversation[]                @relation("BusinessConversations")
-  jobs             Job[] // Business posts jobs
-  contracts        Contract[]                    @relation("ContractBusiness") // Business's contracts
-  reportsSubmitted       BusinessReport[] @relation("BusinessReportSubmitter")
-  reportsReceived        BusinessReport[] @relation("BusinessReportTarget")
-  jobReportsSubmitted    JobReport[]      @relation("JobReportBusinessSubmitter")
-  workerReportsSubmitted  WorkerReport[]   @relation("WorkerReportBusinessSubmitter")
-  sentMessages     Message[]                     @relation("BusinessSentMessages") // Messages sent by business
-  receivedMessages Message[]                     @relation("BusinessReceivedMessages")
-  isBlocked        Boolean                       @default(false)
-  lastActive       DateTime                    @default(now())
+  id                     String                        @id @default(uuid())
+  userId                 String                        @unique
+  user                   User                          @relation("UserBusinessProfile", fields: [userId], references: [id], onDelete: Cascade)
+  companyName            String?
+  description            String?                       @db.Text
+  industry               String?
+  phoneNumber            String?
+  city                   String?
+  state                  String?
+  country                String?
+  website                String?
+  employeeCount          Int?
+  yearFounded            Int?
+  totalSpent             Float                         @default(0)
+  postedJobs             Int                           @default(0)
+  onboardingStep         OnboardingStepBusinessProfile @default(COMPANY_INFO)
+  createdAt              DateTime                      @default(now())
+  updatedAt              DateTime                      @updatedAt
+  reviewsReceived        Review[]                      @relation("BusinessReviews")
+  conversations          Conversation[]                @relation("BusinessConversations")
+  jobs                   Job[] // Business posts jobs
+  contracts              Contract[]                    @relation("ContractBusiness") // Business's contracts
+  reportsSubmitted       BusinessReport[]              @relation("BusinessReportSubmitter")
+  reportsReceived        BusinessReport[]              @relation("BusinessReportTarget")
+  jobReportsSubmitted    JobReport[]                   @relation("JobReportBusinessSubmitter")
+  workerReportsSubmitted WorkerReport[]                @relation("WorkerReportBusinessSubmitter")
+  sentMessages           Message[]                     @relation("BusinessSentMessages") // Messages sent by business
+  receivedMessages       Message[]                     @relation("BusinessReceivedMessages")
+  isBlocked              Boolean                       @default(false)
+  lastActive             DateTime                      @default(now())
 
   @@map("business_profiles")
 }
@@ -394,18 +394,18 @@ model Review {
 }
 
 model JobReport {
-  id                 String           @id @default(uuid())
-  jobId             String
-  job               Job              @relation(fields: [jobId], references: [id])
+  id                 String             @id @default(uuid())
+  targetJobId        String
+  job                Job                @relation(fields: [targetJobId], references: [id])
   reporterWorkerId   String?
-  reporterWorker     WorkerProfile?   @relation("JobReportSubmitter", fields: [reporterWorkerId], references: [id])
+  reporterWorker     WorkerProfile?     @relation("JobReportSubmitter", fields: [reporterWorkerId], references: [id])
   reporterBusinessId String?
-  reporterBusiness   BusinessProfile? @relation("JobReportBusinessSubmitter", fields: [reporterBusinessId], references: [id])
-  reason            String           @db.Text
-  category          ReportCategory   @default(OTHER)
-  status            ReportStatus     @default(PENDING)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  reporterBusiness   BusinessProfile?   @relation("JobReportBusinessSubmitter", fields: [reporterBusinessId], references: [id])
+  reason             String             @db.Text
+  category           ReportJobsCategory @default(OTHER)
+  status             ReportStatus       @default(PENDING)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
   @@map("job_reports")
 }
@@ -418,11 +418,11 @@ model WorkerReport {
   reporterWorker     WorkerProfile?   @relation("WorkerReportSubmitter", fields: [reporterWorkerId], references: [id])
   reporterBusinessId String?
   reporterBusiness   BusinessProfile? @relation("WorkerReportBusinessSubmitter", fields: [reporterBusinessId], references: [id])
-  reason            String           @db.Text
-  category          ReportCategory   @default(OTHER)
-  status            ReportStatus     @default(PENDING)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  reason             String           @db.Text
+  category           ReportCategory   @default(OTHER)
+  status             ReportStatus     @default(PENDING)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   @@map("worker_reports")
 }
@@ -435,11 +435,11 @@ model BusinessReport {
   reporterWorker     WorkerProfile?   @relation("BusinessReportSubmitter", fields: [reporterWorkerId], references: [id])
   reporterBusinessId String?
   reporterBusiness   BusinessProfile? @relation("BusinessReportSubmitter", fields: [reporterBusinessId], references: [id])
-  reason            String           @db.Text
-  category          ReportCategory   @default(OTHER)
-  status            ReportStatus     @default(PENDING)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  reason             String           @db.Text
+  category           ReportCategory   @default(OTHER)
+  status             ReportStatus     @default(PENDING)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   @@map("business_reports")
 }
@@ -454,6 +454,18 @@ enum ReportCategory {
   VIOLENCE
   INTELLECTUAL_PROPERTY
   IMPERSONATION
+  OTHER
+}
+
+enum ReportJobsCategory {
+  SCAM_FRAUD
+  INAPPROPRIATE
+  MISLEADING
+  PRIVACY_VIOLATION
+  SPAM
+  DUPLICATE
+  EXPIRED
+  ILLEGAL
   OTHER
 }
 
