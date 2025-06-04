@@ -40,6 +40,18 @@ export const updateBusinessProfile = async (
   }
 };
 
+export const getBusinessProfileDetailsByUserId = async (userId: string) => {
+  try {
+    const businessProfile = await prisma.businessProfile.findUnique({
+      where: { userId },
+    });
+
+    return businessProfile;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
 export const getBusinessProfileDetails = async (businessId: string) => {
   try {
     const user = await prisma.businessProfile.findUnique({

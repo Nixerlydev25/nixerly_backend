@@ -16,7 +16,7 @@ export const reportWorkerHandler = async (
     const reportData = request.body;
 
     // Get business profile using existing model
-    const businessProfile = await businessModel.getBusinessProfileDetails(
+    const businessProfile = await businessModel.getBusinessProfileDetailsByUserId(
       userId
     );
     if (!businessProfile) {
@@ -198,7 +198,7 @@ export const hasBusinessReportedWorkerHandler = async (
     const { workerId } = request.params;
 
     // Get business profile
-    const business = await businessModel.getBusinessProfileDetails(userId);
+    const business = await businessModel.getBusinessProfileDetailsByUserId(userId);
     if (!business) {
       return response.status(ResponseStatus.NotFound).json({
         success: false,

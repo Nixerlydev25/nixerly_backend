@@ -17,7 +17,7 @@ const reportRouter = Router();
 
 // Report a worker (only business and admin can report)
 reportRouter.post(
-  `${ROUTES.REPORT.REPORT_WORKER}`,
+  ROUTES.REPORT.REPORT_WORKER,
   isAuthorized([Role.BUSINESS, Role.ADMIN]),
   ValidationMiddleware.paramValidation(reportWorkerParamSchema, "workerId"),
   ValidationMiddleware.bodyValidation(reportWorkerBodySchema),
@@ -26,7 +26,7 @@ reportRouter.post(
 
 // Report a business (only worker and admin can report)
 reportRouter.post(
-  `${ROUTES.REPORT.REPORT_BUSINESS}`,
+  ROUTES.REPORT.REPORT_BUSINESS,
   isAuthorized([Role.WORKER, Role.ADMIN]),
   ValidationMiddleware.paramValidation(reportBusinessParamSchema, "businessId"),
   ValidationMiddleware.bodyValidation(reportBusinessBodySchema),
@@ -35,7 +35,7 @@ reportRouter.post(
 
 // Report a job (only worker and admin can report)
 reportRouter.post(
-  `${ROUTES.REPORT.REPORT_JOB}`,
+  ROUTES.REPORT.REPORT_JOB,
   isAuthorized([Role.WORKER, Role.ADMIN]),
   ValidationMiddleware.paramValidation(reportJobParamSchema, "jobId"),
   ValidationMiddleware.bodyValidation(reportJobBodySchema),
@@ -44,7 +44,7 @@ reportRouter.post(
 
 // Check if worker has reported a job
 reportRouter.get(
-  `${ROUTES.REPORT.HAS_WORKER_REPORTED_JOB}`,
+  ROUTES.REPORT.HAS_WORKER_REPORTED_JOB,
   isAuthorized([Role.WORKER]),
   ValidationMiddleware.paramValidation(reportJobParamSchema, "jobId"),
   reportController.hasWorkerReportedJobHandler
@@ -52,7 +52,7 @@ reportRouter.get(
 
 // Check if worker has reported a business
 reportRouter.get(
-  `${ROUTES.REPORT.HAS_WORKER_REPORTED_BUSINESS}`,
+  ROUTES.REPORT.HAS_WORKER_REPORTED_BUSINESS,
   isAuthorized([Role.WORKER]),
   ValidationMiddleware.paramValidation(reportBusinessParamSchema, "businessId"),
   reportController.hasWorkerReportedBusinessHandler
@@ -60,7 +60,7 @@ reportRouter.get(
 
 // Check if business has reported a worker
 reportRouter.get(
-  `${ROUTES.REPORT.HAS_BUSINESS_REPORTED_WORKER}`,
+  ROUTES.REPORT.HAS_BUSINESS_REPORTED_WORKER,
   isAuthorized([Role.BUSINESS]),
   ValidationMiddleware.paramValidation(reportWorkerParamSchema, "workerId"),
   reportController.hasBusinessReportedWorkerHandler
