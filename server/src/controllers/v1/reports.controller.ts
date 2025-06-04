@@ -1,85 +1,217 @@
-import { Request, Response } from 'express';
-import { ResponseStatus } from '../../types/response.enums';
-import * as reportModel from '../../models/v1/report.model';
-import { ProfileType } from '@prisma/client';
+import { Request, Response, NextFunction } from "express";
+import { ResponseStatus } from "../../types/response.enums";
+import * as reportModel from "../../model/v1/report.model";
+import * as businessModel from "../../model/v1/business.model";
+import * as workerModel from "../../model/worker.model";
+import * as jobModel from "../../model/v1/admin/job.model";
 
-export const createReportWorkerHandler = async (
+export const reportWorkerHandler = async (
   request: Request,
-  response: Response
+  response: Response,
+  next: NextFunction
 ) => {
   try {
-    const { reason, category, targetWorkerId } = request.body;
-    const { userId, defaultProfile } = request.user;
+    const { userId } = request.user;
+    const { workerId } = request.params; // Get workerId from params
+    const reportData = request.body;
 
-    await reportModel.reportWorker(
-      reason,
-      category,
-      targetWorkerId,
-      userId,
-      defaultProfile
+    // Get business profile using existing model
+    const businessProfile = await businessModel.getBusinessProfileDetails(
+      userId
     );
+    if (!businessProfile) {
+      return response.status(ResponseStatus.NotFound).json({
+        success: false,
+        message: "Business profile not found",
+      });
+    }
 
-    return response.status(ResponseStatus.OK).json({
-      message: 'Reported worker successfully',
+    // Verify worker exists
+    const worker = await workerModel.getWorkerById(workerId);
+    if (!worker) {
+      return response.status(ResponseStatus.NotFound).json({
+        success: false,
+        message: "Worker not found",
+      });
+    }
+
+    const created = await reportModel.reportWorker(
+      businessProfile.id,
+      workerId,
+      reportData
+    );
+    response.status(ResponseStatus.Created).json({
+      success: true,
+      message: "Worker report submitted successfully",
+      data: created,
     });
   } catch (error) {
-    return response.status(ResponseStatus.BadRequest).json({
-      message: 'Invalid request body',
-      error: (error as Error).message,
-    });
+    next(error);
   }
 };
 
-export const createReportBusinessHandler = async (
+export const reportBusinessHandler = async (
   request: Request,
-  response: Response
+  response: Response,
+  next: NextFunction
 ) => {
   try {
-    const { reason, category, targetBusinessId } = request.body;
-    const { userId, defaultProfile } = request.user;
+    const { userId } = request.user;
+    const { businessId } = request.params; // Get businessId from params
+    const reportData = request.body;
 
-    await reportModel.reportBusiness(
-      reason,
-      category,
-      targetBusinessId,
-      userId,
-      defaultProfile
+    // Get worker profile using existing model
+    const worker = await workerModel.getWorkerById(userId);
+    if (!worker) {
+      return response.status(ResponseStatus.NotFound).json({
+        success: false,
+        message: "Worker profile not found",
+      });
+    }
+
+    // Verify business exists
+    const business = await businessModel.getBusinessProfileDetails(businessId);
+    if (!business) {
+      return response.status(ResponseStatus.NotFound).json({
+        success: false,
+        message: "Business not found",
+      });
+    }
+
+    const created = await reportModel.reportBusiness(
+      worker.id,
+      businessId,
+      reportData
     );
-
-    return response.status(ResponseStatus.OK).json({
-      message: 'Reported business successfully',
+    response.status(ResponseStatus.Created).json({
+      success: true,
+      message: "Business report submitted successfully",
+      data: created,
     });
   } catch (error) {
-    return response.status(ResponseStatus.BadRequest).json({
-      message: 'Invalid request body',
-      error: (error as Error).message,
-    });
+    next(error);
   }
 };
 
-export const createReportJobHandler = async (
+export const reportJobHandler = async (
   request: Request,
-  response: Response
+  response: Response,
+  next: NextFunction
 ) => {
   try {
-    const { reason, category, targetJobId } = request.body;
-    const { userId, defaultProfile } = request.user;
+    const { userId } = request.user;
+    const { jobId } = request.params; // Get jobId from params
+    const reportData = request.body;
 
-    await reportModel.reportJob(
-      reason,
-      category,
-      targetJobId,
-      userId,
-      defaultProfile
-    );
+    // Get worker profile using existing model
+    const worker = await workerModel.getWorkerById(userId);
+    if (!worker) {
+      return response.status(ResponseStatus.NotFound).json({
+        success: false,
+        message: "Worker profile not found",
+      });
+    }
 
-    return response.status(ResponseStatus.OK).json({
-      message: 'Reported job successfully',
+    // Verify job exists
+    const job = await jobModel.getJobById(jobId);
+    if (!job) {
+      return response.status(ResponseStatus.NotFound).json({
+        success: false,
+        message: "Job not found",
+      });
+    }
+
+    const created = await reportModel.reportJob(worker.id, jobId, reportData);
+    response.status(ResponseStatus.Created).json({
+      success: true,
+      message: "Job report submitted successfully",
+      data: created,
     });
   } catch (error) {
-    return response.status(ResponseStatus.BadRequest).json({
-      message: 'Invalid request body',
-      error: (error as Error).message,
+    next(error);
+  }
+};
+
+export const hasWorkerReportedJobHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { jobId } = request.params;
+
+    // Get worker profile
+    const worker = await workerModel.getWorkerById(userId);
+    if (!worker) {
+      return response.status(ResponseStatus.NotFound).json({
+        success: false,
+        message: "Worker profile not found",
+      });
+    }
+
+    const hasReported = await reportModel.hasWorkerReportedJob(worker.id, jobId);
+    response.status(ResponseStatus.OK).json({
+      success: true,
+      data: hasReported,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const hasWorkerReportedBusinessHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { businessId } = request.params;
+
+    // Get worker profile
+    const worker = await workerModel.getWorkerById(userId);
+    if (!worker) {
+      return response.status(ResponseStatus.NotFound).json({
+        success: false,
+        message: "Worker profile not found",
+      });
+    }
+
+    const hasReported = await reportModel.hasWorkerReportedBusiness(worker.id, businessId);
+    response.status(ResponseStatus.OK).json({
+      success: true,
+      data: hasReported,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const hasBusinessReportedWorkerHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { workerId } = request.params;
+
+    // Get business profile
+    const business = await businessModel.getBusinessProfileDetails(userId);
+    if (!business) {
+      return response.status(ResponseStatus.NotFound).json({
+        success: false,
+        message: "Business profile not found",
+      });
+    }
+
+    const hasReported = await reportModel.hasBusinessReportedWorker(business.id, workerId);
+    response.status(ResponseStatus.OK).json({
+      success: true,
+      data: hasReported,
+    });
+  } catch (error) {
+    next(error);
   }
 };
