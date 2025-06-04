@@ -145,6 +145,7 @@ export const getAllBusinessJobs = async (
         hourlyRateMin: true,
         hourlyRateMax: true,
         status: true,
+        salary: true,
         jobType: true,
         startDate: true,
         numberOfWorkersRequired: true,
