@@ -64,7 +64,7 @@ export const getMyBusinessJobsHandler = async (
       message: "All business Jobs fetched",
       jobs: allJobsPosts,
       jobStatusCounts: jobStatusCounts,
-      ...pagination,
+      pagination,
     });
   } catch (error) {
     next(error);
