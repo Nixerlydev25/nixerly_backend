@@ -16,3 +16,11 @@ export const resetPassword = z.object({
     .min(8, "Password must be at least 8 characters long")
     .max(64, "Password must be at most 64 characters long"),
 });
+
+export const getAppliedJobsQuerySchema = z.object({
+  page: z.string().transform(Number).default('1'),
+  limit: z.string().transform(Number).default('10'),
+  search: z.string().optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().optional()
+});

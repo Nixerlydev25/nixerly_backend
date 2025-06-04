@@ -228,3 +228,26 @@ export const getBusinessProfileDetailsHandler = async (
     return next(error);
   }
 };
+
+export const getWorkerAppliedJobsHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { page, limit, search, startDate, endDate } = request.query;
+
+    const appliedJobs = await userModel.getWorkerAppliedJobs(userId, {
+      page: Number(page),
+      limit: Number(limit),
+      search: search as string | undefined,
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined
+    });
+
+    return response.status(ResponseStatus.OK).json(appliedJobs);
+  } catch (error: any) {
+    return next(error);
+  }
+};

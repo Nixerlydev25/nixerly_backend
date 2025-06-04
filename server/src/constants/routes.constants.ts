@@ -89,6 +89,7 @@ export const ROUTES = {
     RESET_PASSWORD: "/reset-password",
     GET_WORKER_PROFILE_DETAILS: "/worker-profile-details",
     GET_BUSINESS_PROFILE_DETAILS: "/business-profile-details",
+    GET_WORKER_APPLIED_JOBS: "/applied-jobs",
   },
   ROLE: {
     UPDATE_ROLE: "/:id",

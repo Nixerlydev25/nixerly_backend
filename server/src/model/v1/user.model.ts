@@ -293,3 +293,89 @@ export const getBusinessProfileDetails = async (userId: string) => {
     throw new DatabaseError(error.message);
   }
 };
+
+export const getWorkerAppliedJobs = async (
+  userId: string,
+  filters: {
+    page: number;
+    limit: number;
+    search?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }
+) => {
+  try {
+    const { page, limit, search, startDate, endDate } = filters;
+    const skip = (page - 1) * limit;
+
+    // Get worker profile id first
+    const workerProfile = await prisma.workerProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!workerProfile) {
+      throw new DatabaseError("Worker profile not found");
+    }
+
+    // Build where clause for filtering
+    const where = {
+      workerProfileId: workerProfile.id,
+      ...(search && {
+        job: {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { businessProfile: { companyName: { contains: search, mode: 'insensitive' } } }
+          ]
+        }
+      }),
+      ...(startDate && endDate && {
+        createdAt: {
+          gte: startDate,
+          lte: endDate
+        }
+      })
+    };
+
+    // Get job applications with pagination
+    const applications = await prisma.jobApplication.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        job: {
+          include: {
+            businessProfile: {
+              select: {
+                companyName: true,
+                city: true,
+                state: true,
+                country: true
+              }
+            },
+            location: true
+          }
+        }
+      }
+    });
+
+    // Get total count for pagination
+    const totalCount = await prisma.jobApplication.count({ where });
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasMore = page < totalPages;
+
+    return {
+      applications,
+      pagination: {
+        totalCount,
+        totalPages,
+        currentPage: page,
+        hasMore
+      }
+    };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
