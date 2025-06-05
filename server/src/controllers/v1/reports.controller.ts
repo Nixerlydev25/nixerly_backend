@@ -27,7 +27,7 @@ export const reportWorkerHandler = async (
     }
 
     // Verify worker exists
-    const worker = await workerModel.getWorkerById(workerId);
+    const worker = await workerModel.getWorkerProfileByUserId(workerId);
     if (!worker) {
       return response.status(ResponseStatus.NotFound).json({
         success: false,
@@ -61,7 +61,7 @@ export const reportBusinessHandler = async (
     const reportData = request.body;
 
     // Get worker profile using existing model
-    const worker = await workerModel.getWorkerById(userId);
+    const worker = await workerModel.getWorkerProfileByUserId(userId);
     if (!worker) {
       return response.status(ResponseStatus.NotFound).json({
         success: false,
@@ -104,7 +104,7 @@ export const reportJobHandler = async (
     const reportData = request.body;
 
     // Get worker profile using existing model
-    const worker = await workerModel.getWorkerById(userId);
+    const worker = await workerModel.getWorkerProfileByUserId(userId);
     if (!worker) {
       return response.status(ResponseStatus.NotFound).json({
         success: false,
@@ -142,7 +142,7 @@ export const hasWorkerReportedJobHandler = async (
     const { jobId } = request.params;
 
     // Get worker profile
-    const worker = await workerModel.getWorkerById(userId);
+    const worker = await workerModel.getWorkerProfileByUserId(userId);
     if (!worker) {
       return response.status(ResponseStatus.NotFound).json({
         success: false,
@@ -170,7 +170,7 @@ export const hasWorkerReportedBusinessHandler = async (
     const { businessId } = request.params;
 
     // Get worker profile
-    const worker = await workerModel.getWorkerById(userId);
+    const worker = await workerModel.getWorkerProfileByUserId(userId);
     if (!worker) {
       return response.status(ResponseStatus.NotFound).json({
         success: false,

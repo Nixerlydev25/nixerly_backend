@@ -48,10 +48,6 @@ export const ROUTES = {
       GET_SINGLE_WORKER_REPORT: "/get-single-worker-report/:reportId",
       GET_SINGLE_BUSINESS_REPORT: "/get-single-business-report/:reportId",
       GET_SINGLE_JOB_REPORT: "/get-single-job-report/:reportId",
-      TOGGLE_BLOCK_WORKER_BY_REPORT: "/toggle-block-worker-by-report/:reportId",
-      TOGGLE_BLOCK_BUSINESS_BY_REPORT:
-        "/toggle-block-business-by-report/:reportId",
-      TOGGLE_BLOCK_JOB_BY_REPORT: "/toggle-block-job-by-report/:reportId",
     },
   },
   AUTH: {

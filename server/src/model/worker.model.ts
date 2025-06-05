@@ -200,3 +200,15 @@ export const saveProfilePicture = async (userId: string, s3Key: string) => {
     throw new DatabaseError(error.message);
   }
 };
+
+export const getWorkerProfileByUserId = async (userId: string) => {
+  try {
+    const worker = await prisma.workerProfile.findUnique({
+      where: { userId },
+    });
+
+    return worker;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
