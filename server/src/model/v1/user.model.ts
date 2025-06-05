@@ -317,28 +317,25 @@ export const getWorkerAppliedJobs = async (
       throw new DatabaseError("Worker profile not found");
     }
 
-    // Build where clause for filtering
-    const where = {
-      workerProfileId: workerProfile.id,
-      ...(search && {
-        job: {
-          OR: [
-            { title: { contains: search, mode: 'insensitive' } },
-            { businessProfile: { companyName: { contains: search, mode: 'insensitive' } } }
-          ]
-        }
-      }),
-      ...(startDate && endDate && {
-        createdAt: {
-          gte: startDate,
-          lte: endDate
-        }
-      })
-    };
-
     // Get job applications with pagination
     const applications = await prisma.jobApplication.findMany({
-      where,
+      where : {
+        workerProfileId: workerProfile.id,
+        ...(search && {
+          job: {
+            OR: [
+              { title: { contains: search } },
+              { businessProfile: { companyName: { contains: search } } }
+            ]
+          }
+        }),
+        ...(startDate && endDate && {
+          createdAt: {
+            gte: startDate,
+            lte: endDate
+          }
+        })
+      },
       skip,
       take: limit,
       orderBy: {
@@ -352,7 +349,7 @@ export const getWorkerAppliedJobs = async (
                 companyName: true,
                 city: true,
                 state: true,
-                country: true
+                country: true,
               }
             },
             location: true
@@ -362,7 +359,9 @@ export const getWorkerAppliedJobs = async (
     });
 
     // Get total count for pagination
-    const totalCount = await prisma.jobApplication.count({ where });
+    const totalCount = await prisma.jobApplication.count({ where : {
+      workerProfileId: workerProfile.id,
+    }});
     const totalPages = Math.ceil(totalCount / limit);
     const hasMore = page < totalPages;
 

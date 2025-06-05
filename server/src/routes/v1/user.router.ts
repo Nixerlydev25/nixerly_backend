@@ -7,7 +7,8 @@ import {
   forgotPassword,
   resetPassword,
   verifyOtp,
-  getAppliedJobsQuerySchema
+  getAppliedJobsQuerySchema,
+  userIdSchema
 } from "../../schema/v1/user.valdiation";
 import {
   updateUserSchema 
@@ -75,6 +76,7 @@ userRouter.post(
 userRouter.get(
   ROUTES.USER.GET_WORKER_APPLIED_JOBS,
   isAuthorized([Role.WORKER, Role.ADMIN, Role.SUPER_ADMIN]),
+  ValidationMiddleware.userValidation(userIdSchema as any),
   ValidationMiddleware.queryValidation(getAppliedJobsQuerySchema),
   userController.getWorkerAppliedJobsHandler
 );

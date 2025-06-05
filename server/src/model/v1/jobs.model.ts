@@ -4,11 +4,12 @@ import {
   JobStatus,
   JobType,
   JobApplicationDuration,
-} from "@prisma/client";
-import prisma from "../../config/prisma.config";
-import { DatabaseError } from "../../utils/errors";
-import { ResponseStatus } from "../../types/response.enums";
-import { stat } from "fs";
+  ProfileType,
+} from '@prisma/client';
+import prisma from '../../config/prisma.config';
+import { DatabaseError } from '../../utils/errors';
+import { ResponseStatus } from '../../types/response.enums';
+import { stat } from 'fs';
 
 export const createJob = async (
   businessProfileId: string,
@@ -91,7 +92,7 @@ export const createJob = async (
 export const getJobs = async (filters: {
   page: number;
   limit: number;
-  sortOrder: "asc" | "desc";
+  sortOrder: 'asc' | 'desc';
   search?: string;
   minHourlyRate?: number;
   maxHourlyRate?: number;
@@ -135,12 +136,14 @@ export const getJobs = async (filters: {
         // Budget filter for contract jobs
         ...(budget ? [{ budget: { gte: budget } }] : []),
         // Skills filter
-        ...(skills ? [{ skills: { some: { skillName: { in: skills } } } }] : []),
+        ...(skills
+          ? [{ skills: { some: { skillName: { in: skills } } } }]
+          : []),
       ],
     };
 
-    console.log("wherea", JSON.stringify(where));
-    console.log("sortOrder", sortOrder);
+    console.log('wherea', JSON.stringify(where));
+    console.log('sortOrder', sortOrder);
 
     // Use Promise.all to fetch totalCount and jobs concurrently
     const [totalCount, jobs] = await Promise.all([
@@ -175,7 +178,7 @@ export const getJobs = async (filters: {
         },
       }),
     ]);
-    
+
     // Transform the jobs to simplify skills array
     const transformedJobs = jobs.map((job) => ({
       ...job,
@@ -209,40 +212,82 @@ export const getJobById = async (jobId: string) => {
   }
 };
 
-export const getJobDetails = async (jobId: string, userId: string) => {
+export const getJobDetails = async (
+  jobId: string,
+  userId: string,
+  role: string
+) => {
   try {
-    const jobDetials = await prisma.job.findUnique({
+    const jobDetails = await prisma.job.findUnique({
       where: { id: jobId },
       include: {
         businessProfile: true,
-        skills: true,
-        workAreaImages: true,
+        skills: {
+          select: {
+            skillName: true,
+          },
+        },
+        workAreaImages: {
+          select: {
+            s3Key: true,
+          },
+        },
+        applications:
+          role === ProfileType.BUSINESS
+            ? {
+                include: {
+                  workerProfile: {
+                    include: {
+                      user: {
+                        select: {
+                          firstName: true,
+                          lastName: true,
+                          email: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              }
+            : false,
       },
     });
 
-    const workerProfile = await prisma.workerProfile.findUnique({
-      where: { userId },
-    });
-
-    if (!workerProfile) {
-      throw new DatabaseError("Worker profile not found");
+    if (!jobDetails) {
+      throw new DatabaseError('Job not found');
     }
 
-    const hasWorkerApplied = await prisma.jobApplication.findFirst({
-      where: {
-        jobId,
-        workerProfileId: workerProfile.id,
-      },
-    });
+    let hasWorkerApplied = false;
+    if (role === ProfileType.WORKER) {
+      const workerProfile = await prisma.workerProfile.findUnique({
+        where: { userId: userId },
+      });
 
-    const jobDetails = {
-      hasWorkerApplied: hasWorkerApplied ? true : false,
-      ...jobDetials,
-      skills: jobDetials?.skills.map((skill) => skill.skillName),
-      workAreaImages: jobDetials?.workAreaImages.map((image) => image.s3Key),
+      if (!workerProfile) {
+        throw new DatabaseError('Worker profile not found');
+      }
+
+      const application = await prisma.jobApplication.findFirst({
+        where: {
+          jobId,
+          workerProfileId: workerProfile.id,
+        },
+      });
+
+      hasWorkerApplied = !!application;
+    }
+
+    const transformedJobDetails = {
+      ...jobDetails,
+      skills: jobDetails.skills.map((skill) => skill.skillName),
+      workAreaImages: jobDetails.workAreaImages.map((image) => image.s3Key),
+      hasWorkerApplied:
+        role === ProfileType.WORKER ? hasWorkerApplied : undefined,
+      applicants:
+        role === ProfileType.BUSINESS ? jobDetails.applications : undefined,
     };
 
-    return jobDetails;
+    return transformedJobDetails;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
@@ -263,7 +308,7 @@ export const applyJob = async (
     });
 
     if (!workerProfile) {
-      throw new DatabaseError("Worker profile not found");
+      throw new DatabaseError('Worker profile not found');
     }
 
     const jobApplication = await prisma.jobApplication.findFirst({
@@ -274,7 +319,7 @@ export const applyJob = async (
     });
 
     if (jobApplication) {
-      throw new DatabaseError("You have already applied for this job");
+      throw new DatabaseError('You have already applied for this job');
     }
 
     return await prisma.jobApplication.create({
@@ -311,15 +356,18 @@ export const getApplicantsOfJob = async (
       skip,
       take: limit,
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
       include: {
         workerProfile: {
           select: {
+            phoneNumber: true,
+            profilePicture: true,
             user: {
               select: {
                 firstName: true,
                 lastName: true,
+                email: true,
               },
             },
           },

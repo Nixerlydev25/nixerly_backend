@@ -69,12 +69,12 @@ export const getJobDetailsHandler = async (
   try {
     const { jobId } = request.params;
     console.log(jobId);
-    const { userId } = request.user;
+    const { userId, defaultProfile } = request.user;
     const jobFound = await jobModel.getJobById(jobId);
     if (!jobFound) {
       throw new NotFoundError("Job not found");
     }
-    const job = await jobModel.getJobDetails(jobId, userId);
+    const job = await jobModel.getJobDetails(jobId, userId, defaultProfile);
 
     response.status(ResponseStatus.OK).json(job);
   } catch (error) {

@@ -17,6 +17,8 @@ export const resetPassword = z.object({
     .max(64, "Password must be at most 64 characters long"),
 });
 
+export const userIdSchema = z.string().uuid("Invalid worker ID format");
+
 export const getAppliedJobsQuerySchema = z.object({
   page: z.string().transform(Number).default('1'),
   limit: z.string().transform(Number).default('10'),
