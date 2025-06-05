@@ -1,3 +1,4 @@
+import { ReportStatus } from "@prisma/client";
 import prisma from "../../../config/prisma.config";
 import { DatabaseError, NotFoundError } from "../../../utils/errors";
 
@@ -5,7 +6,15 @@ export const toggleWorkerBlockStatus = async (workerId: string) => {
   try {
     const worker = await prisma.workerProfile.findUnique({
       where: { id: workerId },
-      select: { isBlocked: true },
+      select: { 
+        isBlocked: true,
+        reportsReceived: {
+          select: {
+            id: true,
+            status: true
+          }
+        }
+      },
     });
 
     if (!worker) {
@@ -28,6 +37,19 @@ export const toggleWorkerBlockStatus = async (workerId: string) => {
       },
     });
 
+    // If worker is blocked, update all pending reports to ACTION_TAKEN
+    if (!worker.isBlocked && updatedWorker.isBlocked) {
+      await prisma.workerReport.updateMany({
+        where: {
+          reportedWorkerId: workerId,
+          status: ReportStatus.PENDING
+        },
+        data: {
+          status: ReportStatus.ACTION_TAKEN
+        }
+      });
+    }
+
     return updatedWorker;
   } catch (error: any) {
     throw new DatabaseError(error.message);
@@ -38,7 +60,15 @@ export const toggleBusinessBlockStatus = async (businessId: string) => {
   try {
     const business = await prisma.businessProfile.findUnique({
       where: { id: businessId },
-      select: { isBlocked: true },
+      select: { 
+        isBlocked: true,
+        reportsReceived: {
+          select: {
+            id: true,
+            status: true
+          }
+        }
+      },
     });
 
     if (!business) {
@@ -75,6 +105,17 @@ export const toggleBusinessBlockStatus = async (businessId: string) => {
           isBlocked: true,
         },
       });
+
+      // Update any pending reports to ACTION_TAKEN
+      await prisma.businessReport.updateMany({
+        where: {
+          reportedBusinessId: businessId,
+          status: ReportStatus.PENDING
+        },
+        data: {
+          status: ReportStatus.ACTION_TAKEN
+        }
+      });
     }
 
     return updatedBusiness;
@@ -82,12 +123,20 @@ export const toggleBusinessBlockStatus = async (businessId: string) => {
     throw new DatabaseError(error.message);
   }
 };
-
 export const toggleJobBlockStatus = async (jobId: string) => {
   try {
+    console.log({jobId});
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      select: { isBlocked: true },
+      select: { 
+        isBlocked: true,
+        reportsReceived: {
+          select: {
+            id: true,
+            status: true
+          }
+        }
+      },
     });
 
     if (!job) {
@@ -113,8 +162,21 @@ export const toggleJobBlockStatus = async (jobId: string) => {
       },
     });
 
+    // If job is being blocked, update any pending reports to ACTION_TAKEN
+    if (!job.isBlocked && updatedJob.isBlocked) {
+      await prisma.jobReport.updateMany({
+        where: {
+          reportedJobId: jobId,
+          status: ReportStatus.PENDING
+        },
+        data: {
+          status: ReportStatus.ACTION_TAKEN
+        }
+      });
+    }
+
     return updatedJob;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
-}; 
+};

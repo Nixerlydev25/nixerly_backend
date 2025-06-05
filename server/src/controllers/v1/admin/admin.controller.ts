@@ -47,6 +47,7 @@ export const toggleJobBlockStatus = async (
 ) => {
   try {
     const { jobId } = request.params;
+    console.log({jobId});
     const updatedJob = await adminModel.toggleJobBlockStatus(jobId);
     
     response.status(ResponseStatus.OK).json({
