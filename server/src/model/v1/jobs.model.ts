@@ -5,11 +5,13 @@ import {
   JobType,
   JobApplicationDuration,
   ProfileType,
+  ApplicationStatus,
 } from '@prisma/client';
 import prisma from '../../config/prisma.config';
 import { DatabaseError } from '../../utils/errors';
 import { ResponseStatus } from '../../types/response.enums';
 import { stat } from 'fs';
+import { S3Service } from '../../services/s3.service';
 
 export const createJob = async (
   businessProfileId: string,
@@ -221,7 +223,11 @@ export const getJobDetails = async (
     const jobDetails = await prisma.job.findUnique({
       where: { id: jobId },
       include: {
-        businessProfile: true,
+        businessProfile: {
+          include: {
+            profilePicture: true
+          }
+        },
         skills: {
           select: {
             skillName: true,
@@ -245,6 +251,11 @@ export const getJobDetails = async (
                           email: true,
                         },
                       },
+                      profilePicture: true,
+                      skills: true,
+                      experience: true,
+                      education: true,
+                      languages: true,
                     },
                   },
                 },
@@ -277,14 +288,69 @@ export const getJobDetails = async (
       hasWorkerApplied = !!application;
     }
 
+    // Get work area image URLs
+    const workAreaImageUrls = await Promise.all(
+      jobDetails.workAreaImages.map(async (image) => {
+        try {
+          return await S3Service.getObjectUrl(image.s3Key);
+        } catch (error) {
+          console.error("Failed to get work area image URL:", error);
+          return null;
+        }
+      })
+    );
+
+    // Get business profile picture URL if exists
+    let businessProfilePictureUrl = null;
+    if (jobDetails.businessProfile?.profilePicture?.s3Key) {
+      try {
+        businessProfilePictureUrl = await S3Service.getObjectUrl(
+          jobDetails.businessProfile.profilePicture.s3Key
+        );
+      } catch (error) {
+        console.error("Failed to get business profile picture URL:", error);
+      }
+    }
+
+    // Get worker profile pictures for applications if business role
+    let applications = jobDetails.applications;
+    if (role === ProfileType.BUSINESS && Array.isArray(applications)) {
+      applications = await Promise.all(
+        applications.map(async (application: any) => {
+          let workerProfilePictureUrl = null;
+          if (application.workerProfile?.profilePicture?.s3Key) {
+            try {
+              workerProfilePictureUrl = await S3Service.getObjectUrl(
+                application.workerProfile.profilePicture.s3Key
+              );
+            } catch (error) {
+              console.error("Failed to get worker profile picture URL:", error);
+            }
+          }
+          return {
+            ...application,
+            workerProfile: {
+              ...application.workerProfile,
+              profilePicture: workerProfilePictureUrl,
+              skills: application.workerProfile.skills.map((skill: { skillName: SkillName }) => skill.skillName)
+            }
+          };
+        })
+      );
+    }
+
     const transformedJobDetails = {
       ...jobDetails,
+      businessProfile: {
+        ...jobDetails.businessProfile,
+        profilePicture: businessProfilePictureUrl
+      },
       skills: jobDetails.skills.map((skill) => skill.skillName),
-      workAreaImages: jobDetails.workAreaImages.map((image) => image.s3Key),
+      workAreaImages: workAreaImageUrls.filter(url => url !== null),
       hasWorkerApplied:
         role === ProfileType.WORKER ? hasWorkerApplied : undefined,
       applicants:
-        role === ProfileType.BUSINESS ? jobDetails.applications : undefined,
+        role === ProfileType.BUSINESS ? applications : undefined,
     };
 
     return transformedJobDetails;
@@ -375,6 +441,30 @@ export const getApplicantsOfJob = async (
       },
     });
 
+    // Transform applicants to include profile picture URLs
+    const transformedApplicants = await Promise.all(
+      applicants.map(async (applicant) => {
+        let profilePictureUrl = null;
+        if (applicant.workerProfile?.profilePicture?.s3Key) {
+          try {
+            profilePictureUrl = await S3Service.getObjectUrl(
+              applicant.workerProfile.profilePicture.s3Key
+            );
+          } catch (error) {
+            console.error("Failed to get worker profile picture URL:", error);
+          }
+        }
+
+        return {
+          ...applicant,
+          workerProfile: {
+            ...applicant.workerProfile,
+            profilePicture: profilePictureUrl
+          }
+        };
+      })
+    );
+
     const totalCount = await prisma.jobApplication.count({ where: { jobId } });
     const totalPages = Math.ceil(totalCount / limit);
     const hasMore = page < totalPages;
@@ -388,7 +478,7 @@ export const getApplicantsOfJob = async (
     });
 
     return {
-      applicants,
+      applicants: transformedApplicants,
       pagination: {
         totalCount,
         totalPages,
