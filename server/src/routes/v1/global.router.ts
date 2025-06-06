@@ -15,7 +15,7 @@ import jobsRouter from './jobs.router';
 import businessRouter from './business.router';
 import adminRouter from './admin/admin.router';
 import reportRouter from './reports.router';
-import certificateRouter from './certifications.router';
+import certificateRouter from './certificates.router';
 // import subscriptionRouter from "./subscription.router";
 
 const Api2 = Router();
