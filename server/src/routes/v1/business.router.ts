@@ -8,6 +8,8 @@ import * as businessController from "../../controllers/v1/business.controller";
 import {
   getJobsByBusiness,
   getWorkerDetailsSchema,
+  saveProfilePicture,
+  getProfilePictureUploadUrl,
 } from "../../schema/v1/worker.validation";
 import { getJobDetailsSchema } from "../../schema/v1/jobs.validation";
 
@@ -39,6 +41,22 @@ businessRouter.get(
   isAuthorized([Role.BUSINESS]),
   ValidationMiddleware.paramValidation(getJobDetailsSchema, "jobId"),
   businessController.getJobDetailsHandler
+);
+
+// GET PROFILE PICTURE UPLOAD URL
+businessRouter.post(
+  ROUTES.BUSINESS_PROFILE.GET_PROFILE_PICTURE_UPLOAD_URL,
+  isAuthorized([Role.BUSINESS, Role.ADMIN, Role.SUPER_ADMIN]),
+  ValidationMiddleware.bodyValidation(getProfilePictureUploadUrl),
+  businessController.getProfilePictureUploadUrlHandler
+);
+
+// SAVE PROFILE PICTURE
+businessRouter.put(
+  ROUTES.BUSINESS_PROFILE.SAVE_PROFILE_PICTURE,
+  isAuthorized([Role.BUSINESS, Role.ADMIN, Role.SUPER_ADMIN]),
+  ValidationMiddleware.bodyValidation(saveProfilePicture),
+  businessController.saveProfilePictureHandler
 );
 
 export default businessRouter;
