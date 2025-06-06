@@ -1,6 +1,7 @@
 import { OnboardingStepBusinessProfile } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { DatabaseError, NotFoundError } from "../../utils/errors";
+import { S3Service } from "../../services/s3.service";
 
 export const updateBusinessProfile = async (
   userId: string,
@@ -51,7 +52,6 @@ export const getBusinessProfileDetailsByUserId = async (userId: string) => {
     throw new DatabaseError(error.message);
   }
 };
-
 export const getBusinessProfileDetails = async (businessId: string) => {
   try {
     const user = await prisma.businessProfile.findUnique({
@@ -65,6 +65,7 @@ export const getBusinessProfileDetails = async (businessId: string) => {
             email: true,
           },
         },
+        profilePicture: true,
         jobs: {
           select: {
             id: true,
@@ -81,6 +82,20 @@ export const getBusinessProfileDetails = async (businessId: string) => {
         },
       },
     });
+
+    // Get profile picture URL if exists
+    if (user?.profilePicture?.s3Key) {
+      const profilePictureUrl = await S3Service.getObjectUrl(
+        user.profilePicture.s3Key
+      );
+      return {
+        ...user,
+        profilePicture: {
+          ...user.profilePicture,
+          url: profilePictureUrl,
+        },
+      };
+    }
 
     return user;
   } catch (error: any) {
@@ -257,6 +272,45 @@ export const getJobById = async (jobId: string, businessId: string) => {
       totalApplications: job._count.applications,
       company: job.businessProfile,
     };
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const saveProfilePicture = async (userId: string, s3Key: string) => {
+  try {
+    // First, get the business profile ID
+    const businessProfile = await prisma.businessProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!businessProfile) {
+      throw new NotFoundError("Business profile not found");
+    }
+
+    // Check if profile picture already exists
+    const existingProfilePicture = await prisma.profilePicture.findUnique({
+      where: { businessProfileId: businessProfile.id },
+    });
+
+    if (existingProfilePicture) {
+      // Update existing profile picture
+      const updatedProfilePicture = await prisma.profilePicture.update({
+        where: { businessProfileId: businessProfile.id },
+        data: { s3Key },
+      });
+      return updatedProfilePicture;
+    } else {
+      // Create new profile picture
+      const newProfilePicture = await prisma.profilePicture.create({
+        data: {
+          businessProfileId: businessProfile.id,
+          s3Key,
+        },
+      });
+      return newProfilePicture;
+    }
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

@@ -1,10 +1,8 @@
-import {
-  ProfileType,
-} from "@prisma/client";
+import { ProfileType } from "@prisma/client";
 import prisma from "../../config/prisma.config";
 import { hashPassword } from "../../utils";
 import { DatabaseError } from "../../utils/errors";
-import {S3Service} from "../../services/s3.service";
+import { S3Service } from "../../services/s3.service";
 
 export const updateUserVerificationStatus = async (
   userId: string,
@@ -85,35 +83,58 @@ export const markUserAsDeleted = async (userId: string) => {
     throw new DatabaseError(error.message);
   }
 };
-
 export const getCurrentUserDetails = async (
   userId: string,
   defaultProfile: ProfileType
 ) => {
   try {
+    // Define type for user response
+    type UserResponse = {
+      id: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      defaultProfile: ProfileType;
+      isVerified: boolean;
+      isDeleted: boolean;
+      isSuspended: boolean;
+      firstTimeLogin: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+      workerProfile?: {
+        id: string;
+        profilePicture?: {
+          s3Key: string;
+          url?: string;
+        };
+      };
+      businessProfile?: {
+        id: string;
+        profilePicture?: {
+          s3Key: string;
+          url?: string;
+        };
+      };
+    };
+
     const includeProfile =
       defaultProfile === "WORKER"
-        ? { workerProfile: true }
+        ? {
+            workerProfile: {
+              include: {
+                profilePicture: true
+              }
+            }
+          }
         : defaultProfile === "BUSINESS"
-        ? { businessProfile: true }
+        ? {
+            businessProfile: {
+              include: {
+                profilePicture: true
+              }
+            }
+          }
         : {};
-
-
-        // only return thisid
-  //       : '9bf6dc77-083a-401a-b8e0-fa9351efee5c',
-  // email: 'dev.naveedrehmani@gmail.com',
-  // firstName: 'admin',
-  // lastName: 'admin',
-  // createdAt: '2025-05-29T20:14:59.511Z',
-  // updatedAt: '2025-05-29T20:14:59.511Z',
-  // isVerified: true,
-  // isDeleted: false,
-  // isSuspended: false,
-  // role: 'ADMIN',
-  // provider: 'EMAIL_PASSWORD',
-  // defaultProfile: 'WORKER',
-  // firstTimeLogin: true,
-  // workerProfile: null
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -133,7 +154,28 @@ export const getCurrentUserDetails = async (
         updatedAt: true,
         ...includeProfile,
       },
-    });
+    }) as UserResponse | null;
+
+    if (user) {
+      // Get profile picture URL if exists
+      if (
+        user.workerProfile?.profilePicture?.s3Key ||
+        user.businessProfile?.profilePicture?.s3Key
+      ) {
+        const s3Key =
+          user.workerProfile?.profilePicture?.s3Key ||
+          user.businessProfile?.profilePicture?.s3Key;
+
+        const profilePictureUrl = await S3Service.getObjectUrl(s3Key!);
+
+        // Only keep URL in response
+        if (user.workerProfile?.profilePicture) {
+          user.workerProfile.profilePicture = profilePictureUrl as any;
+        } else if (user.businessProfile?.profilePicture) {
+          user.businessProfile.profilePicture =  profilePictureUrl as any;
+        }
+      }
+    }
 
     return user;
   } catch (error: any) {
@@ -232,9 +274,11 @@ export const getWorkerProfileDetails = async (userId: string) => {
     let profilePictureUrl = null;
     if (user.workerProfile.profilePicture?.s3Key) {
       try {
-        profilePictureUrl = await S3Service.getObjectUrl(user.workerProfile.profilePicture.s3Key);
+        profilePictureUrl = await S3Service.getObjectUrl(
+          user.workerProfile.profilePicture.s3Key
+        );
       } catch (error) {
-        console.error('Failed to get profile picture URL:', error);
+        console.error("Failed to get profile picture URL:", error);
         // Continue execution even if profile picture URL generation fails
       }
     }
@@ -249,7 +293,7 @@ export const getWorkerProfileDetails = async (userId: string) => {
           proficiency: language.proficiency,
           id: language.id,
         })),
-        profilePicture: profilePictureUrl
+        profilePicture: profilePictureUrl,
       },
     };
 
@@ -258,7 +302,6 @@ export const getWorkerProfileDetails = async (userId: string) => {
     throw new DatabaseError(error.message);
   }
 };
-
 export const getBusinessProfileDetails = async (userId: string) => {
   try {
     const user = await prisma.user.findUnique({
@@ -273,22 +316,47 @@ export const getBusinessProfileDetails = async (userId: string) => {
               select: {
                 id: true,
                 title: true,
-                description:true,
-                requirements:true,
+                description: true,
+                requirements: true,
                 employmentType: true,
                 numberOfPositions: true,
                 budget: true,
                 hourlyRateMin: true,
                 hourlyRateMax: true,
                 status: true,
-              }
-            }, 
+              },
+            },
+            profilePicture: true,
           },
-        }
-      }
+        },
+      },
     });
-    
-    return user;
+
+    if (!user || !user.businessProfile) {
+      return null;
+    }
+
+    let profilePictureUrl = null;
+    if (user.businessProfile.profilePicture?.s3Key) {
+      try {
+        profilePictureUrl = await S3Service.getObjectUrl(
+          user.businessProfile.profilePicture.s3Key
+        );
+      } catch (error) {
+        console.error("Failed to get profile picture URL:", error);
+        // Continue execution even if profile picture URL generation fails
+      }
+    }
+
+    const transformedUser = {
+      ...user,
+      businessProfile: {
+        ...user.businessProfile,
+        profilePicture: profilePictureUrl,
+      },
+    };
+
+    return transformedUser;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
@@ -319,27 +387,28 @@ export const getWorkerAppliedJobs = async (
 
     // Get job applications with pagination
     const applications = await prisma.jobApplication.findMany({
-      where : {
+      where: {
         workerProfileId: workerProfile.id,
         ...(search && {
           job: {
             OR: [
               { title: { contains: search } },
-              { businessProfile: { companyName: { contains: search } } }
-            ]
-          }
+              { businessProfile: { companyName: { contains: search } } },
+            ],
+          },
         }),
-        ...(startDate && endDate && {
-          createdAt: {
-            gte: startDate,
-            lte: endDate
-          }
-        })
+        ...(startDate &&
+          endDate && {
+            createdAt: {
+              gte: startDate,
+              lte: endDate,
+            },
+          }),
       },
       skip,
       take: limit,
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
       },
       include: {
         job: {
@@ -350,18 +419,20 @@ export const getWorkerAppliedJobs = async (
                 city: true,
                 state: true,
                 country: true,
-              }
+              },
             },
-            location: true
-          }
-        }
-      }
+            location: true,
+          },
+        },
+      },
     });
 
     // Get total count for pagination
-    const totalCount = await prisma.jobApplication.count({ where : {
-      workerProfileId: workerProfile.id,
-    }});
+    const totalCount = await prisma.jobApplication.count({
+      where: {
+        workerProfileId: workerProfile.id,
+      },
+    });
     const totalPages = Math.ceil(totalCount / limit);
     const hasMore = page < totalPages;
 
@@ -371,8 +442,8 @@ export const getWorkerAppliedJobs = async (
         totalCount,
         totalPages,
         currentPage: page,
-        hasMore
-      }
+        hasMore,
+      },
     };
   } catch (error: any) {
     throw new DatabaseError(error.message);

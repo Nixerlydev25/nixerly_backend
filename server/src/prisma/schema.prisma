@@ -76,12 +76,14 @@ model WorkerProfile {
 }
 
 model ProfilePicture {
-  id              String        @id @default(uuid())
-  workerProfileId String        @unique
-  workerProfile   WorkerProfile @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
-  s3Key           String // S3 key for the profile picture
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id                String           @id @default(uuid())
+  workerProfileId   String?         @unique
+  workerProfile     WorkerProfile?  @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+  businessProfileId String?         @unique
+  businessProfile   BusinessProfile? @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  s3Key             String // S3 key for the profile picture
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   @@map("profile_pictures")
 }
@@ -93,30 +95,32 @@ model BusinessProfile {
   user                   User                          @relation("UserBusinessProfile", fields: [userId], references: [id], onDelete: Cascade)
   companyName            String?
   description            String?                       @db.Text
-  industry               String?
-  phoneNumber            String?
-  city                   String?
-  state                  String?
-  country                String?
-  website                String?
-  employeeCount          Int?
-  yearFounded            Int?
-  totalSpent             Float                         @default(0)
-  postedJobs             Int                           @default(0)
-  onboardingStep         OnboardingStepBusinessProfile @default(COMPANY_INFO)
-  createdAt              DateTime                      @default(now())
-  updatedAt              DateTime                      @default(now()) @updatedAt
-  reviewsReceived        Review[]                      @relation("BusinessReviews")
-  conversations          Conversation[]                @relation("BusinessConversations")
-  jobs                   Job[] // Business posts jobs
-  contracts              Contract[]                    @relation("ContractBusiness") // Business's contracts
-  sentMessages           Message[]                     @relation("BusinessSentMessages") // Messages sent by business
-  receivedMessages       Message[]                     @relation("BusinessReceivedMessages")
-  isBlocked              Boolean                       @default(false)
-  lastActive             DateTime                      @default(now())
+  industry              String?
+  phoneNumber           String?
+  city                  String?
+  state                 String?
+  country               String?
+  website               String?
+  employeeCount         Int?
+  yearFounded           Int?
+  totalSpent            Float                         @default(0)
+  postedJobs            Int                           @default(0)
+  onboardingStep        OnboardingStepBusinessProfile @default(COMPANY_INFO)
+  createdAt             DateTime                      @default(now())
+  updatedAt             DateTime                      @default(now()) @updatedAt
+  reviewsReceived       Review[]                      @relation("BusinessReviews")
+  conversations         Conversation[]                @relation("BusinessConversations")
+  jobs                  Job[] // Business posts jobs
+  contracts             Contract[]                    @relation("ContractBusiness") // Business's contracts
+  sentMessages          Message[]                     @relation("BusinessSentMessages") // Messages sent by business
+  receivedMessages      Message[]                     @relation("BusinessReceivedMessages")
+  isBlocked             Boolean                       @default(false)
+  lastActive            DateTime                      @default(now())
+  assets                Asset[]                       @relation("BusinessAssets") // Business can have multiple assets
+  profilePicture        ProfilePicture? // One-to-one relation with profile picture
   // Reports
-  reportsReceived        BusinessReport[]              @relation("BusinessReportsReceived")
-  workerReportsSent      WorkerReport[]                @relation("WorkerReportsByBusiness")
+  reportsReceived       BusinessReport[]              @relation("BusinessReportsReceived")
+  workerReportsSent     WorkerReport[]                @relation("WorkerReportsByBusiness")
 
   @@map("business_profiles")
 }
@@ -440,29 +444,51 @@ model Education {
 }
 
 model Certificate {
-  id            String        @id @default(uuid())
+  id            String           @id @default(uuid())
   workerId      String
-  workerProfile WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  workerProfile WorkerProfile    @relation(fields: [workerId], references: [id], onDelete: Cascade)
   name          String
   issuingOrg    String
   issueDate     DateTime
   expiryDate    DateTime?
   credentialUrl String?
+  certificateType CertificateType?
   assets        Asset[] // Relation to certificate images
 
   @@map("certificates")
 }
 
+enum CertificateType {
+  SAFE_PASS
+  MANUAL_HANDLING
+  WORKING_AT_HEIGHT
+  PASMA
+  IPAF
+  ABRASIVE_WHEELS  
+  CONFINED_SPACE_ENTRY
+  FIRST_AID_AT_WORK
+  FIRE_WARDEN
+  CSCS
+  QQI_ELECTRICIAN
+  QQI_PLUMBER
+  QQI_CARPENTER
+  QQI_BRICKLAYER
+  QQI_PLASTERER
+  OTHER
+}
+
 // ASSETS --------------------------------------------
 model Asset {
-  id            String       @id @default(uuid())
-  key           String // S3 key for the image
-  mediaType     String // Type of media (e.g., "image/jpeg", "image/png", "application/pdf")
-  projectId     String? // Optional relation to Project
-  project       Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  certificateId String? // Optional relation to Certificate
-  certificate   Certificate? @relation(fields: [certificateId], references: [id], onDelete: Cascade)
-  createdAt     DateTime     @default(now())
+  id                String          @id @default(uuid())
+  key               String // S3 key for the image
+  mediaType         String // Type of media (e.g., "image/jpeg", "image/png", "application/pdf")
+  projectId         String? // Optional relation to Project
+  project           Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  certificateId     String? // Optional relation to Certificate
+  certificate       Certificate?    @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  businessProfileId String? // Optional relation to BusinessProfile
+  businessProfile   BusinessProfile? @relation("BusinessAssets", fields: [businessProfileId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
 
   @@map("assets")
 }

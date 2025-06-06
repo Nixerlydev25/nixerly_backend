@@ -17,6 +17,7 @@ export const ROUTES = {
     ADMIN: "/admin",
     REPORTS: "/reports",
     ADMIN_REPORTS: "/admin-reports",
+    CERTIFICATE: "/certificate",
   },
   ADMIN: {
     STATISTICS: {
@@ -100,6 +101,8 @@ export const ROUTES = {
     GET_BUSINESS_PROFILE_DETAILS: "/business-profile-details/:businessId",
     GET_ALL_BUSINESS_JOBS: "/get-all-business-jobs",
     GET_JOB_DETAILS: "/job-details/:jobId",
+    GET_PROFILE_PICTURE_UPLOAD_URL: "/get-profile-picture-upload-url",
+    SAVE_PROFILE_PICTURE: "/save-profile-picture",
   },
   WROKER_SKILLS: {
     CREATE: "/",
@@ -145,5 +148,11 @@ export const ROUTES = {
     HAS_WORKER_REPORTED_JOB: "/has-reported-job/:jobId",
     HAS_WORKER_REPORTED_BUSINESS: "/has-reported-business/:businessId",
     HAS_BUSINESS_REPORTED_WORKER: "/has-reported-worker/:workerId",
+  },
+  CERTIFICATE: {
+    CREATE: "/create",
+    DELETE: "/delete",
+    GET_ASSET_UPLOAD_URL: "/get-asset-upload-url",
+    SAVE_ASSETS: "/save-assets",
   },
 } as const;
