@@ -13,8 +13,6 @@ export const getAllWorkers = async (
   try {
     const filters = request.query;
 
-    console.log({ filters });
-
     const { workers, pagination: {totalCount, totalPages, currentPage, hasMore} } = await WorkerModel.getAllWorkers(
       filters as any,
     );

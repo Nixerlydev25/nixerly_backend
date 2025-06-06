@@ -5,6 +5,7 @@ import {
   createWorkerFilterClause,
   createWorkerSortClause,
 } from '../utils/filters';
+import { S3Service } from '../services/s3.service';
 
 export const getAllWorkers = async (filters: {
   skills?: SkillName[];
@@ -48,6 +49,7 @@ export const getAllWorkers = async (filters: {
           experience: true,
           education: true,
           languages: true,
+          profilePicture: true,
         },
         orderBy: orderByClause,
       }),
@@ -56,10 +58,22 @@ export const getAllWorkers = async (filters: {
       }),
     ]);
 
-    // Transform the skills to be an array of just skillNames
-    const transformedWorkers = workers.map((worker) => ({
-      ...worker,
-      skills: worker.skills.map((skill) => skill.skillName),
+    // Transform workers with profile pictures and skills
+    const transformedWorkers = await Promise.all(workers.map(async (worker) => {
+      let profilePictureUrl = null;
+      if (worker.profilePicture?.s3Key) {
+        try {
+          profilePictureUrl = await S3Service.getObjectUrl(worker.profilePicture.s3Key);
+        } catch (error) {
+          console.error("Failed to get profile picture URL:", error);
+        }
+      }
+
+      return {
+        ...worker,
+        skills: worker.skills.map((skill) => skill.skillName),
+        profilePicture: profilePictureUrl
+      };
     }));
 
     return {
@@ -102,19 +116,27 @@ export const getWorkerById = async (workerId: string) => {
         experience: true,
         education: true,
         languages: true,
-        // Explicitly exclude conversations
+        profilePicture: true,
       },
     });
 
     if (!worker) return null;
 
-    // Transform the skills for better readability
-    const transformedSkills = worker.skills.map((skill) => skill.skillName);
+    // Transform profile picture if it exists
+    let profilePictureUrl = null;
+    if (worker.profilePicture?.s3Key) {
+      try {
+        profilePictureUrl = await S3Service.getObjectUrl(worker.profilePicture.s3Key);
+      } catch (error) {
+        console.error("Failed to get profile picture URL:", error);
+      }
+    }
 
-    // Return the worker with transformed skills
+    // Return the worker with transformed skills and profile picture
     return {
       ...worker,
-      skills: transformedSkills,
+      skills: worker.skills.map((skill) => skill.skillName),
+      profilePicture: profilePictureUrl
     };
   } catch (error) {
     console.log(error);
@@ -205,9 +227,29 @@ export const getWorkerProfileByUserId = async (userId: string) => {
   try {
     const worker = await prisma.workerProfile.findUnique({
       where: { userId },
+      include: {
+        profilePicture: true
+      }
     });
 
-    return worker;
+    if (!worker) return null;
+
+    // Transform profile picture if it exists
+    let profilePictureUrl = null;
+    if (worker.profilePicture?.s3Key) {
+      try {
+        profilePictureUrl = await S3Service.getObjectUrl(worker.profilePicture.s3Key);
+      } catch (error) {
+        console.error("Failed to get profile picture URL:", error);
+        // Continue execution even if profile picture URL generation fails
+      }
+    }
+
+    return {
+      ...worker,
+      profilePicture: profilePictureUrl
+    };
+
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
