@@ -232,7 +232,6 @@ export const updateUser = async (
     throw new DatabaseError(error.message);
   }
 };
-
 export const getWorkerProfileDetails = async (userId: string) => {
   try {
     const user = await prisma.user.findUnique({
@@ -253,7 +252,11 @@ export const getWorkerProfileDetails = async (userId: string) => {
             skills: true,
             experience: true,
             education: true,
-            certificates: true,
+            certificates: {
+              include: {
+                assets: true
+              }
+            },
             portfolio: {
               include: {
                 assets: true,
@@ -283,6 +286,31 @@ export const getWorkerProfileDetails = async (userId: string) => {
       }
     }
 
+    // Get S3 URLs for certificate assets
+    const certificatesWithUrls = await Promise.all(
+      user.workerProfile.certificates.map(async (certificate) => {
+        const assetUrls = await Promise.all(
+          certificate.assets.map(async (asset) => {
+            try {
+              const url = await S3Service.getObjectUrl(asset.key);
+              return {
+                url,
+                key: asset.key,
+                mediaType: asset.mediaType
+              };
+            } catch (error) {
+              console.error(`Failed to get certificate asset URL for key ${asset.key}:`, error);
+              return null;
+            }
+          })
+        );
+        return {
+          ...certificate,
+          assets: assetUrls.filter(asset => asset !== null)
+        };
+      })
+    );
+
     const transformedUser = {
       ...user,
       workerProfile: {
@@ -294,6 +322,7 @@ export const getWorkerProfileDetails = async (userId: string) => {
           id: language.id,
         })),
         profilePicture: profilePictureUrl,
+        certificates: certificatesWithUrls
       },
     };
 
@@ -302,6 +331,7 @@ export const getWorkerProfileDetails = async (userId: string) => {
     throw new DatabaseError(error.message);
   }
 };
+
 export const getBusinessProfileDetails = async (userId: string) => {
   try {
     const user = await prisma.user.findUnique({
