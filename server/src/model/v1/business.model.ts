@@ -1,6 +1,6 @@
 import { OnboardingStepBusinessProfile } from "@prisma/client";
 import prisma from "../../config/prisma.config";
-import { DatabaseError, NotFoundError } from "../../utils/errors";
+import { DatabaseError, NotFoundError, UnauthorizedError } from "../../utils/errors";
 import { S3Service } from "../../services/s3.service";
 
 export const updateBusinessProfile = async (
@@ -311,6 +311,94 @@ export const saveProfilePicture = async (userId: string, s3Key: string) => {
       });
       return newProfilePicture;
     }
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const saveBusinessAssets = async (
+  userId: string,
+  assets: {
+    s3Key: string;
+    mediaType: string;
+  }[]
+) => {
+  try {
+    // Get business profile ID
+    const businessProfile = await prisma.businessProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!businessProfile) {
+      throw new NotFoundError("Business profile not found");
+    }
+
+    // Create all assets in a transaction
+    const createdAssets = await prisma.$transaction(
+      assets.map((asset) =>
+        prisma.asset.create({
+          data: {
+            key: asset.s3Key,
+            mediaType: asset.mediaType,
+            businessProfileId: businessProfile.id,
+          },
+        })
+      )
+    );
+
+    return createdAssets;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};
+
+export const deleteBusinessAssets = async (userId: string, assetIds: string[]) => {
+  try {
+    // Get business profile ID
+    const businessProfile = await prisma.businessProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!businessProfile) {
+      throw new NotFoundError("Business profile not found");
+    }
+
+    // Verify ownership of all assets
+    const assets = await prisma.asset.findMany({
+      where: {
+        id: { in: assetIds },
+      },
+      select: {
+        id: true,
+        businessProfileId: true,
+        key: true,
+      },
+    });
+
+    // Check if all assets belong to the business
+    const unauthorized = assets.some(
+      (asset) => asset.businessProfileId !== businessProfile.id
+    );
+    if (unauthorized) {
+      throw new UnauthorizedError("Unauthorized to delete one or more assets");
+    }
+
+    // Delete the assets from S3
+    const s3Keys = assets.map((asset) => asset.key);
+    // TODO: Implement S3 deletion here if needed
+    // await Promise.all(s3Keys.map(key => S3Service.deleteObject(key)));
+
+    // Delete the assets from the database
+    await prisma.asset.deleteMany({
+      where: {
+        id: { in: assetIds },
+        businessProfileId: businessProfile.id,
+      },
+    });
+
+    return { message: "Assets deleted successfully" };
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }

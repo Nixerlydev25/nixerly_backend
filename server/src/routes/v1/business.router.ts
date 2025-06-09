@@ -6,11 +6,14 @@ import { updateBusinessProfileSchema } from "../../schema/v1/auth.validation";
 import * as ValidationMiddleware from "../../middleware/validation";
 import * as businessController from "../../controllers/v1/business.controller";
 import {
-  getJobsByBusiness,
-  getWorkerDetailsSchema,
   saveProfilePicture,
   getProfilePictureUploadUrl,
-} from "../../schema/v1/worker.validation";
+  getBusinessProfileDetailsSchema,
+  businessPagination,
+  getBusinessAssetUploadUrl,
+  saveBusinessAssets,
+  deleteBusinessAssets,
+} from "../../schema/v1/business.validation";
 import { getJobDetailsSchema } from "../../schema/v1/jobs.validation";
 
 const businessRouter = Router();
@@ -25,14 +28,14 @@ businessRouter.patch(
 businessRouter.get(
   ROUTES.BUSINESS_PROFILE.GET_BUSINESS_PROFILE_DETAILS,
   isAuthorized([Role.BUSINESS, Role.ADMIN, Role.SUPER_ADMIN, Role.WORKER]),
-  ValidationMiddleware.paramValidation(getWorkerDetailsSchema, "businessId"),
+  ValidationMiddleware.paramValidation(getBusinessProfileDetailsSchema, "businessId"),
   businessController.getBusinessProfileDetailsHandler
 );
 
 businessRouter.get(
   ROUTES.BUSINESS_PROFILE.GET_ALL_BUSINESS_JOBS,
   isAuthorized([Role.BUSINESS]),
-  ValidationMiddleware.queryValidation(getJobsByBusiness),
+  ValidationMiddleware.queryValidation(businessPagination),
   businessController.getMyBusinessJobsHandler
 );
 
@@ -57,6 +60,30 @@ businessRouter.put(
   isAuthorized([Role.BUSINESS, Role.ADMIN, Role.SUPER_ADMIN]),
   ValidationMiddleware.bodyValidation(saveProfilePicture),
   businessController.saveProfilePictureHandler
+);
+
+// GET BUSINESS ASSET UPLOAD URL
+businessRouter.post(
+  ROUTES.BUSINESS_PROFILE.GET_ASSET_UPLOAD_URL,
+  isAuthorized([Role.BUSINESS]),
+  ValidationMiddleware.bodyValidation(getBusinessAssetUploadUrl),
+  businessController.getBusinessAssetUploadUrlHandler
+);
+
+// SAVE BUSINESS ASSETS
+businessRouter.post(
+  ROUTES.BUSINESS_PROFILE.SAVE_ASSETS,
+  isAuthorized([Role.BUSINESS]),
+  ValidationMiddleware.bodyValidation(saveBusinessAssets),
+  businessController.saveBusinessAssetsHandler
+);
+
+// DELETE BUSINESS ASSETS
+businessRouter.delete(
+  ROUTES.BUSINESS_PROFILE.DELETE_ASSETS,
+  isAuthorized([Role.BUSINESS]),
+  ValidationMiddleware.bodyValidation(deleteBusinessAssets),
+  businessController.deleteBusinessAssetsHandler
 );
 
 export default businessRouter;

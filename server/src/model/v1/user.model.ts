@@ -357,6 +357,7 @@ export const getBusinessProfileDetails = async (userId: string) => {
               },
             },
             profilePicture: true,
+            assets: true,
           },
         },
       },
@@ -378,11 +379,28 @@ export const getBusinessProfileDetails = async (userId: string) => {
       }
     }
 
+    // Get S3 URLs for business assets
+    const assetsWithUrls = await Promise.all(
+      user.businessProfile.assets.map(async (asset) => {
+        try {
+          const url = await S3Service.getObjectUrl(asset.key);
+          return {
+            ...asset,
+            url,
+          };
+        } catch (error) {
+          console.error(`Failed to get asset URL for key ${asset.key}:`, error);
+          return null;
+        }
+      })
+    );
+
     const transformedUser = {
       ...user,
       businessProfile: {
         ...user.businessProfile,
         profilePicture: profilePictureUrl,
+        assets: assetsWithUrls.filter(asset => asset !== null),
       },
     };
 

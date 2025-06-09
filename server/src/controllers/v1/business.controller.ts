@@ -138,3 +138,74 @@ export const saveProfilePictureHandler = async (
     return next(error);
   }
 };
+
+export const getBusinessAssetUploadUrlHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { files } = request.body;
+
+    // Generate presigned URLs for each file
+    const urlPromises = files.map(async (file: { fileName: string; contentType: string }) => {
+      const fileExtension = file.fileName.split('.').pop();
+      const s3Key = `business-assets/${userId}/${uuidv4()}.${fileExtension}`;
+      const presignedUrl = await S3Service.generatePresignedUrl(s3Key, file.contentType);
+      
+      return {
+        fileName: file.fileName,
+        presignedUrl,
+        s3Key,
+      };
+    });
+
+    const urls = await Promise.all(urlPromises);
+
+    return response.status(ResponseStatus.OK).json({
+      urls,
+    });
+  } catch (error: any) {
+    return next(error);
+  }
+};
+
+export const saveBusinessAssetsHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { assets } = request.body;
+
+    const savedAssets = await businessModel.saveBusinessAssets(userId, assets);
+
+    return response.status(ResponseStatus.OK).json({
+      message: ResponseMessages.Success,
+      assets: savedAssets,
+    });
+  } catch (error: any) {
+    return next(error);
+  }
+};
+
+export const deleteBusinessAssetsHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { assetIds } = request.body;
+
+    await businessModel.deleteBusinessAssets(userId, assetIds);
+
+    return response.status(ResponseStatus.OK).json({
+      message: ResponseMessages.Success,
+    });
+  } catch (error: any) {
+    return next(error);
+  }
+};
