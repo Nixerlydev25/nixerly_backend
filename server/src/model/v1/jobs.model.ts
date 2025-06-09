@@ -177,6 +177,13 @@ export const getJobs = async (filters: {
               skillName: true,
             },
           },
+          location:{
+            select:{
+              city:true,
+              state:true,
+              country:true,
+            }
+          }
         },
       }),
     ]);
