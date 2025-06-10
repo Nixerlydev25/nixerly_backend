@@ -117,6 +117,11 @@ export const getWorkerById = async (workerId: string) => {
         education: true,
         languages: true,
         profilePicture: true,
+        certificates: {
+          include: {
+            assets: true
+          }
+        },
       },
     });
 
@@ -132,11 +137,33 @@ export const getWorkerById = async (workerId: string) => {
       }
     }
 
-    // Return the worker with transformed skills and profile picture
+    // Transform certificates to include asset URLs
+    const transformedCertificates = await Promise.all(worker.certificates.map(async (cert) => {
+      const transformedAssets = await Promise.all(cert.assets.map(async (asset) => {
+        try {
+          const url = await S3Service.getObjectUrl(asset.key);
+          return {
+            ...asset,
+            url
+          };
+        } catch (error) {
+          console.error("Failed to get certificate asset URL:", error);
+          return null;
+        }
+      }));
+
+      return {
+        ...cert,
+        assets: transformedAssets.filter(asset => asset !== null)
+      };
+    }));
+
+    // Return the worker with transformed skills, profile picture and certificates
     return {
       ...worker,
       skills: worker.skills.map((skill) => skill.skillName),
-      profilePicture: profilePictureUrl
+      profilePicture: profilePictureUrl,
+      certificates: transformedCertificates
     };
   } catch (error) {
     console.log(error);
