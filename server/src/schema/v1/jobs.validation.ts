@@ -48,7 +48,7 @@ export const createJobSchema = z
   })
   .refine(
     (data) => {
-      if (data.jobType === "HOURLY") {
+      if (data.jobType === JobType.HOURLY) {
         return (
           data.hourlyRateMin != null &&
           data.hourlyRateMax != null &&
@@ -56,7 +56,7 @@ export const createJobSchema = z
           !data.salary
         );
       }
-      if (data.jobType === "CONTRACT") {
+      if (data.jobType === JobType.CONTRACT) {
         return (
           data.budget != null &&
           !data.hourlyRateMin &&
@@ -64,7 +64,7 @@ export const createJobSchema = z
           !data.salary
         );
       }
-      if (data.jobType === "SALARY") {
+      if (data.jobType === JobType.SALARY) {
         return (
           data.salary != null &&
           !data.budget &&
@@ -76,7 +76,7 @@ export const createJobSchema = z
     },
     {
       message: "Invalid combination of fields for the selected job type",
-      path: ["jobType"], // This will make the error show up on the jobType field
+      path: ["jobType"],
     }
   );
 
@@ -85,8 +85,14 @@ export const getJobsQuerySchema = z.object({
   limit: z.string().transform(Number).default("10"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
   search: z.string().optional(),
-  budget: z.string().optional().transform((val) => (val ? parseFloat(val) : undefined)),
+  budget: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseFloat(val) : undefined)),
   skills: z.array(z.nativeEnum(SkillName)).optional(),
+  country: z.string().optional(),
+  state: z.string().optional(),
+  city: z.string().optional(),
   minHourlyRate: z
     .string()
     .optional()
@@ -108,11 +114,9 @@ export const getJobDetailsSchema = z.string().uuid("Invalid job ID");
 export const applyJobSchema = z.object({
   coverLetter: z.string({ required_error: "Cover letter is required" }),
   proposedRate: z.number().min(0, "Proposed rate must be greater than 0"),
-  availability: z
-    .string()
-    .datetime({
-      message: "Invalid date format. Please provide a valid ISO date string",
-    }),
+  availability: z.string().datetime({
+    message: "Invalid date format. Please provide a valid ISO date string",
+  }),
   jobDuration: z.nativeEnum(JobApplicationDuration, {
     required_error: "Duration is required",
   }),

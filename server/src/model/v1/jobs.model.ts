@@ -101,6 +101,9 @@ export const getJobs = async (filters: {
   status?: JobStatus;
   budget?: number;
   skills?: SkillName[];
+  country?: string;
+  state?: string;
+  city?: string;
 }) => {
   try {
     const {
@@ -113,6 +116,9 @@ export const getJobs = async (filters: {
       status,
       budget,
       skills,
+      country,
+      state,
+      city,
     } = filters;
     const skip = (page - 1) * limit;
 
@@ -141,6 +147,10 @@ export const getJobs = async (filters: {
         ...(skills
           ? [{ skills: { some: { skillName: { in: skills } } } }]
           : []),
+        // Location filters
+        ...(country ? [{ location: { country } }] : []),
+        ...(state ? [{ location: { state } }] : []),
+        ...(city ? [{ location: { city } }] : []),
       ],
     };
 
