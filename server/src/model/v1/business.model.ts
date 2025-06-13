@@ -403,3 +403,51 @@ export const deleteBusinessAssets = async (userId: string, assetIds: string[]) =
     throw new DatabaseError(error.message);
   }
 };
+
+export const toggleJobStatus = async (jobId: string, userId: string) => {
+  try {
+    // Get business profile ID
+    const businessProfile = await prisma.businessProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!businessProfile) {
+      throw new NotFoundError("Business profile not found");
+    }
+
+    // Get the job and verify ownership
+    const job = await prisma.job.findFirst({
+      where: {
+        id: jobId,
+        businessProfileId: businessProfile.id,
+      },
+      select: {
+        id: true,
+        status: true,
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundError("Job not found");
+    }
+
+    // Toggle the status
+    const newStatus = job.status === "OPEN" ? "CLOSED" : "OPEN";
+
+    // Update the job status
+    const updatedJob = await prisma.job.update({
+      where: { id: jobId },
+      data: { status: newStatus },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+      },
+    });
+
+    return updatedJob;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};

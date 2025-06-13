@@ -101,6 +101,7 @@ export const ROUTES = {
     GET_BUSINESS_PROFILE_DETAILS: "/business-profile-details/:businessId",
     GET_ALL_BUSINESS_JOBS: "/get-all-business-jobs",
     GET_JOB_DETAILS: "/job-details/:jobId",
+    TOGGLE_JOB_STATUS: "/toggle-job-status/:jobId",
     GET_PROFILE_PICTURE_UPLOAD_URL: "/get-profile-picture-upload-url",
     SAVE_PROFILE_PICTURE: "/save-profile-picture",
     GET_ASSET_UPLOAD_URL: "/get-asset-upload-url",

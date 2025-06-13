@@ -46,6 +46,14 @@ businessRouter.get(
   businessController.getJobDetailsHandler
 );
 
+// TOGGLE JOB STATUS
+businessRouter.patch(
+  ROUTES.BUSINESS_PROFILE.TOGGLE_JOB_STATUS,
+  isAuthorized([Role.BUSINESS]),
+  ValidationMiddleware.paramValidation(getJobDetailsSchema, "jobId"),
+  businessController.toggleJobStatusHandler
+);
+
 // GET PROFILE PICTURE UPLOAD URL
 businessRouter.post(
   ROUTES.BUSINESS_PROFILE.GET_PROFILE_PICTURE_UPLOAD_URL,

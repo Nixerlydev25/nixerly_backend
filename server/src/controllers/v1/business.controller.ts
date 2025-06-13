@@ -209,3 +209,23 @@ export const deleteBusinessAssetsHandler = async (
     return next(error);
   }
 };
+
+export const toggleJobStatusHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userId } = request.user;
+    const { jobId } = request.params;
+
+    const updatedJob = await businessModel.toggleJobStatus(jobId, userId);
+
+    return response.status(ResponseStatus.OK).json({
+      message: ResponseMessages.Success,
+      job: updatedJob,
+    });
+  } catch (error: any) {
+    return next(error);
+  }
+};
