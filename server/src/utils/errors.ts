@@ -59,3 +59,13 @@ export class UnauthorizedError extends Error {
     this.name = "UnauthorizedError";
   }
 }
+
+export class BadRequestError extends Error {
+  public statusCode: number;
+
+  constructor(message: string) {
+    super(message);
+    this.statusCode = ResponseStatus.BadRequest;
+    this.name = "BadRequestError";
+  }
+}

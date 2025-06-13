@@ -2,7 +2,8 @@ import { Request, Response, NextFunction, request } from "express";
 import { ResponseStatus } from "../../types/response.enums";
 import * as jobModel from "../../model/v1/jobs.model";
 import prisma from "../../config/prisma.config";
-import { DatabaseError, NotFoundError, UnauthorizedError } from "../../utils/errors";
+import { BadRequestError, DatabaseError, NotFoundError, UnauthorizedError } from "../../utils/errors";
+import { JobStatus } from "@prisma/client";
 
 export const createJobHandler = async (
   request: Request,
@@ -96,6 +97,10 @@ export const applyJobHandler = async (
 
     if (!jobFound) {
       throw new NotFoundError("Job not found");
+    }
+
+    if (jobFound.status === JobStatus.CLOSED) {
+      throw new BadRequestError("Job is closed");
     }
 
     const appliedJob = await jobModel.applyJob(

@@ -91,6 +91,7 @@ export const createJob = async (
   }
 };
 
+// should not return jobs that are closed or isblocked 
 export const getJobs = async (filters: {
   page: number;
   limit: number;
@@ -151,6 +152,9 @@ export const getJobs = async (filters: {
         ...(country ? [{ location: { country } }] : []),
         ...(state ? [{ location: { state } }] : []),
         ...(city ? [{ location: { city } }] : []),
+        // Exclude closed and blocked jobs
+        { status: { not: JobStatus.CLOSED } },
+        { isBlocked: false },
       ],
     };
 
