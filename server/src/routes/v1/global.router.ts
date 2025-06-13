@@ -66,8 +66,6 @@ Api2.use(ROUTES.API.HEALTH, healthRouter);
 // admin routes
 Api2.use(ROUTES.API.ADMIN, adminRouter);
 
-Api2.use(ROUTES.API.REPORTS, reportRouter);
-
 // certificate routes
 Api2.use(ROUTES.API.CERTIFICATE, certificateRouter);
 

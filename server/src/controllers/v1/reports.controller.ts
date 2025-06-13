@@ -27,7 +27,7 @@ export const reportWorkerHandler = async (
     }
 
     // Verify worker exists
-    const worker = await workerModel.getWorkerProfileByUserId(workerId);
+    const worker = await workerModel.doesWorkerExist(workerId);
     if (!worker) {
       return response.status(ResponseStatus.NotFound).json({
         success: false,

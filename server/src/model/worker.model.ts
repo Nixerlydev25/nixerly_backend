@@ -1,11 +1,11 @@
-import { OnboardingStepWorkerProfile, SkillName } from '@prisma/client';
-import { DatabaseError, NotFoundError } from '../utils/errors';
-import prisma from '../config/prisma.config';
+import { OnboardingStepWorkerProfile, SkillName } from "@prisma/client";
+import { DatabaseError, NotFoundError } from "../utils/errors";
+import prisma from "../config/prisma.config";
 import {
   createWorkerFilterClause,
   createWorkerSortClause,
-} from '../utils/filters';
-import { S3Service } from '../services/s3.service';
+} from "../utils/filters";
+import { S3Service } from "../services/s3.service";
 
 export const getAllWorkers = async (filters: {
   skills?: SkillName[];
@@ -59,22 +59,26 @@ export const getAllWorkers = async (filters: {
     ]);
 
     // Transform workers with profile pictures and skills
-    const transformedWorkers = await Promise.all(workers.map(async (worker) => {
-      let profilePictureUrl = null;
-      if (worker.profilePicture?.s3Key) {
-        try {
-          profilePictureUrl = await S3Service.getObjectUrl(worker.profilePicture.s3Key);
-        } catch (error) {
-          console.error("Failed to get profile picture URL:", error);
+    const transformedWorkers = await Promise.all(
+      workers.map(async (worker) => {
+        let profilePictureUrl = null;
+        if (worker.profilePicture?.s3Key) {
+          try {
+            profilePictureUrl = await S3Service.getObjectUrl(
+              worker.profilePicture.s3Key
+            );
+          } catch (error) {
+            console.error("Failed to get profile picture URL:", error);
+          }
         }
-      }
 
-      return {
-        ...worker,
-        skills: worker.skills.map((skill) => skill.skillName),
-        profilePicture: profilePictureUrl
-      };
-    }));
+        return {
+          ...worker,
+          skills: worker.skills.map((skill) => skill.skillName),
+          profilePicture: profilePictureUrl,
+        };
+      })
+    );
 
     return {
       workers: transformedWorkers,
@@ -87,7 +91,7 @@ export const getAllWorkers = async (filters: {
     };
   } catch (error) {
     console.log(error);
-    throw new DatabaseError('Error fetching workers');
+    throw new DatabaseError("Error fetching workers");
   }
 };
 
@@ -119,8 +123,8 @@ export const getWorkerById = async (workerId: string) => {
         profilePicture: true,
         certificates: {
           include: {
-            assets: true
-          }
+            assets: true,
+          },
         },
       },
     });
@@ -131,43 +135,49 @@ export const getWorkerById = async (workerId: string) => {
     let profilePictureUrl = null;
     if (worker.profilePicture?.s3Key) {
       try {
-        profilePictureUrl = await S3Service.getObjectUrl(worker.profilePicture.s3Key);
+        profilePictureUrl = await S3Service.getObjectUrl(
+          worker.profilePicture.s3Key
+        );
       } catch (error) {
         console.error("Failed to get profile picture URL:", error);
       }
     }
 
     // Transform certificates to include asset URLs
-    const transformedCertificates = await Promise.all(worker.certificates.map(async (cert) => {
-      const transformedAssets = await Promise.all(cert.assets.map(async (asset) => {
-        try {
-          const url = await S3Service.getObjectUrl(asset.key);
-          return {
-            ...asset,
-            url
-          };
-        } catch (error) {
-          console.error("Failed to get certificate asset URL:", error);
-          return null;
-        }
-      }));
+    const transformedCertificates = await Promise.all(
+      worker.certificates.map(async (cert) => {
+        const transformedAssets = await Promise.all(
+          cert.assets.map(async (asset) => {
+            try {
+              const url = await S3Service.getObjectUrl(asset.key);
+              return {
+                ...asset,
+                url,
+              };
+            } catch (error) {
+              console.error("Failed to get certificate asset URL:", error);
+              return null;
+            }
+          })
+        );
 
-      return {
-        ...cert,
-        assets: transformedAssets.filter(asset => asset !== null)
-      };
-    }));
+        return {
+          ...cert,
+          assets: transformedAssets.filter((asset) => asset !== null),
+        };
+      })
+    );
 
     // Return the worker with transformed skills, profile picture and certificates
     return {
       ...worker,
       skills: worker.skills.map((skill) => skill.skillName),
       profilePicture: profilePictureUrl,
-      certificates: transformedCertificates
+      certificates: transformedCertificates,
     };
   } catch (error) {
     console.log(error);
-    throw new DatabaseError('Error fetching worker details');
+    throw new DatabaseError("Error fetching worker details");
   }
 };
 
@@ -220,7 +230,7 @@ export const saveProfilePicture = async (userId: string, s3Key: string) => {
     });
 
     if (!workerProfile) {
-      throw new NotFoundError('Worker profile not found');
+      throw new NotFoundError("Worker profile not found");
     }
 
     // Check if profile picture already exists
@@ -255,29 +265,20 @@ export const getWorkerProfileByUserId = async (userId: string) => {
     const worker = await prisma.workerProfile.findUnique({
       where: { userId },
       include: {
-        profilePicture: true
-      }
+        profilePicture: true,
+      },
     });
 
     if (!worker) return null;
-
-    // Transform profile picture if it exists
-    let profilePictureUrl = null;
-    if (worker.profilePicture?.s3Key) {
-      try {
-        profilePictureUrl = await S3Service.getObjectUrl(worker.profilePicture.s3Key);
-      } catch (error) {
-        console.error("Failed to get profile picture URL:", error);
-        // Continue execution even if profile picture URL generation fails
-      }
-    }
-
-    return {
-      ...worker,
-      profilePicture: profilePictureUrl
-    };
-
+    return worker;
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
+};
+
+export const doesWorkerExist = async (workerId: string) => {
+  const worker = await prisma.workerProfile.findUnique({
+    where: { id: workerId },
+  });
+  return worker !== null;
 };

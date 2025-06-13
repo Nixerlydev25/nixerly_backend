@@ -45,7 +45,7 @@ reportRouter.post(
 // Check if worker has reported a job
 reportRouter.get(
   ROUTES.REPORT.HAS_WORKER_REPORTED_JOB,
-  isAuthorized([Role.WORKER]),
+  isAuthorized([Role.WORKER, Role.ADMIN]),
   ValidationMiddleware.paramValidation(reportJobParamSchema, "jobId"),
   reportController.hasWorkerReportedJobHandler
 );
@@ -53,7 +53,7 @@ reportRouter.get(
 // Check if worker has reported a business
 reportRouter.get(
   ROUTES.REPORT.HAS_WORKER_REPORTED_BUSINESS,
-  isAuthorized([Role.WORKER]),
+  isAuthorized([Role.WORKER, Role.ADMIN]),
   ValidationMiddleware.paramValidation(reportBusinessParamSchema, "businessId"),
   reportController.hasWorkerReportedBusinessHandler
 );
@@ -61,7 +61,7 @@ reportRouter.get(
 // Check if business has reported a worker
 reportRouter.get(
   ROUTES.REPORT.HAS_BUSINESS_REPORTED_WORKER,
-  isAuthorized([Role.BUSINESS]),
+  isAuthorized([Role.BUSINESS, Role.ADMIN]),
   ValidationMiddleware.paramValidation(reportWorkerParamSchema, "workerId"),
   reportController.hasBusinessReportedWorkerHandler
 );
