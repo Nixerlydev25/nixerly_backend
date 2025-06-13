@@ -32,7 +32,6 @@ workerRouter.patch(
   workerController.updateWorkerProfileHandler
 );
 
-
 // GET PROFILE PICTURE UPLOAD URL
 workerRouter.post(
   ROUTES.WORKER_PROFILE.GET_PROFILE_PICTURE_UPLOAD_URL,

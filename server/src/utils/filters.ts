@@ -20,6 +20,7 @@ export interface WorkerFilters {
  * @param filters The filter parameters to apply
  * @returns A Prisma-compatible where clause object
  */
+
 export function createWorkerFilterClause(filters?: WorkerFilters): Record<string, any> {
   const whereClause: Record<string, any> = {};
   
@@ -84,6 +85,8 @@ export function createWorkerFilterClause(filters?: WorkerFilters): Record<string
       whereClause.avgRating.lte = filters.maxAvgRating;
     }
   }
+
+  whereClause.isBlocked = false;
 
   return whereClause;
 }

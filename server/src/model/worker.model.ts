@@ -30,8 +30,6 @@ export const getAllWorkers = async (filters: {
     // Create orderBy clause based on sort option
     const orderByClause = createWorkerSortClause(filters?.sort);
 
-    console.log({ orderByClause, whereClause });
-
     const skip = (filters.page - 1) * filters.limit;
 
     const [workers, totalCount] = await Promise.all([
