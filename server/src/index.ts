@@ -15,6 +15,8 @@ async function startServer(): Promise<void> {
 
 startServer();
 
+
+
 httpServer.on("close", async () => {
   await prisma.$disconnect();
 });
