@@ -117,9 +117,9 @@ export const applyJobSchema = z.object({
   availability: z.string().datetime({
     message: "Invalid date format. Please provide a valid ISO date string",
   }),
-  jobDuration: z.nativeEnum(JobApplicationDuration, {
-    required_error: "Duration is required",
-  }),
+  // jobDuration: z.nativeEnum(JobApplicationDuration, {
+  //   required_error: "Duration is required",
+  // }),
 });
 
 export const applyJobParamSchema = z.string().uuid("Invalid job ID");

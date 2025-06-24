@@ -386,7 +386,7 @@ export const applyJob = async (
   coverLetter: string,
   proposedRate: number,
   workerStartDateAvailability: Date,
-  duration: JobApplicationDuration
+  // duration: JobApplicationDuration
 ) => {
   try {
     // Check if the worker profile exists
@@ -416,7 +416,7 @@ export const applyJob = async (
         coverLetter,
         proposedRate,
         workerStartDateAvailability,
-        duration,
+        // duration,
       },
       include: {
         job: true,

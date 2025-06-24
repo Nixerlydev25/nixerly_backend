@@ -16,6 +16,7 @@ import businessRouter from './business.router';
 import adminRouter from './admin/admin.router';
 import reportRouter from './reports.router';
 import certificateRouter from './certificates.router';
+import portfolioRouter from './portfolio.router';
 // import subscriptionRouter from "./subscription.router";
 
 const Api2 = Router();
@@ -68,6 +69,9 @@ Api2.use(ROUTES.API.ADMIN, adminRouter);
 
 // certificate routes
 Api2.use(ROUTES.API.CERTIFICATE, certificateRouter);
+
+// portfolio routes
+Api2.use(ROUTES.API.PORTFOLIO, portfolioRouter);
 
 // subscription routes
 // Api2.use(ROUTES.API.SUBSCRIPTION, subscriptionRouter);

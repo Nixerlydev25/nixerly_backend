@@ -311,6 +311,31 @@ export const getWorkerProfileDetails = async (userId: string) => {
       })
     );
 
+    // Get S3 URLs for portfolio assets
+    const portfolioWithUrls = await Promise.all(
+      user.workerProfile.portfolio.map(async (portfolioItem) => {
+        const assetUrls = await Promise.all(
+          portfolioItem.assets.map(async (asset) => {
+            try {
+              const url = await S3Service.getObjectUrl(asset.key);
+              return {
+                url,
+                key: asset.key,
+                mediaType: asset.mediaType
+              };
+            } catch (error) {
+              console.error(`Failed to get portfolio asset URL for key ${asset.key}:`, error);
+              return null;
+            }
+          })
+        );
+        return {
+          ...portfolioItem,
+          assets: assetUrls.filter(asset => asset !== null)
+        };
+      })
+    );
+
     const transformedUser = {
       ...user,
       workerProfile: {
@@ -322,7 +347,8 @@ export const getWorkerProfileDetails = async (userId: string) => {
           id: language.id,
         })),
         profilePicture: profilePictureUrl,
-        certificates: certificatesWithUrls
+        certificates: certificatesWithUrls,
+        portfolio: portfolioWithUrls
       },
     };
 

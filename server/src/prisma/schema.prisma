@@ -51,7 +51,7 @@ model WorkerProfile {
   experience               Experience[]
   education                Education[] // Education moved exclusively to worker profile
   certificates             Certificate[]
-  portfolio                Project[]
+  portfolio                Portfolio[]
   languages                WorkerLanguage[]
   availability             Boolean                     @default(true)
   totalEarnings            Float                       @default(0)
@@ -397,18 +397,22 @@ model Review {
 }
 
 // WORKER PORTFOLIO & EXPERIENCE --------------------------------------------
-model Project {
-  id             String        @id @default(uuid())
-  workerId       String
-  workerProfile  WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
-  title          String
-  description    String        @db.Text
-  completionDate DateTime
-  projectUrl     String?
-  assets         Asset[] // Relation to project images
-  createdAt      DateTime      @default(now())
+model Portfolio {
+  id              String        @id @default(uuid())
+  workerId        String
+  workerProfile   WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  title           String
+  description     String        @db.Text
+  startDate       DateTime
+  endDate         DateTime?
+  employerName    String        // Company name
+  employerWebsite String?       // Website link
+  projectUrl      String?
+  assets          Asset[]       // Relation to portfolio images
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  @@map("projects")
+  @@map("portfolios")
 }
 
 model Experience {
@@ -482,8 +486,8 @@ model Asset {
   id                String          @id @default(uuid())
   key               String // S3 key for the image
   mediaType         String // Type of media (e.g., "image/jpeg", "image/png", "application/pdf")
-  projectId         String? // Optional relation to Project
-  project           Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  portfolioId       String? // Optional relation to Portfolio
+  portfolio         Portfolio?      @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
   certificateId     String? // Optional relation to Certificate
   certificate       Certificate?    @relation(fields: [certificateId], references: [id], onDelete: Cascade)
   businessProfileId String? // Optional relation to BusinessProfile

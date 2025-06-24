@@ -18,6 +18,7 @@ export const ROUTES = {
     REPORTS: "/reports",
     ADMIN_REPORTS: "/admin-reports",
     CERTIFICATE: "/certificate",
+    PORTFOLIO: "/portfolio",
   },
   ADMIN: {
     STATISTICS: {
@@ -154,6 +155,12 @@ export const ROUTES = {
     HAS_BUSINESS_REPORTED_WORKER: "/has-reported-worker/:workerId",
   },
   CERTIFICATE: {
+    CREATE: "/create",
+    DELETE: "/delete",
+    GET_ASSET_UPLOAD_URL: "/get-asset-upload-url",
+    SAVE_ASSETS: "/save-assets",
+  },
+  PORTFOLIO: {
     CREATE: "/create",
     DELETE: "/delete",
     GET_ASSET_UPLOAD_URL: "/get-asset-upload-url",
