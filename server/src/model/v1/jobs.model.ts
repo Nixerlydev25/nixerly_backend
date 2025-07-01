@@ -184,6 +184,11 @@ export const getJobs = async (filters: {
               website: true,
               employeeCount: true,
               yearFounded: true,
+              profilePicture: {
+                select: {
+                  s3Key: true
+                }
+              }
             },
           },
           skills: {
@@ -202,10 +207,22 @@ export const getJobs = async (filters: {
       }),
     ]);
 
-    // Transform the jobs to simplify skills array
-    const transformedJobs = jobs.map((job) => ({
-      ...job,
-      skills: job.skills.map((skill) => skill.skillName),
+    // Transform the jobs and get profile picture URLs
+    const transformedJobs = await Promise.all(jobs.map(async (job) => {
+      let profilePictureUrl = null;
+      if (job.businessProfile.profilePicture?.s3Key) {
+        profilePictureUrl = await S3Service.getObjectUrl(job.businessProfile.profilePicture.s3Key);
+      }
+
+      return {
+        ...job,
+        businessProfile: {
+          ...job.businessProfile,
+          profilePictureUrl,
+          profilePicture: undefined // Remove the s3Key from response
+        },
+        skills: job.skills.map((skill) => skill.skillName),
+      };
     }));
 
     const totalPages = Math.ceil(totalCount / limit);

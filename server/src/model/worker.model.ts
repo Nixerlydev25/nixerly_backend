@@ -48,6 +48,16 @@ export const getAllWorkers = async (filters: {
           education: true,
           languages: true,
           profilePicture: true,
+          certificates: {
+            include: {
+              assets: true,
+            },
+          },
+          portfolio: {
+            include: {
+              assets: true,
+            },
+          },
         },
         orderBy: orderByClause,
       }),
@@ -56,9 +66,10 @@ export const getAllWorkers = async (filters: {
       }),
     ]);
 
-    // Transform workers with profile pictures and skills
+    // Transform workers with profile pictures, certificates, portfolio and skills
     const transformedWorkers = await Promise.all(
       workers.map(async (worker) => {
+        // Handle profile picture
         let profilePictureUrl = null;
         if (worker.profilePicture?.s3Key) {
           try {
@@ -70,10 +81,62 @@ export const getAllWorkers = async (filters: {
           }
         }
 
+        // Transform certificates to include asset URLs
+        const transformedCertificates = await Promise.all(
+          worker.certificates.map(async (cert) => {
+            const transformedAssets = await Promise.all(
+              cert.assets.map(async (asset) => {
+                try {
+                  const url = await S3Service.getObjectUrl(asset.key);
+                  return {
+                    ...asset,
+                    url,
+                  };
+                } catch (error) {
+                  console.error("Failed to get certificate asset URL:", error);
+                  return null;
+                }
+              })
+            );
+
+            return {
+              ...cert,
+              assets: transformedAssets.filter((asset) => asset !== null),
+            };
+          })
+        );
+
+        // Transform portfolio to include asset URLs
+        const transformedPortfolio = await Promise.all(
+          worker.portfolio.map(async (portfolio) => {
+            const transformedAssets = await Promise.all(
+              portfolio.assets.map(async (asset) => {
+                try {
+                  const url = await S3Service.getObjectUrl(asset.key);
+                  return {
+                    ...asset,
+                    url,
+                  };
+                } catch (error) {
+                  console.error("Failed to get portfolio asset URL:", error);
+                  return null;
+                }
+              })
+            ); 
+
+            return {
+              ...portfolio,
+              assets: transformedAssets.filter((asset) => asset !== null),
+            };
+          })
+        );
+
         return {
           ...worker,
           skills: worker.skills.map((skill) => skill.skillName),
           profilePicture: profilePictureUrl,
+          certificates: transformedCertificates,
+          portfolio: transformedPortfolio,
         };
       })
     );
