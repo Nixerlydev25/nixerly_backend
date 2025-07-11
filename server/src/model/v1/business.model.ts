@@ -166,6 +166,7 @@ export const getAllBusinessJobs = async (
       select: {
         id: true,
         title: true,
+        description: true,
         employmentType: true,
         numberOfPositions: true,
         budget: true,
