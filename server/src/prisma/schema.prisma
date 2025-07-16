@@ -118,6 +118,7 @@ model BusinessProfile {
   lastActive            DateTime                      @default(now())
   assets                Asset[]                       @relation("BusinessAssets") // Business can have multiple assets
   profilePicture        ProfilePicture? // One-to-one relation with profile picture
+  subscription          Subscription? // One-to-one relation with subscription
   // Reports
   reportsReceived       BusinessReport[]              @relation("BusinessReportsReceived")
   workerReportsSent     WorkerReport[]                @relation("WorkerReportsByBusiness")
@@ -840,4 +841,45 @@ enum ReportStatus {
   RESOLVED
   DISMISSED
   ACTION_TAKEN
+}
+
+// SUBSCRIPTIONS --------------------------------------------
+enum SubscriptionPlan {
+  CORE
+  TEAM
+  ENTERPRISE
+  FREE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAST_DUE
+  UNPAID
+  TRIALING
+}
+
+model Subscription {
+  id                          String             @id @default(uuid())
+  businessProfileId           String             @unique
+  businessProfile             BusinessProfile    @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  plan                        SubscriptionPlan    @default(FREE)
+  status                      SubscriptionStatus  @default(ACTIVE)
+  stripeCustomerId            String?            // Stripe customer ID
+  stripeSubscriptionId        String?        // Stripe subscription ID
+  currentPeriodStart          DateTime?
+  currentPeriodEnd            DateTime?
+  cancelAtPeriodEnd           Boolean          @default(false)
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime          @updatedAt
+  //          Usage tracking
+  profileViewsCount           Int               @default(0)
+  profileSearchCount          Int              @default(0)
+  jobPostsCount               Int               @default(0)
+  //          Reset dates for usage tracking
+  lastProfileViewsReset       DateTime      @default(now())
+  lastProfileSearchReset      DateTime     @default(now())
+  lastJobPostsReset           DateTime       @default(now())
+
+  @@map("subscriptions")
 }

@@ -187,6 +187,11 @@ export const getWorkerById = async (workerId: string) => {
             assets: true,
           },
         },
+        portfolio: {
+          include: {
+            assets: true,
+          },
+        },
       },
     });
 
@@ -229,12 +234,38 @@ export const getWorkerById = async (workerId: string) => {
       })
     );
 
-    // Return the worker with transformed skills, profile picture and certificates
+    // Transform portfolio to include asset URLs
+    const transformedPortfolio = await Promise.all(
+      worker.portfolio.map(async (portfolio) => {
+        const transformedAssets = await Promise.all(
+          portfolio.assets.map(async (asset) => {
+            try {
+              const url = await S3Service.getObjectUrl(asset.key);
+              return {
+                ...asset,
+                url,
+              };
+            } catch (error) {
+              console.error("Failed to get portfolio asset URL:", error);
+              return null;
+            }
+          })
+        );
+
+        return {
+          ...portfolio,
+          assets: transformedAssets.filter((asset) => asset !== null),
+        };
+      })
+    );
+
+    // Return the worker with transformed skills, profile picture, certificates and portfolio
     return {
       ...worker,
       skills: worker.skills.map((skill) => skill.skillName),
       profilePicture: profilePictureUrl,
       certificates: transformedCertificates,
+      portfolio: transformedPortfolio,
     };
   } catch (error) {
     console.log(error);
