@@ -166,4 +166,8 @@ export const ROUTES = {
     GET_ASSET_UPLOAD_URL: "/get-asset-upload-url",
     SAVE_ASSETS: "/save-assets",
   },
+  SUBSCRIPTION: {
+    CREATE_CHECKOUT_SESSION: "/create-checkout-session",
+    HANDLE_WEBHOOK: "/webhook",
+  },
 } as const;

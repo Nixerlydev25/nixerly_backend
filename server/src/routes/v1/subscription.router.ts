@@ -1,31 +1,24 @@
-// import { Router } from 'express';
-// import { SubscriptionController } from '../../controllers/subscription.controller';
-// import express from 'express';
+// import { Router } from "express";
+// import { createCheckoutSession, handleWebhook } from "../../controllers/subscription.controller";
+// import deserializeUser from "../../middleware/deserializeUsers";
+// import isAuthorized from "../../middleware/isAuthorized";
+// import { Role } from "@prisma/client";
+// import express from "express";
+// import { ROUTES } from "../../constants/routes.constants";
 
 // const router = Router();
 
-// // Create checkout session for subscription
+// // This endpoint requires authentication and business role
 // router.post(
-//   '/create-checkout-session',
-//   SubscriptionController.createCheckoutSession
+//   ROUTES.SUBSCRIPTION.CREATE_CHECKOUT_SESSION,
+//   isAuthorized([Role.BUSINESS]),
+//   createCheckoutSession
 // );
 
-// // Handle Stripe webhook
+// // Webhook endpoint - needs raw body for signature verification
 // router.post(
-//   '/webhook',
-//   SubscriptionController.handleWebhook
-// );
-
-// // Get current user's subscription
-// router.get(
-//   '/current',
-//   SubscriptionController.getCurrentSubscription
-// );
-
-// // Cancel subscription
-// router.post(
-//   '/cancel',
-//   SubscriptionController.cancelSubscription
+//   ROUTES.SUBSCRIPTION.HANDLE_WEBHOOK,
+//   handleWebhook
 // );
 
 // export default router; 

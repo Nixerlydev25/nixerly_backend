@@ -66,6 +66,7 @@ export const getBusinessProfileDetails = async (businessId: string) => {
           },
         },
         profilePicture: true,
+        assets: true,
         jobs: {
           select: {
             id: true,
@@ -83,21 +84,36 @@ export const getBusinessProfileDetails = async (businessId: string) => {
       },
     });
 
-    // Get profile picture URL if exists
-    if (user?.profilePicture?.s3Key) {
-      const profilePictureUrl = await S3Service.getObjectUrl(
-        user.profilePicture.s3Key
-      );
-      return {
-        ...user,
-        profilePicture: {
-          ...user.profilePicture,
-          url: profilePictureUrl,
-        },
-      };
+    if (!user) {
+      return null;
     }
 
-    return user;
+    // Get profile picture URL if exists
+    let profilePictureUrl;
+    if (user.profilePicture?.s3Key) {
+      profilePictureUrl = await S3Service.getObjectUrl(user.profilePicture.s3Key);
+    }
+
+    // Get business asset URLs if they exist
+    const assetsWithUrls = await Promise.all(
+      user.assets.map(async (asset) => ({
+        ...asset,
+        url: await S3Service.getObjectUrl(asset.key),
+      }))
+    );
+
+    return {
+      ...user,
+      phoneNumber: user.phoneNumber,
+      profilePicture: user.profilePicture
+        ? {
+            ...user.profilePicture,
+            url: profilePictureUrl,
+          }
+        : null,
+      assets: assetsWithUrls,
+    };
+
   } catch (error: any) {
     throw new DatabaseError(error.message);
   }
