@@ -148,3 +148,36 @@ export const toggleJobBlock = async (jobId: string) => {
     throw new DatabaseError(error.message);
   }
 };
+
+export const closeJob = async (jobId: string, businessProfileId: string) => {
+  try {
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      select: { 
+        businessProfileId: true,
+        status: true 
+      }
+    });
+
+    if (!job) {
+      throw new NotFoundError('Job not found');
+    }
+
+    if (job.businessProfileId !== businessProfileId) {
+      throw new Error('Unauthorized: You are not the owner of this job');
+    }
+
+    if (job.status === 'CLOSED') {
+      throw new Error('Job is already closed');
+    }
+
+    const updatedJob = await prisma.job.update({
+      where: { id: jobId },
+      data: { status: 'CLOSED' }
+    });
+
+    return updatedJob;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
+};

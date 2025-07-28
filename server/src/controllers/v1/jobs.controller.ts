@@ -2,7 +2,12 @@ import { Request, Response, NextFunction, request } from "express";
 import { ResponseStatus } from "../../types/response.enums";
 import * as jobModel from "../../model/v1/jobs.model";
 import prisma from "../../config/prisma.config";
-import { BadRequestError, DatabaseError, NotFoundError, UnauthorizedError } from "../../utils/errors";
+import {
+  BadRequestError,
+  DatabaseError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../../utils/errors";
 import { JobStatus } from "@prisma/client";
 
 export const createJobHandler = async (
@@ -43,13 +48,13 @@ export const getJobsHandler = async (
 ) => {
   try {
     const filters = request.query;
-    const { jobs, pagination:{totalCount,
-      totalPages,
-      currentPage,
-      hasMore,} } = await jobModel.getJobs(filters as any);
+    const {
+      jobs,
+      pagination: { totalCount, totalPages, currentPage, hasMore },
+    } = await jobModel.getJobs(filters as any);
 
     response.status(ResponseStatus.OK).json({
-      pagination:{
+      pagination: {
         totalCount,
         totalPages,
         currentPage,
@@ -91,7 +96,11 @@ export const applyJobHandler = async (
   try {
     const { jobId } = request.params;
     const { userId } = request.user;
-    const { coverLetter, proposedRate, availability: workerStartDateAvailability } = request.body;
+    const {
+      coverLetter,
+      proposedRate,
+      availability: workerStartDateAvailability,
+    } = request.body;
 
     const jobFound = await jobModel.getJobById(jobId);
 
@@ -108,7 +117,7 @@ export const applyJobHandler = async (
       userId,
       coverLetter,
       proposedRate,
-      workerStartDateAvailability,
+      workerStartDateAvailability
       // duration
     );
 
@@ -131,7 +140,7 @@ export const getApplicantsOfJobHandler = async (
     const { jobId } = request.params;
     const { userId } = request.user;
     const filters = request.query;
-    
+
     // check if job exists
     const jobFound = await jobModel.getJobById(jobId);
     if (!jobFound) {
@@ -152,6 +161,26 @@ export const getApplicantsOfJobHandler = async (
       data: applicants,
     });
   } catch (error) {
+    next(error);
+  }
+};
+
+export const toggleJobStatusHandler = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  try {
+    const { jobId } = request.params;
+    const { userId } = request.user;
+
+    const updatedJob = await jobModel.toggleJobStatus(jobId, userId);
+
+    response.status(ResponseStatus.OK).json({
+      message: `Job status toggled to ${updatedJob.status}`,
+      status: updatedJob.status
+    });
+  } catch (error: any) {
     next(error);
   }
 };

@@ -123,3 +123,5 @@ export const applyJobSchema = z.object({
 });
 
 export const applyJobParamSchema = z.string().uuid("Invalid job ID");
+
+export const closeJobSchema = z.string().uuid('Invalid job ID');

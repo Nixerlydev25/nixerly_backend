@@ -8,7 +8,7 @@ import {
   ApplicationStatus,
 } from '@prisma/client';
 import prisma from '../../config/prisma.config';
-import { DatabaseError } from '../../utils/errors';
+import { DatabaseError, NotFoundError, UnauthorizedError } from '../../utils/errors';
 import { ResponseStatus } from '../../types/response.enums';
 import { stat } from 'fs';
 import { S3Service } from '../../services/s3.service';
@@ -547,4 +547,34 @@ export const checkIfUserOwnsJob = async (userId: string, jobId: string) => {
   });
 
   return job ? true : false;
+};
+
+export const toggleJobStatus = async (jobId: string, userId: string) => {
+  try {
+    // First check if user owns the job
+    const isOwner = await checkIfUserOwnsJob(userId, jobId);
+    if (!isOwner) {
+      throw new UnauthorizedError('You are not authorized to toggle this job status');
+    }
+
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      select: { status: true }
+    });
+
+    if (!job) {
+      throw new NotFoundError('Job not found');
+    }
+
+    const newStatus = job.status === JobStatus.OPEN ? JobStatus.CLOSED : JobStatus.OPEN;
+
+    const updatedJob = await prisma.job.update({
+      where: { id: jobId },
+      data: { status: newStatus }
+    });
+
+    return updatedJob;
+  } catch (error: any) {
+    throw new DatabaseError(error.message);
+  }
 };

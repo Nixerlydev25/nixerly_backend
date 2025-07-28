@@ -7,6 +7,7 @@ import * as ValidationMiddleware from '../../middleware/validation';
 import {
   applyJobParamSchema,
   applyJobSchema,
+  closeJobSchema,
   createJobSchema,
   getApplicantsOfJobQuerySchema,
   getJobDetailsSchema,
@@ -49,6 +50,13 @@ jobsRouter.get(
   ValidationMiddleware.paramValidation(getJobDetailsSchema, 'jobId'),
   ValidationMiddleware.queryValidation(getApplicantsOfJobQuerySchema),
   jobController.getApplicantsOfJobHandler
+);
+
+jobsRouter.patch(
+  ROUTES.JOBS.TOGGLE_STATUS,
+  isAuthorized([Role.BUSINESS, Role.ADMIN]),
+  ValidationMiddleware.paramValidation(closeJobSchema, 'jobId'),
+  jobController.toggleJobStatusHandler
 );
 
 export default jobsRouter;

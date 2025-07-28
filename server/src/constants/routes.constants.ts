@@ -144,6 +144,7 @@ export const ROUTES = {
     DELETE: "/delete/:jobId",
     APPLY: "/apply/:jobId",
     GET_APPLICANTS_OF_JOB: "/get-applicants-of-job/:jobId",
+    TOGGLE_STATUS: "/toggle-status/:jobId"
   },
   REPORT: {
     ROOT: "/report",
